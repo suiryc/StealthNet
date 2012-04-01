@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://rshare.de/rshare.asmx" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" targetNamespace="http://rshare.de/rshare.asmx" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://rshare.de/rshare.asmx">
+      <s:element name="AddPeer">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="port" type="s:int"/>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddPeerResponse">
+        <s:complexType/>
+      </s:element>
+      <s:element name="GetPeer">
+        <s:complexType/>
+      </s:element>
+      <s:element name="GetPeerResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetPeerResult" type="s:string"/>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="RemovePeer">
+        <s:complexType/>
+      </s:element>
+      <s:element name="RemovePeerResponse">
+        <s:complexType/>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="AddPeerSoapIn">
+    <wsdl:part name="parameters" element="tns:AddPeer"/>
+  </wsdl:message>
+  <wsdl:message name="AddPeerSoapOut">
+    <wsdl:part name="parameters" element="tns:AddPeerResponse"/>
+  </wsdl:message>
+  <wsdl:message name="GetPeerSoapIn">
+    <wsdl:part name="parameters" element="tns:GetPeer"/>
+  </wsdl:message>
+  <wsdl:message name="GetPeerSoapOut">
+    <wsdl:part name="parameters" element="tns:GetPeerResponse"/>
+  </wsdl:message>
+  <wsdl:message name="RemovePeerSoapIn">
+    <wsdl:part name="parameters" element="tns:RemovePeer"/>
+  </wsdl:message>
+  <wsdl:message name="RemovePeerSoapOut">
+    <wsdl:part name="parameters" element="tns:RemovePeerResponse"/>
+  </wsdl:message>
+  <wsdl:portType name="rshareSoap">
+    <wsdl:operation name="AddPeer">
+      <wsdl:input message="tns:AddPeerSoapIn"/>
+      <wsdl:output message="tns:AddPeerSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetPeer">
+      <wsdl:input message="tns:GetPeerSoapIn"/>
+      <wsdl:output message="tns:GetPeerSoapOut"/>
+    </wsdl:operation>
+    <wsdl:operation name="RemovePeer">
+      <wsdl:input message="tns:RemovePeerSoapIn"/>
+      <wsdl:output message="tns:RemovePeerSoapOut"/>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="rshareSoap" type="tns:rshareSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="AddPeer">
+      <soap:operation soapAction="http://rshare.de/rshare.asmx/AddPeer" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPeer">
+      <soap:operation soapAction="http://rshare.de/rshare.asmx/GetPeer" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RemovePeer">
+      <soap:operation soapAction="http://rshare.de/rshare.asmx/RemovePeer" style="document"/>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="rshareSoap12" type="tns:rshareSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="AddPeer">
+      <soap12:operation soapAction="http://rshare.de/rshare.asmx/AddPeer" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPeer">
+      <soap12:operation soapAction="http://rshare.de/rshare.asmx/GetPeer" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="RemovePeer">
+      <soap12:operation soapAction="http://rshare.de/rshare.asmx/RemovePeer" style="document"/>
+      <wsdl:input>
+        <soap12:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="rshare">
+    <wsdl:port name="rshareSoap" binding="tns:rshareSoap">
+      <soap:address location="http://rshare.de/rshare.asmx"/>
+    </wsdl:port>
+    <wsdl:port name="rshareSoap12" binding="tns:rshareSoap12">
+      <soap12:address location="http://rshare.de/rshare.asmx"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
