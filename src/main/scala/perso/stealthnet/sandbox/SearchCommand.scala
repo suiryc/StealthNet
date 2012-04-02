@@ -13,6 +13,8 @@ import scala.io.Source
 import scala.xml.{Elem,XML}
 import perso.stealthnet.core.cryptography.Hash
 import perso.stealthnet.core.util.UUID
+import perso.stealthnet.webservices.UpdateClient
+import perso.stealthnet.webservices.WebCacheClient
 
 /**
  * Encryption methods.
@@ -183,83 +185,20 @@ object Test {
     val decrypted = cipher.doFinal(output)
     println(new String(decrypted))
 
-
     /*
-    WebCacheClient.getPeer("http://rshare.de/rshare.asmx") match {
-      case Some(peer) => println(peer)
-      case None =>
-    }
+    UpdateClient.getWebCaches("http://rshare.de/rshareupdates.asmx") match {
+      case Some(webCaches) =>
+        for (webCache <- webCaches) {
+          println("WebCache: " + webCache)
+          WebCacheClient.getPeer(webCache) match {
+            case Some(peer) => println("Got peer: " + peer)
+            case None =>
+          }
+        }
 
-    WebCacheClient.getPeer("http://webcache.stealthnet.at/rwpmws.php") match {
-      case Some(peer) => println(peer)
       case None =>
     }
     */
-  }
-
-}
-
-object SoapClient {
-
-  def wrap(elem: Elem): String = {
-    "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"  + <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
-  <soap12:Body>
-    { elem }
-  </soap12:Body>
-</soap12:Envelope>
-  }
-
-  def doRequest(host: String, req: Elem): Either[String, Elem] = {
-    val url = new java.net.URL(host)
-    val outs = wrap(req).getBytes("UTF-8")
-    val conn = url.openConnection.asInstanceOf[java.net.HttpURLConnection]
-    try {
-      conn.setRequestMethod("POST")
-      conn.setDoOutput(true)
-      conn.setRequestProperty("Content-Length", outs.length.toString)
-      conn.setRequestProperty("Content-Type", "text/xml; charset=utf-8")
-      conn.getOutputStream.write(outs)
-      conn.getOutputStream.close
-      Right(XML.load(conn.getInputStream))
-    }
-    catch {
-      case e: Exception =>
-        val response = Source.fromInputStream(conn.getErrorStream).mkString
-        val details = try {
-          val doc = XML.loadString(response)
-          "Fault code[" + (doc \\ "faultcode").text +
-              "] actor[" + (doc \\ "faultactor").text +
-              "]: " + (doc \\ "faultstring").text
-        }
-        catch {
-          case e: Exception => response
-        }
-
-        Left("Response code[" + conn.getResponseCode +
-            "] message[" + conn.getResponseMessage +
-            "] details[" + details + "]")
-      }
-  }
-}
-
-object WebCacheClient {
-
-  def getPeer(host: String): Option[String] = {
-    SoapClient.doRequest(host, <GetPeer xmlns="http://rshare.de/rshare.asmx" />) match {
-      case Left(l) =>
-        println("Failed: " + l)
-        None
-
-      case Right(r) =>
-        r.text match {
-          case "" =>
-            println("No peer received")
-            None
-
-          case peer =>
-            Some(peer)
-        }
-    }
   }
 
 }
