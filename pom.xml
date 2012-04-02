@@ -28,11 +28,6 @@
       <version>1.46</version>
     </dependency>
     <dependency>
-      <groupId>net.databinder</groupId>
-      <artifactId>dispatch-http_${scala.version}</artifactId>
-      <version>0.8.8</version>
-    </dependency>
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.8.2</version>
@@ -72,19 +67,6 @@
                     <ignore></ignore>
                   </action>
                 </pluginExecution>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.scalaxb</groupId>
-                    <artifactId>scalaxb-maven-plugin</artifactId>
-                    <versionRange>[0.7.0,)</versionRange>
-                    <goals>
-                      <goal>generate</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore></ignore>
-                  </action>
-                </pluginExecution>
               </pluginExecutions>
             </lifecycleMappingMetadata>
           </configuration>
@@ -111,24 +93,6 @@
             <arg>${project.build.directory}/.scala_dependencies</arg>
           </args>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.scalaxb</groupId>
-        <artifactId>scalaxb-maven-plugin</artifactId>
-        <version>0.7.0</version>
-        <!-- For details: mvn org.scalaxb:scalaxb-maven-plugin:help -Dgoal=generate -Ddetail -->
-        <configuration>
-          <outputDirectory>${basedir}/src/main/scala</outputDirectory>
-          <packageName>perso.stealthnet.webcache</packageName>
-        </configuration>
-        <executions>
-          <execution>
-            <id>scalaxb</id>
-            <goals>
-              <goal>generate</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
