@@ -13,6 +13,7 @@ import scala.io.Source
 import scala.xml.{Elem,XML}
 import perso.stealthnet.core.cryptography.Hash
 import perso.stealthnet.core.util.UUID
+import perso.stealthnet.network.Server
 import perso.stealthnet.webservices.UpdateClient
 import perso.stealthnet.webservices.WebCacheClient
 
@@ -185,6 +186,8 @@ object Test {
     val decrypted = cipher.doFinal(output)
     println(new String(decrypted))
 
+    Server.start()
+
     /*
     UpdateClient.getWebCaches("http://rshare.de/rshareupdates.asmx") match {
       case Some(webCaches) =>
@@ -199,6 +202,9 @@ object Test {
       case None =>
     }
     */
+
+    Thread.sleep(5000)
+    Server ! Server.Action.Stop
   }
 
 }
