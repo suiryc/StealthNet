@@ -1,11 +1,12 @@
 package perso.stealthnet.webservices
 
+import com.weiglewilczek.slf4s.Logging
 import scala.xml.XML
 
 /**
  * RShare update client.
  */
-object UpdateClient {
+object UpdateClient extends Logging {
 
   /**
    * GetWebCaches SOAP action.
@@ -13,11 +14,10 @@ object UpdateClient {
    * @param url URL to call
    * @return webcache (URL) list upon success
    */
-  def getWebCaches(host: String): Option[List[String]] = {
-    SoapClient.doRequest(host, <GetWebCaches xmlns="http://rshare.de/rshareupdates.asmx" />) match {
+  def getWebCaches(url: String): Option[List[String]] = {
+    SoapClient.doRequest(url, <GetWebCaches xmlns="http://rshare.de/rshareupdates.asmx" />) match {
       case Left(l) =>
-        /* XXX - report failure in logs ? */
-        println("Failed: " + l)
+        logger error ("Failed to get WebCaches from service[" + url + "]: " + l)
         None
 
       case Right(r) =>
@@ -30,8 +30,7 @@ object UpdateClient {
         }
         catch {
           case e: Exception =>
-            /* XXX - report failure in logs ? */
-            println("Failed: " + e)
+            logger error ("Failed to get WebCaches from service[" + url + "]!", e)
             None
         }
     }

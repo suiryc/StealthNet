@@ -1,9 +1,11 @@
 package perso.stealthnet.webservices
 
+import com.weiglewilczek.slf4s.Logging
+
 /**
  * WebCache client.
  */
-object WebCacheClient {
+object WebCacheClient extends Logging {
 
   /**
    * GetPeer SOAP action.
@@ -14,18 +16,17 @@ object WebCacheClient {
   def getPeer(url: String): Option[String] = {
     SoapClient.doRequest(url, <GetPeer xmlns="http://rshare.de/rshare.asmx" />) match {
       case Left(l) =>
-        /* XXX - report failure in logs ? */
-        println("Failed: " + l)
+        logger error ("Failed to get peer from service[" + url + "]: " + l)
         None
 
       case Right(r) =>
         (r \\ "GetPeerResult").text match {
           case "" =>
-            /* XXX - report failure in logs ? */
-            println("No peer received")
+            logger debug ("Got no peer from service[" + url + "]")
             None
 
           case peer =>
+            logger debug ("Got peer[" + peer + "] from service[" + url + "]")
             Some(peer)
         }
     }
@@ -41,11 +42,12 @@ object WebCacheClient {
   def addPeer(url: String, port: Int): Boolean = {
     SoapClient.doRequest(url, <AddPeer xmlns="http://rshare.de/rshare.asmx"><port>{port}</port></AddPeer>) match {
       case Left(l) =>
-        /* XXX - report failure in logs ? */
+        logger error ("Failed to add (self) peer on service[" + url + "]: " + l)
         println("Failed: " + l)
         false
 
       case Right(r) =>
+        logger debug ("Added (self) peer on service[" + url + "]")
         true
     }
   }
@@ -59,11 +61,11 @@ object WebCacheClient {
   def removePeer(url: String): Boolean = {
     SoapClient.doRequest(url, <RemovePeer xmlns="http://rshare.de/rshare.asmx" />) match {
       case Left(l) =>
-        /* XXX - report failure in logs ? */
-        println("Failed: " + l)
+        logger error ("Failed to remove (self) peer from service[" + url + "]: " + l)
         false
 
       case Right(r) =>
+        logger debug ("Removed (self) peer from service[" + url + "]")
         true
     }
   }

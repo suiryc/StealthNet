@@ -1,11 +1,11 @@
 package perso.stealthnet.network
 
-import java.net.ServerSocket
-import java.net.SocketTimeoutException
+import java.net.{ServerSocket, SocketTimeoutException}
+import com.weiglewilczek.slf4s.Logging
 import scala.actors._
 import scala.collection.mutable.MutableList
 
-object Server extends Actor {
+object Server extends Actor with Logging {
 
   object Action extends Enumeration {
     val WaitConnection, Stop = Value
@@ -22,8 +22,7 @@ object Server extends Actor {
     /* XXX - get from configuration */
     val acceptTimeout = 5000
 
-    /* XXX - debug */
-    println("Server starting")
+    logger info "Server starting"
 
     /* Note: setSoTimeout impacts accept() */
     server = new ServerSocket(port)
@@ -41,8 +40,7 @@ object Server extends Actor {
         case Action.WaitConnection =>
           try {
         	val socket = server.accept()
-        	/* XXX - log */
-        	println("Accepted remote connection[" + socket.getInetAddress.getHostAddress + ":" + socket.getPort + "]")
+        	logger debug("Accepted remote connection[" + socket.getInetAddress.getHostAddress + ":" + socket.getPort + "]")
         	val connection = new Connection(socket)
         	sockets += connection
         	connection.start()
@@ -50,13 +48,11 @@ object Server extends Actor {
           catch {
             case e: SocketTimeoutException =>
               /* loop */
-              /* XXX - debug */
-              println("Server timeout on accept")
+              logger debug "Server timeout on accept"
               this ! Action.WaitConnection
             
             case e: Exception =>
-              /* XXX - log issue */
-              println("Server failed: " + e)
+              logger error ("Server failed!", e)
               cleanup()
           }
 
@@ -68,8 +64,7 @@ object Server extends Actor {
   }
 
   protected def cleanup() {
-    /* XXX - debug */
-    println("Server stopping")
+    logger info "Server stopping"
     server.close()
 
     for (connection <- sockets)

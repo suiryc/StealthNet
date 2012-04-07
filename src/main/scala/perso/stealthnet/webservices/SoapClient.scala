@@ -3,8 +3,7 @@ package perso.stealthnet.webservices
 import java.net.URL
 
 import scala.io.Source
-import scala.xml.Elem
-import scala.xml.XML
+import scala.xml.{Elem, XML}
 
 /**
  * Minimal SOAP client.

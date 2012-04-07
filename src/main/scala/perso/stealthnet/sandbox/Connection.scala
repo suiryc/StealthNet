@@ -1,8 +1,8 @@
 package perso.stealthnet.network
 
-import java.net.Socket
+import java.net.{Socket, SocketTimeoutException}
+import com.weiglewilczek.slf4s.Logging
 import scala.actors._
-import java.net.SocketTimeoutException
 
 object Connection {
   
@@ -12,7 +12,7 @@ object Connection {
 
 }
 
-class Connection(val socket: Socket) extends Actor {
+class Connection(val socket: Socket) extends Actor with Logging {
 
   import perso.stealthnet.network.Connection._
 
@@ -20,8 +20,7 @@ class Connection(val socket: Socket) extends Actor {
     /* XXX - get from configuration */
     val socketTimeout = 5000
 
-    /* XXX - debug */
-    println("Connection starting")
+    logger debug "Connection starting"
 
     socket.setSoTimeout(socketTimeout)
 
@@ -44,20 +43,17 @@ class Connection(val socket: Socket) extends Actor {
           catch {
             case e: SocketTimeoutException =>
               /* loop */
-              /* XXX - debug */
-              println("Socket timeout")
+              logger error "Socket timeout"
               this ! Action.WaitData
             
             case e: Exception =>
-              /* XXX - log issue */
-              println("Socket failed: " + e)
+              logger error ("Socket failed!",  e)
               exit()
           }
 
         case Action.Stop =>
           /* time to leave */
-          /* XXX - debug */
-          println("Socket stopping")
+          logger debug "Socket stopping"
           socket.close()
           exit()
       }
