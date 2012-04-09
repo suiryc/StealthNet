@@ -8,46 +8,70 @@ import org.jboss.netty.channel.{
   Channels,
   ChannelFactory,
   ChannelFuture,
+  ChannelFutureListener,
   ChannelPipeline,
   ChannelPipelineFactory
 }
+import org.jboss.netty.channel.group.{ChannelGroup, DefaultChannelGroup}
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
+import org.jboss.netty.channel.group.ChannelGroupFuture
 
 class StealthNetClient(val host: String, val port: Int) extends Logging {
 
-  val factory: ChannelFactory = new NioClientSocketChannelFactory(
-    Executors.newCachedThreadPool(),
-    Executors.newCachedThreadPool()
-  )
+  private var factory: ChannelFactory = null
+  private var future: ChannelFuture = null
 
-  val bootstrap: ClientBootstrap = new ClientBootstrap(factory)
+  def start(): Boolean = {
+    if (!StealthNetConnections.add(host))
+      return false
 
-  bootstrap.setPipelineFactory(StealthNetPipelineFactory(null))
+    factory = new NioClientSocketChannelFactory(
+      Executors.newCachedThreadPool(),
+      Executors.newCachedThreadPool()
+    )
 
-  bootstrap.setOption("tcpNoDelay", true)
-  bootstrap.setOption("keepAlive", true)
+    val bootstrap: ClientBootstrap = new ClientBootstrap(factory)
 
-  val future: ChannelFuture = bootstrap.connect(new InetSocketAddress(host, port))
-  future.awaitUninterruptibly()
-  if (!future.isSuccess) {
-    logger error("Failed to connect to host[" + host + "] port[" + port + "]", future.getCause)
-    stop()
-    false
+    bootstrap.setPipelineFactory(StealthNetPipelineFactory(new StealthNetConnectionParameters(isClient = true)))
+
+    /* XXX - useful ? */
+    bootstrap.setOption("tcpNoDelay", true)
+    bootstrap.setOption("keepAlive", true)
+    /* XXX - configuration */
+    bootstrap.setOption("connectTimeoutMillis", 5000)
+
+    future = bootstrap.connect(new InetSocketAddress(host, port))
+    future.awaitUninterruptibly()
+    if (!future.isSuccess) {
+      logger error("Failed to connect to host[" + host + "] port[" + port + "]", future.getCause)
+      stop()
+      false
+    }
+    else
+      true
   }
-  else {
-    logger debug("Connected to host[" + host + "] port[" + port + "]")
-    true
+
+  def stop() {
+    if (future != null) {
+      val channel = future.getChannel
+
+      if (channel.isOpen) {
+        logger debug("Closing connection to host[" + host + "] port[" + port + "]")
+
+        val cnx = StealthNetConnections.get(channel, create = false)
+        if (cnx != null)
+          cnx.closing = true
+        channel.close()
+        channel.getCloseFuture.awaitUninterruptibly()
+      }
+    }
+
+    if (factory != null)
+      factory.releaseExternalResources()
   }
 
-  def write() = {
+  def write() {
     future.getChannel.write(1)
-  }
-
-  def stop() = {
-    logger debug("Closing connection to host[" + host + "] port[" + port + "]")
-    future.getChannel.close()
-    future.getChannel.getCloseFuture.awaitUninterruptibly()
-    factory.releaseExternalResources()
   }
 
 }

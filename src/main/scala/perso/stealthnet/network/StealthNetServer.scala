@@ -20,7 +20,7 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
 
 object StealthNetServer extends Logging {
 
-  val group: ChannelGroup = new DefaultChannelGroup("StealthNet")
+  val group: ChannelGroup = new DefaultChannelGroup("StealthNet server")
   val factory: ChannelFactory = new NioServerSocketChannelFactory(
     Executors.newCachedThreadPool(),
     Executors.newCachedThreadPool()
@@ -30,13 +30,17 @@ object StealthNetServer extends Logging {
     logger debug "Starting StealthNet server"
     val bootstrap: ServerBootstrap = new ServerBootstrap(factory)
 
-    bootstrap.setPipelineFactory(StealthNetPipelineFactory(group))
+    bootstrap.setPipelineFactory(StealthNetPipelineFactory(new StealthNetConnectionParameters(group = group)))
 
+    /* XXX - useful ? */
     bootstrap.setOption("child.tcpNoDelay", true);
     bootstrap.setOption("child.keepAlive", true);
  
-    val channel: Channel = bootstrap.bind(new InetSocketAddress(8080));
+    var channel: Channel = bootstrap.bind(new InetSocketAddress(8080))
     group.add(channel)
+    /* XXX - can be used to pause accept ? */
+    //channel.close().awaitUninterruptibly()
+    //channel = bootstrap.bind(new InetSocketAddress(8080))
   }
 
   def stop() = {
@@ -44,6 +48,7 @@ object StealthNetServer extends Logging {
     val future: ChannelGroupFuture = group.close()
     future.awaitUninterruptibly()
     factory.releaseExternalResources()
+    StealthNetPipelineFactory.releaseExternalResources()
   }
 
 }

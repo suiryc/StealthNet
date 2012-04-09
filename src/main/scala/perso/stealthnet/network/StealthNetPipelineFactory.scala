@@ -1,19 +1,35 @@
 package perso.stealthnet.network
 
+import java.util.concurrent.TimeUnit
 import org.jboss.netty.channel.{
   Channels,
   ChannelPipeline,
   ChannelPipelineFactory
 }
 import org.jboss.netty.channel.group.ChannelGroup
+import org.jboss.netty.handler.timeout.ReadTimeoutHandler
+import org.jboss.netty.util.{
+  ExternalResourceReleasable,
+  HashedWheelTimer,
+  Timer
+}
 
-object StealthNetPipelineFactory {
+object StealthNetPipelineFactory extends ExternalResourceReleasable {
 
-  def apply(group: ChannelGroup): StealthNetPipelineFactory = new StealthNetPipelineFactory(group)
+  val timer: Timer = new HashedWheelTimer()
+
+  def apply(parameters: StealthNetConnectionParameters) =
+    new StealthNetPipelineFactory(parameters)
+
+  def releaseExternalResources() {
+    timer.stop()
+  }
 
 }
 
-class StealthNetPipelineFactory(val group: ChannelGroup) extends ChannelPipelineFactory {
+class StealthNetPipelineFactory(val parameters: StealthNetConnectionParameters)
+  extends ChannelPipelineFactory
+{
 
   def getPipeline(): ChannelPipeline = {
     val pipeline = Channels.pipeline()
@@ -24,15 +40,21 @@ class StealthNetPipelineFactory(val group: ChannelGroup) extends ChannelPipeline
      * upstream event, and in reverse order for a downstream event.
      */
 
-    /* upstream/downstream encryption handler */
-    pipeline.addLast("decrypter", new EncryptionDecoder())
-    pipeline.addLast("encrypter", new EncryptionEncoder())
+    /* upstream/downstream parameters handler */
+    pipeline.addLast("parameters handler", new ParametersHandler(parameters))
 
-    /* upstream command builder */
-    pipeline.addLast("command builder", new CommandDecoder())
+    /* upstream connection limiter */
+    pipeline.addLast("connection limiter", new ConnectionLimitHandler())
+
+    /* upstream timeout handler */
+    /* XXX - possible to change timeout dynamically */
+    pipeline.addLast("timeout handler", new ReadTimeoutHandler(StealthNetPipelineFactory.timer, 30000, TimeUnit.MILLISECONDS))
+
+    /* upstream command decoder */
+    pipeline.addLast("command decoder", new CommandDecoder())
 
     /* upstream/downstream command handler */
-    pipeline.addLast("command handler", new CommandHandler(group))
+    pipeline.addLast("command handler", new CommandHandler(parameters.group))
 
     pipeline
   }
