@@ -1,13 +1,11 @@
 package perso.stealthnet.network
 
-import org.jboss.netty.buffer.ChannelBuffer
+import javax.crypto.{Cipher, CipherInputStream}
+import com.weiglewilczek.slf4s.Logging
+import org.jboss.netty.buffer.{ChannelBuffer, ChannelBufferInputStream}
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.replay.{ReplayingDecoder, VoidEnum}
-import perso.stealthnet.network.protocol.Constants
-import com.weiglewilczek.slf4s.Logging
-import org.jboss.netty.buffer.ChannelBufferInputStream
-import javax.crypto.Cipher
-import javax.crypto.CipherInputStream
+import perso.stealthnet.network.protocol.{Constants, ProtocolStream}
 
 object CommandDecoderState extends Enumeration {
   val Header, Encryption, Length, Content = Value
@@ -17,7 +15,7 @@ class CommandDecoder extends ReplayingDecoder[VoidEnum] with Logging {
 
   private var state = CommandDecoderState.Header
   private var encryption: Byte = _
-  private var length: Short = _
+  private var length: Int = _
 
   /**
    * Checkpoints.
@@ -31,13 +29,13 @@ class CommandDecoder extends ReplayingDecoder[VoidEnum] with Logging {
       buf: ChannelBuffer, state_unused: VoidEnum): Object = {
     state match {
     case CommandDecoderState.Header =>
-      var headerLength = buf.readShort()
+      var headerLength = ProtocolStream.convertShort(buf.readBytes(2).array)
       /* XXX - cleanly handle issues */
-      if (headerLength != Constants.protocol.length + 1)
-        throw new Exception("Invalid protocol header length")
+      if (headerLength != Constants.protocol.length)
+        throw new Exception("Invalid protocol header length[" + headerLength + "]")
       var header = new String(buf.readBytes(headerLength).array, "US-ASCII")
       if (header != Constants.protocol)
-        throw new Exception("Invalid protocol header length")
+        throw new Exception("Invalid protocol header[" + header + "]")
       logger debug ("Got protocol header")
       checkpoint(CommandDecoderState.Encryption)
       null
@@ -45,13 +43,13 @@ class CommandDecoder extends ReplayingDecoder[VoidEnum] with Logging {
     case CommandDecoderState.Encryption =>
       encryption = buf.readByte()
       /* XXX - check against known encryption methods */
-      logger debug ("Got encryption")
+      logger debug ("Got encryption[0x%02X]".format(encryption))
       checkpoint(CommandDecoderState.Length)
       null
 
     case CommandDecoderState.Length =>
-      length = buf.readShort()
-      logger debug ("Got command length")
+      length = ProtocolStream.convertShort(buf.readBytes(2).array)
+      logger debug ("Got command length[" + length + "]")
       checkpoint(CommandDecoderState.Content)
       null
 
@@ -62,7 +60,10 @@ class CommandDecoder extends ReplayingDecoder[VoidEnum] with Logging {
       /* XXX - get reading cipher of connection */
       val input = new ChannelBufferInputStream(content)
       val cipher: Cipher = null
-      new CipherInputStream(input, cipher)
+      if (cipher != null)
+        new CipherInputStream(input, cipher)
+      else
+        input
     }
   }
 

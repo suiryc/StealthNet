@@ -1,85 +1,106 @@
 package perso.stealthnet.network.protocol
 
+import java.io.{InputStream, OutputStream}
+import javax.crypto.{Cipher, CipherOutputStream}
 import com.weiglewilczek.slf4s.Logging
-import perso.stealthnet.core.util.DataStream
-import perso.stealthnet.network.StealthNetConnection
-import java.io.OutputStream
-import perso.stealthnet.core.cryptography.Hash
+import perso.stealthnet.core.cryptography.{
+  Algorithm,
+  Hash,
+  Message
+}
+import perso.stealthnet.core.util.UUID
 
-/* XXX - trait, or abstract class ? */
-trait Command extends Logging {
+trait CommandBuilder {
 
   val code: Byte
-  val encryption: Encryption.Value
-  var dataStream: DataStream = null
+
+  def read(input: InputStream): Command
+
+}
+
+object Command extends Logging {
+
+  private val builders: List[CommandBuilder] =
+    List(RSAParametersCommand, SearchCommand)
+
+  def generateId(): Hash = Message.hash(UUID.generate().bytes, Algorithm.SHA384)
+
+  def read(input: InputStream): Command = {
+    val code = ProtocolStream.readByte(input)
+
+    val command = builders.find(_.code == code) match {
+      case Some(builder) =>
+        val result = builder.read(input)
+        if (input.read() != -1) {
+          logger error("Command[%s] is followed by unexpected data".format(result))
+          null
+        }
+        else
+          result
+
+      case None =>
+        logger error("Unknown command code[0x%02X]".format(code))
+        null
+    }
+
+    command
+  }
+
+}
+
+abstract class Command(val code: Byte, val encryption: Encryption.Value)
+  extends Logging
+{
 
   def arguments(): List[Any]
 
-  def build(): DataStream = {
-    synchronized {
-      if (dataStream != null)
-        return dataStream
-      dataStream = new DataStream()
+  def write(output: OutputStream): Int = {
+    /* plain-text section */
+    ProtocolStream.writeAscii(output, Constants.protocol)
+    ProtocolStream.writeByte(output, Encryption.id(encryption))
+    ProtocolStream.writeShort(output, 0)
+    output.flush()
 
-      for (argument <- arguments) {
-        if (argument == null) {
-          dataStream = null
-          throw new IllegalArgumentException("Missing command argument in " + toString())
-        }
-
-        dataStream write argument
-      }
-    }
-
-    dataStream
-  }
-
-  def send(output: OutputStream) = {
-    for (argument <- arguments) {
-      if (argument == null)
-        throw new IllegalArgumentException("Missing command argument in " + toString())
-
-      dataStream write argument
-    }
-  }
-
-  def send(connection: StealthNetConnection): Unit = {
-    assert(connection != null)
-
-    /* XXX */
-    logger debug("Sending command[%s] to host[%s]".format(this, connection.host))
-    val dataStream = try {
-      build()
-    }
-    catch {
-      case e: Exception =>
-        logger error("Cannot send command[%02X] to host[%s]".format(code, connection.host), e)
-        return
-    }
-
-    /* XXX */
-    val data: Array[Byte] = encryption match {
-      case Encryption.None => dataStream.getBytes
-      case Encryption.RSA => dataStream.getBytes
+    /* cipher-text section */
+    /* XXX - get writing cipher of connection */
+    val cipher: Cipher = encryption match {
+      case Encryption.None => null
+      case Encryption.RSA => null
       /* encryptedData = Core.RSAEncrypt(connection.PublicKey, m_CommandData.ToArray()); */
-      case Encryption.Rijndael => dataStream.getBytes
+      case Encryption.Rijndael => null
       /* encryptedData = Core.RijndaelEncrypt(connection.SendingKey, m_CommandData.ToArray()); */
     }
+    val cipherOutput = if (cipher != null)
+        new CipherOutputStream(output, cipher)
+      else
+        output
+    var cipherLength: Int = 0
 
-    if (data.length > 0xFFFF)
-       logger error("Cannot send command[%02X] to host[%s]: length[%d] exceeds capacity".
-         format(code, connection.host, data.length))
+    cipherLength += ProtocolStream.writeByte(cipherOutput, code)
+    for (argument <- arguments) {
+      /* XXX - really necessary ? (most, if not all, commands check ctor arguments) */
+      if (argument == null) {
+        logger error("Missing command argument in " + this)
+        return -1
+      }
 
-    val command = (new DataStream)
-        .writeAscii(Constants.protocol)
-        .write(Encryption.id(encryption))
-        .write(data.length.shortValue)
-        .write(data)
+      cipherLength += ProtocolStream.write(cipherOutput, argument)
+    }
+    cipherOutput.flush()
+    cipherOutput.close()
 
-    /* connection.send(command.getBytes(), code) */
+    if (cipherLength > 0xFFFF) {
+      logger error("Command[%s] length exceeds capacity".format(this))
+      return -1
+    }
+
+    cipherLength
   }
 
   override def toString =
-    getClass.getSimpleName + arguments
+    getClass.getSimpleName + arguments.map(_ match {
+      case v: Array[Byte] => "0x" + Hash.bytesToHash(v)
+      case v => v
+    })
 
 }

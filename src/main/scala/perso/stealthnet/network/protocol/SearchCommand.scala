@@ -1,31 +1,39 @@
 package perso.stealthnet.network.protocol
 
-import perso.stealthnet.core.util.{DataStream, UUID}
-import perso.stealthnet.core.cryptography.{Algorithm, Hash, Message}
-import perso.stealthnet.network.StealthNetConnection
+import java.io.InputStream
+import perso.stealthnet.core.cryptography.Hash
 
-object SearchCommand {
+object SearchCommand extends CommandBuilder {
 
-  def generateId(): Hash = Message.hash(UUID.generate().bytes, Algorithm.SHA384)
+  val code = 0x20 byteValue
 
-  def apply() = new SearchCommand()
+  def read(input: InputStream): Command = {
+    val commandId = ProtocolStream.readHash(input)
+    val floodingHash = ProtocolStream.readHash(input)
+    val senderPeerID = ProtocolStream.readHash(input)
+    val searchID = ProtocolStream.readHash(input)
+    val searchPattern = ProtocolStream.readString(input)
+
+    new SearchCommand(commandId, floodingHash, senderPeerID, searchID,
+        searchPattern)
+  }
 
   def apply(searchPattern: String) = new SearchCommand(
-    commandId = generateId(),
+    commandId = Command.generateId(),
     floodingHash = generateFloodingHash(),
-    senderPeerID = generateId(),
-    searchID = generateId(),
+    senderPeerID = Command.generateId(),
+    searchID = Command.generateId(),
     searchPattern = searchPattern
   )
 
   /* http://www.scribd.com/doc/28681327/69/Stealthnet-decloaked */
   def generateFloodingHash(): Hash = {
-    var hash: Hash = generateId()
+    var hash: Hash = Command.generateId()
 
     println(hash)
     println(hash.bytes.size)
     while (hash.bytes(47) <= 51) {
-      hash = generateId()
+      hash = Command.generateId()
     }
 
     hash
@@ -34,15 +42,19 @@ object SearchCommand {
 }
 
 class SearchCommand(
-    var commandId: Hash = null,
-    var floodingHash: Hash = null,
-    var senderPeerID: Hash = null,
-    var searchID: Hash = null,
-    var searchPattern: String = null
-) extends Command {
+    val commandId: Hash,
+    val floodingHash: Hash,
+    val senderPeerID: Hash,
+    val searchID: Hash,
+    val searchPattern: String
+) extends Command(code = SearchCommand.code, encryption = Encryption.Rijndael)
+{
 
-  val code = 0x20 byteValue
-  val encryption = Encryption.Rijndael
+  assert(commandId != null)
+  assert(floodingHash != null)
+  assert(senderPeerID != null)
+  assert(searchID != null)
+  assert(searchPattern != null)
 
   def arguments(): List[Any] =
     List(commandId, floodingHash, senderPeerID, searchID, searchPattern)

@@ -40,7 +40,9 @@ class StealthNetClient(val host: String, val port: Int) extends Logging {
     /* XXX - configuration */
     bootstrap.setOption("connectTimeoutMillis", 5000)
 
-    future = bootstrap.connect(new InetSocketAddress(host, port))
+    /* XXX - for testing purposes */
+    //future = bootstrap.connect(new InetSocketAddress(host, port))
+    future = bootstrap.connect(new InetSocketAddress(host, port), new InetSocketAddress("127.0.0.2", 8890))
     future.awaitUninterruptibly()
     if (!future.isSuccess) {
       logger error("Failed to connect to host[" + host + "] port[" + port + "]", future.getCause)

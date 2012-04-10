@@ -27,8 +27,13 @@ class CommandHandler(val group: ChannelGroup) extends SimpleChannelHandler with 
 
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     val input: InputStream = e.getMessage.asInstanceOf[InputStream]
-    /* XXX - rebuild command */
-    logger debug("Received command: "/* + command*/)
+    val command = Command.read(input)
+
+    if (command == null)
+      return
+
+    logger debug("Received command: " + command)
+    /* XXX - handle command */
   }
 
   override def writeRequested(ctx: ChannelHandlerContext, e: MessageEvent) {
@@ -37,36 +42,10 @@ class CommandHandler(val group: ChannelGroup) extends SimpleChannelHandler with 
     val buf: ChannelBuffer = ChannelBuffers.dynamicBuffer(1024)
     val output = new ChannelBufferOutputStream(buf)
 
-    /* plain-text section */
-    ProtocolStream.writeAscii(output, Constants.protocol)
-    ProtocolStream.write(output, Encryption.id(command.encryption))
-    output.flush()
-
-    /* cipher-text section */
-    /* XXX - get writing cipher of connection */
-    val cipher: Cipher = null
-    val cipherOutput = new CipherOutputStream(output, cipher)
-    var cipherLength = 0
-    ProtocolStream.write(cipherOutput, 0 shortValue)
-    /* XXX - shouldn't there be the command code ? */
-    for (argument <- command.arguments) {
-      if (argument == null) {
-        logger error("Missing command argument in " + command)
-        return
-      }
-
-      cipherLength += ProtocolStream.write(cipherOutput, argument)
-    }
-    cipherOutput.flush()
-    cipherOutput.close()
-
-    if (cipherLength > 0xFFFF) {
-      logger error("Command[%s] length exceeds capacity".format(command))
-      return
-    }
+    val cipherLength = command.write(output)
 
     /* set the cipher-text command length */
-    buf.setBytes(Constants.commandLengthOffset, ProtocolStream.convertShort(cipherLength shortValue))
+    buf.setBytes(Constants.commandLengthOffset, ProtocolStream.convertShort(cipherLength))
 
     Channels.write(ctx, e.getFuture, buf)
   }
