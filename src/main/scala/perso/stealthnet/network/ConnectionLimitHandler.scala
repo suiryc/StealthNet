@@ -11,7 +11,7 @@ import org.jboss.netty.channel.{
   ChannelStateEvent,
   SimpleChannelHandler
 }
-import perso.stealthnet.network.protocol.RSAParametersCommand
+import perso.stealthnet.network.protocol.RSAParametersServerCommand
 
 class ConnectionLimitHandler extends SimpleChannelHandler with Logging {
 
@@ -28,8 +28,9 @@ class ConnectionLimitHandler extends SimpleChannelHandler with Logging {
       return
     }
 
-    /* 'handshake' */
-    e.getChannel.write(new RSAParametersCommand())
+    /* server starts handshake */
+    if (!cnx.isClient)
+      e.getChannel.write(new RSAParametersServerCommand())
 
     super.channelConnected(ctx, e)
   }

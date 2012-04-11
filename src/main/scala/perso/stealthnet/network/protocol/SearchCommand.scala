@@ -47,7 +47,7 @@ class SearchCommand(
     val senderPeerID: Hash,
     val searchID: Hash,
     val searchPattern: String
-) extends Command(code = SearchCommand.code, encryption = Encryption.Rijndael)
+) extends Command(SearchCommand.code, Encryption.Rijndael)
 {
 
   assert(commandId != null)

@@ -26,7 +26,7 @@ object StealthNetServer extends Logging {
     Executors.newCachedThreadPool()
   )
 
-  def start {
+  def start() {
     logger debug "Starting StealthNet server"
     val bootstrap: ServerBootstrap = new ServerBootstrap(factory)
 
@@ -36,14 +36,14 @@ object StealthNetServer extends Logging {
     bootstrap.setOption("child.tcpNoDelay", true);
     bootstrap.setOption("child.keepAlive", true);
  
-    var channel: Channel = bootstrap.bind(new InetSocketAddress(8080))
+    var channel: Channel = bootstrap.bind(new InetSocketAddress(6097))
     group.add(channel)
     /* XXX - can be used to pause accept ? */
     //channel.close().awaitUninterruptibly()
     //channel = bootstrap.bind(new InetSocketAddress(8080))
   }
 
-  def stop() = {
+  def stop() {
     logger debug "Stopping StealthNet server"
     val future: ChannelGroupFuture = group.close()
     future.awaitUninterruptibly()

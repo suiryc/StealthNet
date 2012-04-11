@@ -23,6 +23,11 @@ object ProtocolStream {
     (0xFF & value(0).asInstanceOf[Int]) | ((0xFF & value(1).asInstanceOf[Int]) << 8)
   }
 
+  def writeHeader(output: OutputStream): Int = {
+    output.write(Constants.protocolRAW)
+    Constants.protocolRAW.length
+  }
+
   def readByte(input: InputStream): Byte = {
     val value = input.read()
 
@@ -84,17 +89,6 @@ object ProtocolStream {
 
   def writeString(output: OutputStream, value: String): Int = {
     val bytes = value.getBytes("UTF-8")
-
-    if (bytes.length > 0xFFFF)
-      throw new IllegalArgumentException("String[%s] length exceeds capacity".format(value))
-
-    writeShort(output, bytes.length)
-    output.write(bytes)
-    bytes.length + 2
-  }
-
-  def writeAscii(output: OutputStream, value: String): Int = {
-    val bytes = value.getBytes("US-ASCII")
 
     if (bytes.length > 0xFFFF)
       throw new IllegalArgumentException("String[%s] length exceeds capacity".format(value))

@@ -1,6 +1,6 @@
 package perso.stealthnet.network
 
-import java.net.InetSocketAddress
+import java.net.{InetAddress, InetSocketAddress}
 import java.util.concurrent.Executors
 import com.weiglewilczek.slf4s.Logging
 import org.jboss.netty.bootstrap.ClientBootstrap
@@ -40,9 +40,7 @@ class StealthNetClient(val host: String, val port: Int) extends Logging {
     /* XXX - configuration */
     bootstrap.setOption("connectTimeoutMillis", 5000)
 
-    /* XXX - for testing purposes */
-    //future = bootstrap.connect(new InetSocketAddress(host, port))
-    future = bootstrap.connect(new InetSocketAddress(host, port), new InetSocketAddress("127.0.0.2", 8890))
+    future = bootstrap.connect(new InetSocketAddress(host, port))
     future.awaitUninterruptibly()
     if (!future.isSuccess) {
       logger error("Failed to connect to host[" + host + "] port[" + port + "]", future.getCause)
@@ -68,8 +66,10 @@ class StealthNetClient(val host: String, val port: Int) extends Logging {
       }
     }
 
-    if (factory != null)
+    if (factory != null) {
       factory.releaseExternalResources()
+      StealthNetPipelineFactory.releaseExternalResources()
+    }
   }
 
   def write() {

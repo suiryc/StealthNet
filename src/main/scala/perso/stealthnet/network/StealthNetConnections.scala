@@ -32,7 +32,8 @@ object StealthNetConnections extends Logging {
 
   def add(host: String): Boolean = {
     /* XXX - configuration */
-    var avgCnxCount = 10
+    //var avgCnxCount = 10
+    var avgCnxCount = 1
 
     if (avgCnxCount > 10)
       avgCnxCount = 10

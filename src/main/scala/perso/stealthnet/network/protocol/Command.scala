@@ -21,7 +21,7 @@ trait CommandBuilder {
 object Command extends Logging {
 
   private val builders: List[CommandBuilder] =
-    List(RSAParametersCommand, SearchCommand)
+    List(RSAParametersServerCommand, RSAParametersClientCommand, SearchCommand)
 
   def generateId(): Hash = Message.hash(UUID.generate().bytes, Algorithm.SHA384)
 
@@ -56,7 +56,7 @@ abstract class Command(val code: Byte, val encryption: Encryption.Value)
 
   def write(output: OutputStream): Int = {
     /* plain-text section */
-    ProtocolStream.writeAscii(output, Constants.protocol)
+    ProtocolStream.writeHeader(output)
     ProtocolStream.writeByte(output, Encryption.id(encryption))
     ProtocolStream.writeShort(output, 0)
     output.flush()

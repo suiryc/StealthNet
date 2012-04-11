@@ -5,6 +5,7 @@ import com.weiglewilczek.slf4s.Logging
 import org.jboss.netty.buffer.{ChannelBuffer, ChannelBufferInputStream}
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.replay.{ReplayingDecoder, VoidEnum}
+import perso.stealthnet.core.cryptography.Hash
 import perso.stealthnet.network.protocol.{Constants, ProtocolStream}
 
 object CommandDecoderState extends Enumeration {
@@ -29,27 +30,23 @@ class CommandDecoder extends ReplayingDecoder[VoidEnum] with Logging {
       buf: ChannelBuffer, state_unused: VoidEnum): Object = {
     state match {
     case CommandDecoderState.Header =>
-      var headerLength = ProtocolStream.convertShort(buf.readBytes(2).array)
+      val header = new String(buf.readBytes(Constants.protocol.length).array, "US-ASCII")
       /* XXX - cleanly handle issues */
-      if (headerLength != Constants.protocol.length)
-        throw new Exception("Invalid protocol header length[" + headerLength + "]")
-      var header = new String(buf.readBytes(headerLength).array, "US-ASCII")
-      if (header != Constants.protocol)
+      if (header != Constants.protocol) {
+        logger debug("Bytes: " + (header.getBytes("US-ASCII").toList ::: buf.readBytes(buf.readableBytes).array.toList).toArray)
         throw new Exception("Invalid protocol header[" + header + "]")
-      logger debug ("Got protocol header")
+      }
       checkpoint(CommandDecoderState.Encryption)
       null
 
     case CommandDecoderState.Encryption =>
       encryption = buf.readByte()
       /* XXX - check against known encryption methods */
-      logger debug ("Got encryption[0x%02X]".format(encryption))
       checkpoint(CommandDecoderState.Length)
       null
 
     case CommandDecoderState.Length =>
       length = ProtocolStream.convertShort(buf.readBytes(2).array)
-      logger debug ("Got command length[" + length + "]")
       checkpoint(CommandDecoderState.Content)
       null
 

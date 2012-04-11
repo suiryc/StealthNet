@@ -24,24 +24,4 @@ class ParametersHandler(val parameters: StealthNetConnectionParameters) extends 
     super.channelOpen(ctx, e)
   }
 
-  /*override def handleUpstream(ctx: ChannelHandlerContext, e: ChannelEvent) {
-    e match {
-      case event: ChannelStateEvent =>
-        if ((event.getState == ChannelState.OPEN) && event.getValue.asInstanceOf[Boolean]) {
-          logger debug "handleUpstream"
-          val cnx = StealthNetConnections.get(e.getChannel)
-
-          cnx.group = parameters.group
-          cnx.isClient = parameters.isClient
-
-          if (cnx.group != null)
-            cnx.group.add(e.getChannel)
-        }
-
-      case _ =>
-    }
-
-    super.handleUpstream(ctx, e)
-  }*/
-
 }

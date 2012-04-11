@@ -1,8 +1,12 @@
 package perso.stealthnet.network
 
+import java.io.InputStream
+import java.nio.channels.ClosedChannelException
+import javax.crypto.{Cipher, CipherOutputStream}
 import com.weiglewilczek.slf4s.Logging
 import org.jboss.netty.buffer.{
   ChannelBuffer,
+  ChannelBufferOutputStream,
   ChannelBuffers
 }
 import org.jboss.netty.channel.{
@@ -13,15 +17,14 @@ import org.jboss.netty.channel.{
   SimpleChannelHandler
 }
 import org.jboss.netty.channel.group.ChannelGroup
-import java.nio.channels.ClosedChannelException
-import perso.stealthnet.network.protocol.Command
-import perso.stealthnet.network.protocol.ProtocolStream
-import perso.stealthnet.network.protocol.Constants
-import perso.stealthnet.network.protocol.Encryption
-import javax.crypto.Cipher
-import javax.crypto.CipherOutputStream
-import org.jboss.netty.buffer.ChannelBufferOutputStream
-import java.io.InputStream
+import perso.stealthnet.network.protocol.{
+  Command,
+  Constants,
+  Encryption,
+  ProtocolStream,
+  RSAParametersClientCommand,
+  RSAParametersServerCommand
+}
 
 class CommandHandler(val group: ChannelGroup) extends SimpleChannelHandler with Logging {
 
@@ -33,7 +36,14 @@ class CommandHandler(val group: ChannelGroup) extends SimpleChannelHandler with 
       return
 
     logger debug("Received command: " + command)
+
     /* XXX - handle command */
+    /* XXX - do it here ? */
+    command match {
+      case c: RSAParametersServerCommand => e.getChannel.write(new RSAParametersClientCommand())
+      case _ =>
+        logger error("Unhandled command")
+    }
   }
 
   override def writeRequested(ctx: ChannelHandlerContext, e: MessageEvent) {
@@ -41,6 +51,8 @@ class CommandHandler(val group: ChannelGroup) extends SimpleChannelHandler with 
     val command: Command = e.getMessage.asInstanceOf[Command]
     val buf: ChannelBuffer = ChannelBuffers.dynamicBuffer(1024)
     val output = new ChannelBufferOutputStream(buf)
+
+    logger debug("Sending command: " + command)
 
     val cipherLength = command.write(output)
 

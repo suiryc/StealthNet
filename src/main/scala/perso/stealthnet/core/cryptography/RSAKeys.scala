@@ -17,6 +17,7 @@ object RSAKeys {
 
   def keys() = pair
 
+  /* XXX - generate a byte array of 129 bytes compared to 128 bytes for stealthnet ? */
   def publicKey() = pair.getPublic.asInstanceOf[RSAPublicKey]
 
   def privateKey() = pair.getPrivate.asInstanceOf[RSAPrivateKey]
