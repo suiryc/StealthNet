@@ -1,14 +1,18 @@
 package perso.stealthnet.network.protocol
 
 import java.io.{InputStream, OutputStream}
-import javax.crypto.{Cipher, CipherOutputStream}
-import com.weiglewilczek.slf4s.Logging
+import javax.crypto.{Cipher, CipherInputStream, CipherOutputStream}
 import perso.stealthnet.core.cryptography.{
   Algorithm,
   Hash,
-  Message
+  Message,
+  RSAKeys
 }
-import perso.stealthnet.core.util.UUID
+import perso.stealthnet.core.cryptography.Ciphers._
+import perso.stealthnet.core.util.{HexDumper, UUID}
+import perso.stealthnet.network.{StealthNetConnection, StealthNetConnections}
+import perso.stealthnet.core.cryptography.io.{BCCipherInputStream, BCCipherOutputStream}
+import perso.stealthnet.core.util.{EmptyLoggingContext, Logging}
 
 trait CommandBuilder {
 
@@ -18,89 +22,140 @@ trait CommandBuilder {
 
 }
 
-object Command extends Logging {
+object Command extends Logging with EmptyLoggingContext {
 
-  private val builders: List[CommandBuilder] =
-    List(RSAParametersServerCommand, RSAParametersClientCommand, SearchCommand)
+  private val builders: Map[Byte, CommandBuilder] =
+    Map() ++ List[CommandBuilder](RSAParametersServerCommand, RSAParametersClientCommand,
+        RijndaelParametersServerCommand, RijndaelParametersClientCommand,
+        SearchCommand).map(c => (c.code, c))
 
   def generateId(): Hash = Message.hash(UUID.generate().bytes, Algorithm.SHA384)
 
-  def read(input: InputStream): Command = {
-    val code = ProtocolStream.readByte(input)
+  class Builder {
 
-    val command = builders.find(_.code == code) match {
-      case Some(builder) =>
-        val result = builder.read(input)
-        if (input.read() != -1) {
-          logger error("Command[%s] is followed by unexpected data".format(result))
-          null
-        }
-        else
-          result
-
-      case None =>
-        logger error("Unknown command code[0x%02X]".format(code))
-        null
+    object State extends Enumeration {
+      val Header, Encryption, Length, Content = Value
     }
 
-    command
+    private var state = State.Header
+    private var encryption: Encryption.Value = _
+    private var length: Int = _
+
+    private def readHeader(input: InputStream) {
+      val header = new String(ProtocolStream.read(input, Constants.protocolRAW.length), "US-ASCII")
+      /* XXX - cleanly handle issues */
+      if (header != Constants.protocol)
+        throw new Exception("Invalid protocol header[" + header + "]")
+    }
+
+    private def readContent(cnx: StealthNetConnection, input: InputStream): Command = {
+      /* cipher-text section */
+      val cipherInput: InputStream = encryption match {
+        case Encryption.None =>
+          input
+
+        case Encryption.RSA =>
+          new CipherInputStream(input, rsaDecrypter(RSAKeys.privateKey))
+
+        case Encryption.Rijndael =>
+          new BCCipherInputStream(input, rijndaelDecrypter(cnx.remoteRijndaelParameters))
+      }
+
+      val code = ProtocolStream.readByte(cipherInput)
+      builders.get(code) match {
+        case Some(builder) =>
+          builder.read(cipherInput)
+
+        case None =>
+          logger error(cnx.loggerContext, "Unknown command code[0x%02X]".format(code))
+          /* XXX - take error into account, and drop connection if too many ? */
+          null
+      }
+    }
+
+    def readCommand(cnx: StealthNetConnection, input: InputStream): Command = {
+      assert(state == State.Content)
+      val command = readContent(cnx, input)
+      state = State.Header
+      command
+    }
+
+    def readHeader(cnx: StealthNetConnection, input: InputStream): Int = {
+      state match {
+      case State.Header =>
+        readHeader(input)
+        state = State.Encryption
+        -1
+
+      case State.Encryption =>
+        encryption = Encryption.value(ProtocolStream.readByte(input))
+        state = State.Length
+        -1
+
+      case State.Length =>
+        length = ProtocolStream.readInteger(input, BitSize.Short).intValue
+        state = State.Content
+        length
+
+      case _ =>
+        length
+      }
+    }
+
   }
 
 }
 
-abstract class Command(val code: Byte, val encryption: Encryption.Value)
-  extends Logging
-{
+abstract class Command extends Logging with EmptyLoggingContext {
 
-  def arguments(): List[Any]
+  val code: Byte
 
-  def write(output: OutputStream): Int = {
+  val encryption: Encryption.Value
+
+  def arguments(): List[(String, Any)]
+
+  def write(cnx: StealthNetConnection, output: OutputStream): Int = {
     /* plain-text section */
     ProtocolStream.writeHeader(output)
     ProtocolStream.writeByte(output, Encryption.id(encryption))
-    ProtocolStream.writeShort(output, 0)
+    ProtocolStream.writeInteger(output, 0, BitSize.Short)
     output.flush()
 
     /* cipher-text section */
-    /* XXX - get writing cipher of connection */
-    val cipher: Cipher = encryption match {
-      case Encryption.None => null
-      case Encryption.RSA => null
-      /* encryptedData = Core.RSAEncrypt(connection.PublicKey, m_CommandData.ToArray()); */
-      case Encryption.Rijndael => null
-      /* encryptedData = Core.RijndaelEncrypt(connection.SendingKey, m_CommandData.ToArray()); */
-    }
-    val cipherOutput = if (cipher != null)
-        new CipherOutputStream(output, cipher)
-      else
+    val cipherOutput: OutputStream = encryption match {
+      case Encryption.None =>
         output
-    var cipherLength: Int = 0
 
-    cipherLength += ProtocolStream.writeByte(cipherOutput, code)
-    for (argument <- arguments) {
+      case Encryption.RSA =>
+        new CipherOutputStream(output, rsaEncrypter(cnx.remoteRSAKey))
+
+      case Encryption.Rijndael =>
+        new BCCipherOutputStream(output, rijndaelEncrypter(cnx.localRijndaelParameters))
+    }
+
+    var unencryptedLength: Int = 0
+    unencryptedLength += ProtocolStream.writeByte(cipherOutput, code)
+    for (tuple <- arguments) {
+      val argument = tuple._2
       /* XXX - really necessary ? (most, if not all, commands check ctor arguments) */
       if (argument == null) {
-        logger error("Missing command argument in " + this)
+        logger error(cnx.loggerContext, "Missing command argument[" + tuple._1 + "] in " + this)
         return -1
       }
 
-      cipherLength += ProtocolStream.write(cipherOutput, argument)
+      unencryptedLength += ProtocolStream.write(cipherOutput, argument)
     }
     cipherOutput.flush()
     cipherOutput.close()
 
-    if (cipherLength > 0xFFFF) {
-      logger error("Command[%s] length exceeds capacity".format(this))
-      return -1
-    }
-
-    cipherLength
+    unencryptedLength
   }
 
   override def toString =
-    getClass.getSimpleName + arguments.map(_ match {
-      case v: Array[Byte] => "0x" + Hash.bytesToHash(v)
+    getClass.getSimpleName + arguments.map(tuple =>
+      tuple._1 + "=" + (tuple._2 match {
+      case v: Array[Byte] => "\n" + HexDumper.dump(v) + "\n"
       case v => v
-    })
+    }))
 
 }

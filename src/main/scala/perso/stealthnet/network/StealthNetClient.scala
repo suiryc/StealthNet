@@ -2,7 +2,6 @@ package perso.stealthnet.network
 
 import java.net.{InetAddress, InetSocketAddress}
 import java.util.concurrent.Executors
-import com.weiglewilczek.slf4s.Logging
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel.{
   Channels,
@@ -15,8 +14,11 @@ import org.jboss.netty.channel.{
 import org.jboss.netty.channel.group.{ChannelGroup, DefaultChannelGroup}
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.channel.group.ChannelGroupFuture
+import perso.stealthnet.core.util.Logging
 
 class StealthNetClient(val host: String, val port: Int) extends Logging {
+
+  protected def loggerContext = List("host" -> (host + ":" + port))
 
   private var factory: ChannelFactory = null
   private var future: ChannelFuture = null
@@ -43,7 +45,7 @@ class StealthNetClient(val host: String, val port: Int) extends Logging {
     future = bootstrap.connect(new InetSocketAddress(host, port))
     future.awaitUninterruptibly()
     if (!future.isSuccess) {
-      logger error("Failed to connect to host[" + host + "] port[" + port + "]", future.getCause)
+      logger error("Failed to connect", future.getCause)
       stop()
       false
     }
@@ -56,7 +58,7 @@ class StealthNetClient(val host: String, val port: Int) extends Logging {
       val channel = future.getChannel
 
       if (channel.isOpen) {
-        logger debug("Closing connection to host[" + host + "] port[" + port + "]")
+        logger debug("Closing connection")
 
         val cnx = StealthNetConnections.get(channel, create = false)
         if (cnx != null)

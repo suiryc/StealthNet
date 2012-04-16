@@ -2,7 +2,6 @@ package perso.stealthnet.network
 
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
-import com.weiglewilczek.slf4s.Logging
 import org.jboss.netty.bootstrap.ServerBootstrap
 import org.jboss.netty.channel.{
   Channel,
@@ -17,8 +16,9 @@ import org.jboss.netty.channel.group.{
   DefaultChannelGroup
 }
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
+import perso.stealthnet.core.util.{EmptyLoggingContext, Logging}
 
-object StealthNetServer extends Logging {
+object StealthNetServer extends Logging with EmptyLoggingContext {
 
   val group: ChannelGroup = new DefaultChannelGroup("StealthNet server")
   val factory: ChannelFactory = new NioServerSocketChannelFactory(
@@ -27,7 +27,7 @@ object StealthNetServer extends Logging {
   )
 
   def start() {
-    logger debug "Starting StealthNet server"
+    logger debug "Starting"
     val bootstrap: ServerBootstrap = new ServerBootstrap(factory)
 
     bootstrap.setPipelineFactory(StealthNetPipelineFactory(new StealthNetConnectionParameters(group = group)))
@@ -44,7 +44,7 @@ object StealthNetServer extends Logging {
   }
 
   def stop() {
-    logger debug "Stopping StealthNet server"
+    logger debug "Stopping"
     val future: ChannelGroupFuture = group.close()
     future.awaitUninterruptibly()
     factory.releaseExternalResources()

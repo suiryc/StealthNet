@@ -1,7 +1,6 @@
 package perso.stealthnet.network
 
 import java.net.InetSocketAddress
-import com.weiglewilczek.slf4s.Logging
 import org.jboss.netty.channel.{
   ChannelHandlerContext,
   ChannelStateEvent,
@@ -10,7 +9,7 @@ import org.jboss.netty.channel.{
 import org.jboss.netty.channel.ChannelEvent
 import org.jboss.netty.channel.ChannelState
 
-class ParametersHandler(val parameters: StealthNetConnectionParameters) extends SimpleChannelHandler with Logging {
+class ParametersHandler(val parameters: StealthNetConnectionParameters) extends SimpleChannelHandler {
 
   override def channelOpen(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
     val cnx = StealthNetConnections.get(e.getChannel)

@@ -1,5 +1,7 @@
 package perso.stealthnet.network.protocol
 
+import perso.stealthnet.core.cryptography.{PaddingMode, CipherMode}
+
 object Constants {
 
   val protocol = "LARS REGENSBURGER'S FILE SHARING PROTOCOL 0.2"
@@ -8,6 +10,18 @@ object Constants {
   /* protocol header length + encryption = 45 + 1 = 46 */
   val commandLengthOffset = 46
 
+  val commandOffset = commandLengthOffset + 2
+
   val RSAKeyLength = 1024
+
+  val RijndaelBlockSize = 256
+
+  val RijndaelFeedbackSize = 256
+
+  val RijndaelKeySize = 256
+
+  val RijndaelCipherMode = CipherMode.CBC
+
+  val RijndaelPaddingMode = PaddingMode.PKCS7
 
 }

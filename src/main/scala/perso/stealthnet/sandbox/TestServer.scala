@@ -10,7 +10,6 @@ object TestServer {
   def main(args: Array[String]): Unit = {
     println("Started")
 
-    /* XXX - JCE Unlimited Strength Jurisdiction Policy Files are needed for keys > 128-bits */
     Security.addProvider(new BouncyCastleProvider())
 
     val webCaches = UpdateClient.getWebCaches("http://rshare.de/rshareupdates.asmx") match {
@@ -18,12 +17,16 @@ object TestServer {
       case None => Nil
     }
 
-    for (webCache <- webCaches) {
-      println("WebCache: " + webCache)
-      WebCacheClient.addPeer(webCache, 6097)
-      WebCacheClient.getPeer(webCache) match {
-        case Some(peer) => println("Got peer: " + peer)
-        case None =>
+    val online = true
+    if (online) {
+      for (webCache <- webCaches) {
+        println("WebCache: " + webCache)
+        WebCacheClient.removePeer(webCache)
+        WebCacheClient.addPeer(webCache, 6097)
+        WebCacheClient.getPeer(webCache) match {
+          case Some(peer) => println("Got peer: " + peer)
+          case None =>
+        }
       }
     }
 
@@ -35,9 +38,11 @@ object TestServer {
     finally {
       StealthNetServer.stop()
 
-      for (webCache <- webCaches) {
-        println("WebCache: " + webCache)
-        WebCacheClient.removePeer(webCache)
+      if (online) {
+        for (webCache <- webCaches) {
+          println("WebCache: " + webCache)
+          WebCacheClient.removePeer(webCache)
+        }
       }
     }
   }

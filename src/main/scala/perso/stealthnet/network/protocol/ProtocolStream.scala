@@ -5,6 +5,11 @@ import perso.stealthnet.core.cryptography.Hash
 import java.io.InputStream
 import java.io.EOFException
 
+object BitSize {
+  val Byte = 8
+  val Short = 16
+}
+
 object ProtocolStream {
 
   /* XXX - since values are unsigned, we need to use more bits */
@@ -19,13 +24,28 @@ object ProtocolStream {
     )
   }
 
+  /*
   def convertShort(value: Array[Byte]): Int = {
     (0xFF & value(0).asInstanceOf[Int]) | ((0xFF & value(1).asInstanceOf[Int]) << 8)
   }
+  */
 
   def writeHeader(output: OutputStream): Int = {
     output.write(Constants.protocolRAW)
     Constants.protocolRAW.length
+  }
+
+  private def _read(input: InputStream, buffer: Array[Byte], offset: Int, length: Int): Int =  {
+    var actual = 0
+
+    while (actual < length) {
+      val read = input.read(buffer, offset + actual, length - actual)
+      if (read < 0)
+        return actual
+      actual += read
+    }
+
+    actual
   }
 
   def readByte(input: InputStream): Byte = {
@@ -42,46 +62,43 @@ object ProtocolStream {
     1
   }
 
-  def readBytes(input: InputStream): Array[Byte] = {
-    val length = readShort(input)
+  def readBytes(input: InputStream, bitSize: Int): Array[Byte] = {
+    val length = readInteger(input, bitSize).intValue
     val bytes = new Array[Byte](length)
 
-    if (input.read(bytes) != length)
+    if (_read(input, bytes, 0, length) != length)
       throw new EOFException()
     else
       bytes
   }
 
-  def writeBytes(output: OutputStream, value: Array[Byte]): Int = {
-    if (value.length > 0xFFFF)
-      throw new IllegalArgumentException("Bytes array length[" + value.length + "] exceeds capacity")
-
-    writeShort(output, value.length)
+  def writeBytes(output: OutputStream, value: Array[Byte], bitSize: Int): Int = {
+    val sizeLength = writeInteger(output, value.length, bitSize)
     output.write(value)
-    value.length + 2
+    value.length + sizeLength
   }
 
-  def readShort(input: InputStream): Int = {
-    var value: Int = 0
-    for (idx <- 0 to 1)
-      value |= (0xFF & readByte(input).asInstanceOf[Int]) << (8 * idx)
+  def readInteger(input: InputStream, bitSize: Int): Long = {
+    var value: Long = 0
+    for (idx <- 0 until (bitSize / 8))
+      value |= (0xFF & readByte(input).asInstanceOf[Long]) << (8 * idx)
     value
   }
 
-  def writeShort(output: OutputStream, value: Int): Int = {
-    if (value > 0xFFFF)
-      throw new IllegalArgumentException("Short value[" + value + "] exceeds capacity")
+  def writeInteger(output: OutputStream, value: Long, bitSize: Int): Int = {
+    if (value > (1L << (bitSize - 1)))
+      throw new IllegalArgumentException("Number value[" + value + "] exceeds capacity")
 
-    for (idx <- 0 to 1)
-      output.write((value >>> (8 * idx)) & 0xFF)
-    2
+    for (idx <- 0 until (bitSize / 8))
+      output.write(((value >>> (8 * idx)) & 0xFF).intValue)
+    bitSize / 8
   }
 
   def readString(input: InputStream): String = {
-    val length = readShort(input)
+    val length = readInteger(input, BitSize.Short).intValue
     val bytes = new Array[Byte](length)
 
-    if (input.read(bytes) != length)
+    if (_read(input, bytes, 0, length) != length)
       throw new EOFException()
     else
       new String(bytes, "UTF-8")
@@ -93,7 +110,7 @@ object ProtocolStream {
     if (bytes.length > 0xFFFF)
       throw new IllegalArgumentException("String[%s] length exceeds capacity".format(value))
 
-    writeShort(output, bytes.length)
+    writeInteger(output, bytes.length, BitSize.Short)
     output.write(bytes)
     bytes.length + 2
   }
@@ -103,7 +120,7 @@ object ProtocolStream {
     val length = 48
     val bytes = new Array[Byte](length)
 
-    if (input.read(bytes) != length)
+    if (_read(input, bytes, 0, length) != length)
       throw new EOFException()
     else
       bytes
@@ -117,11 +134,22 @@ object ProtocolStream {
     value.bytes.length
   }
 
+  def read(input: InputStream, length: Int): Array[Byte] = {
+    val bytes = new Array[Byte](length)
+
+    if (_read(input, bytes, 0, length) != length)
+      throw new EOFException()
+    else
+      bytes
+  }
+
   def write(output: OutputStream, value: Any): Int = {
     value match {
+      case v: CommandArgument => v.write(output)
       case v: Byte => writeByte(output, v)
-      case v: Array[Byte] => writeBytes(output, v)
-      case v: Int => writeShort(output, v)
+      /* XXX - remove (replace by ByteArrayArgument) ? */
+      case v: Array[Byte] => writeBytes(output, v, BitSize.Short)
+      case v: Int => writeInteger(output, v, BitSize.Short)
       case v: String => writeString(output, v)
       case v: Hash => writeHash(output, v)
       case _ => 0

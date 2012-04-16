@@ -1,21 +1,35 @@
 package perso.stealthnet.network
 
 import java.net.InetSocketAddress
-import com.weiglewilczek.slf4s.Logging
+import java.security.interfaces.RSAPublicKey
 import scala.collection.mutable.HashSet
 import org.jboss.netty.channel.Channel
 import org.jboss.netty.channel.ChannelLocal
 import org.jboss.netty.channel.group.ChannelGroup
+import perso.stealthnet.core.cryptography.RijndaelParameters
+import perso.stealthnet.core.util.{EmptyLoggingContext, Logging, LoggingContext}
 
 class StealthNetConnectionParameters(
     var group: ChannelGroup = null,
     var isClient: Boolean = false
-) {
+) extends Logging
+{
 
-  var accepted: Boolean = true
-  var closing: Boolean = false
+  def loggerContext = {
+    if (host != null)
+      List("host" -> (host + ":" + port))
+    else
+      List.empty
+  }
+
   var host: String = null
   var port: Int = _
+  var accepted: Boolean = true
+  var established: Boolean = false
+  var closing: Boolean = false
+  var remoteRSAKey: RSAPublicKey = null
+  var localRijndaelParameters: RijndaelParameters = null
+  var remoteRijndaelParameters: RijndaelParameters = null
 
 }
 
@@ -25,7 +39,7 @@ class StealthNetConnection protected[network] (val channel: Channel)
   assert(channel != null)
 }
 
-object StealthNetConnections extends Logging {
+object StealthNetConnections extends Logging with EmptyLoggingContext {
 
   private val hosts = new HashSet[String]
   private val local: ChannelLocal[StealthNetConnection] = new ChannelLocal(false)
@@ -33,7 +47,7 @@ object StealthNetConnections extends Logging {
   def add(host: String): Boolean = {
     /* XXX - configuration */
     //var avgCnxCount = 10
-    var avgCnxCount = 1
+    var avgCnxCount = 0.5
 
     if (avgCnxCount > 10)
       avgCnxCount = 10

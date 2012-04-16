@@ -47,8 +47,12 @@ class SearchCommand(
     val senderPeerID: Hash,
     val searchID: Hash,
     val searchPattern: String
-) extends Command(SearchCommand.code, Encryption.Rijndael)
+) extends Command
 {
+
+  val code = SearchCommand.code
+
+  val encryption = Encryption.Rijndael
 
   assert(commandId != null)
   assert(floodingHash != null)
@@ -56,7 +60,12 @@ class SearchCommand(
   assert(searchID != null)
   assert(searchPattern != null)
 
-  def arguments(): List[Any] =
-    List(commandId, floodingHash, senderPeerID, searchID, searchPattern)
+  def arguments(): List[(String, Any)] = List(
+    "commandId" -> commandId,
+    "floodingHash" -> floodingHash,
+    "senderPeerID" -> senderPeerID,
+    "searchID" -> searchID,
+    "searchPattern" -> searchPattern
+  )
 
 }

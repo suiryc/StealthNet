@@ -1,7 +1,6 @@
 package perso.stealthnet.network
 
 import java.net.InetSocketAddress
-import com.weiglewilczek.slf4s.Logging
 import org.jboss.netty.buffer.{ChannelBuffer, ChannelBuffers}
 import org.jboss.netty.channel.{
   ChannelEvent,
@@ -12,8 +11,13 @@ import org.jboss.netty.channel.{
   SimpleChannelHandler
 }
 import perso.stealthnet.network.protocol.RSAParametersServerCommand
+import perso.stealthnet.core.util.{EmptyLoggingContext, Logging}
 
-class ConnectionLimitHandler extends SimpleChannelHandler with Logging {
+class ConnectionLimitHandler
+  extends SimpleChannelHandler
+  with Logging
+  with EmptyLoggingContext
+{
 
   override def channelConnected(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
     val cnx = StealthNetConnections.get(e.getChannel)
@@ -45,7 +49,7 @@ class ConnectionLimitHandler extends SimpleChannelHandler with Logging {
     val cnx = StealthNetConnections.get(e.getChannel, create = false)
 
     if ((cnx != null) && !cnx.closing && (cnx.isClient || cnx.accepted))
-      logger debug("Host[" + cnx.host + "] disconnected")
+      logger debug(cnx.loggerContext, "Remote host disconnected")
 
     super.channelDisconnected(ctx, e)
   }

@@ -10,7 +10,6 @@ object TestClient {
   def main(args: Array[String]): Unit = {
     println("Started")
 
-    /* XXX - JCE Unlimited Strength Jurisdiction Policy Files are needed for keys > 128-bits */
     Security.addProvider(new BouncyCastleProvider())
 
     val webCaches = UpdateClient.getWebCaches("http://rshare.de/rshareupdates.asmx") match {
@@ -18,32 +17,37 @@ object TestClient {
       case None => Nil
     }
 
+    val online = true
     val peerRe = "^([^:]+):(\\d+)$".r
     var host: String = null
     var port: Int = 0
-    for (webCache <- webCaches if (port == 0)) {
-      println("WebCache: " + webCache)
-      //WebCacheClient.addPeer(webCache, 6097)
-      WebCacheClient.getPeer(webCache) match {
-        case Some(peer) => println("Got peer: " + peer)
-          peer match {
-            case peerRe(h, p) =>
-              host = h
-              port = Integer.parseInt(p)
-            case _ =>
-          }
-        case None =>
+    if (online) {
+      for (webCache <- webCaches if (port == 0)) {
+        println("WebCache: " + webCache)
+        WebCacheClient.addPeer(webCache, 6097)
+        WebCacheClient.getPeer(webCache) match {
+          case Some(peer) => println("Got peer: " + peer)
+            peer match {
+              case peerRe(h, p) =>
+                host = h
+                port = Integer.parseInt(p)
+              case _ =>
+            }
+          case None =>
+        }
+        WebCacheClient.removePeer(webCache)
       }
-      //WebCacheClient.removePeer(webCache)
     }
 
     var client1: StealthNetClient = null
     try {
-      //client1 = new StealthNetClient("127.0.0.1", 8080)
-      client1 = new StealthNetClient(host, port)
+      client1 = if (online)
+          new StealthNetClient(host, port)
+        else
+          new StealthNetClient("127.0.0.1", 6097)
       client1.start()
 
-      Thread.sleep(5000)
+      Thread.sleep(20000)
     }
     finally {
       if (client1 != null) {
