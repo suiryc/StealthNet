@@ -10,8 +10,8 @@ import perso.stealthnet.core.cryptography.Ciphers._
 protected object RSAParametersCommand {
 
   def readKeySpec(input: InputStream): RSAPublicKeySpec = {
-    val modulus = new BigInteger(ProtocolStream.readBytes(input, BitSize.Short))
-    val exponent = new BigInteger(ProtocolStream.readBytes(input, BitSize.Short))
+    val modulus = ProtocolStream.readBigInteger(input)
+    val exponent = ProtocolStream.readBigInteger(input)
 
     new RSAPublicKeySpec(modulus, exponent)
   }
@@ -36,7 +36,6 @@ object RSAParametersClientCommand extends CommandBuilder {
 
 }
 
-/* Note: public key modulus/exponent as big-endian byte array */
 abstract class RSAParametersCommand extends Command {
 
   val encryption = Encryption.None
@@ -46,8 +45,8 @@ abstract class RSAParametersCommand extends Command {
   assert(key != null)
 
   def arguments(): List[(String, Any)] = List(
-    "modulus" -> key.getModulus.toByteArray(),
-    "exponent" -> key.getPublicExponent.toByteArray()
+    "modulus" -> key.getModulus,
+    "exponent" -> key.getPublicExponent
   )
 
 }

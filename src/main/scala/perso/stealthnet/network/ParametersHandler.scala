@@ -12,7 +12,7 @@ import org.jboss.netty.channel.ChannelState
 class ParametersHandler(val parameters: StealthNetConnectionParameters) extends SimpleChannelHandler {
 
   override def channelOpen(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
-    val cnx = StealthNetConnections.get(e.getChannel)
+    val cnx = StealthNetConnectionsManager.getConnection(e.getChannel)
 
     cnx.group = parameters.group
     cnx.isClient = parameters.isClient

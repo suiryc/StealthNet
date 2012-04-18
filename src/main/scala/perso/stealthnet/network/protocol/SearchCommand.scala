@@ -30,8 +30,6 @@ object SearchCommand extends CommandBuilder {
   def generateFloodingHash(): Hash = {
     var hash: Hash = Command.generateId()
 
-    println(hash)
-    println(hash.bytes.size)
     while (hash.bytes(47) <= 51) {
       hash = Command.generateId()
     }

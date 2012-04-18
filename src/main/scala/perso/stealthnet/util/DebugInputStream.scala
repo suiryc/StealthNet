@@ -1,4 +1,4 @@
-package perso.stealthnet.core.util
+package perso.stealthnet.util
 
 import java.io.{FilterInputStream, InputStream}
 

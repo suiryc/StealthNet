@@ -11,7 +11,8 @@ import org.jboss.netty.channel.{
   SimpleChannelHandler
 }
 import perso.stealthnet.network.protocol.RSAParametersServerCommand
-import perso.stealthnet.core.util.{EmptyLoggingContext, Logging}
+import perso.stealthnet.core.Core
+import perso.stealthnet.util.{EmptyLoggingContext, Logging}
 
 class ConnectionLimitHandler
   extends SimpleChannelHandler
@@ -20,14 +21,14 @@ class ConnectionLimitHandler
 {
 
   override def channelConnected(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
-    val cnx = StealthNetConnections.get(e.getChannel)
+    val cnx = StealthNetConnectionsManager.getConnection(e.getChannel)
 
     /* Note: for server-side, we would like to reject the connection as soon as
      * possible (e.g. upon channel opening), but this does not seem to work as
      * well as expected.
      * So just wait for the connection to be done to cleanly close it.
      */
-    if (!StealthNetConnections.accept(cnx)) {
+    if (!StealthNetConnectionsManager.addConnection(cnx)) {
       e.getChannel.close
       return
     }
@@ -41,14 +42,14 @@ class ConnectionLimitHandler
 
   override def channelClosed(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
     /* Cleanup the connection */
-    StealthNetConnections.closed(e.getChannel)
+    StealthNetConnectionsManager !? StealthNetConnectionsManager.ClosedChannel(e.getChannel)
     super.channelClosed(ctx, e)
   }
 
   override def channelDisconnected(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
-    val cnx = StealthNetConnections.get(e.getChannel, create = false)
+    val cnx = StealthNetConnectionsManager.getConnection(e.getChannel, false)
 
-    if ((cnx != null) && !cnx.closing && (cnx.isClient || cnx.accepted))
+    if ((cnx != null) && !cnx.closing && !Core.stopping && (cnx.isClient || cnx.accepted))
       logger debug(cnx.loggerContext, "Remote host disconnected")
 
     super.channelDisconnected(ctx, e)

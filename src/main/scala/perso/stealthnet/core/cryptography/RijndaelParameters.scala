@@ -17,12 +17,12 @@ object RijndaelParameters {
     val paddingMode = Constants.RijndaelPaddingMode
     /* XXX - secure enough, or should we used a specific generator ? */
     val random = new SecureRandom()
-    val key = new Array[Byte](keySize / 8)
     val iv = new Array[Byte](blockSize / 8)
-    random.nextBytes(key)
+    val key = new Array[Byte](keySize / 8)
     random.nextBytes(iv)
+    random.nextBytes(key)
 
-    new RijndaelParameters(blockSize, feedbackSize, keySize, cipherMode, paddingMode, key, iv)
+    new RijndaelParameters(blockSize, feedbackSize, keySize, cipherMode, paddingMode, iv, key)
   }
 
 }
@@ -33,6 +33,6 @@ class RijndaelParameters(
   val keySize: Int,
   val cipherMode: CipherMode.Value,
   val paddingMode: PaddingMode.Value,
-  val key: Array[Byte],
-  val iv: Array[Byte]
+  val iv: Array[Byte],
+  val key: Array[Byte]
 )

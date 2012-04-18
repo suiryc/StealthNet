@@ -1,9 +1,12 @@
 package perso.stealthnet.network.protocol
 
-import java.io.OutputStream
+import java.io.{
+  InputStream,
+  EOFException,
+  OutputStream
+}
+import java.math.BigInteger
 import perso.stealthnet.core.cryptography.Hash
-import java.io.InputStream
-import java.io.EOFException
 
 object BitSize {
   val Byte = 8
@@ -12,6 +15,7 @@ object BitSize {
 
 object ProtocolStream {
 
+  /* XXX - do tests */
   /* XXX - since values are unsigned, we need to use more bits */
 
   def convertShort(value: Int): Array[Byte] = {
@@ -94,6 +98,31 @@ object ProtocolStream {
     bitSize / 8
   }
 
+  def readBigInteger(input: InputStream): BigInteger = {
+    val length = readInteger(input, BitSize.Short).intValue
+    val initial = readByte(input)
+    val offset = if (initial < 0) 1 else 0
+    val bytes = new Array[Byte](length + offset)
+    bytes(offset) = initial
+
+    if (_read(input, bytes, offset + 1, length - 1) != length - 1)
+      throw new EOFException()
+    else
+      new BigInteger(bytes)
+  }
+
+  def writeBigInteger(output: OutputStream, value: BigInteger): Int = {
+    /* Note: big-endian byte array */
+    val representation = value.toByteArray
+    /* Java's BigInteger may have a leading 0x00 byte because it is the sign
+     * value, while we expect an unsigned value in protocol; so strip it */
+    val bytes = if (representation(0) == 0)
+        representation.tail
+      else
+        representation
+    writeBytes(output, bytes, BitSize.Short)
+  }
+
   def readString(input: InputStream): String = {
     val length = readInteger(input, BitSize.Short).intValue
     val bytes = new Array[Byte](length)
@@ -150,6 +179,7 @@ object ProtocolStream {
       /* XXX - remove (replace by ByteArrayArgument) ? */
       case v: Array[Byte] => writeBytes(output, v, BitSize.Short)
       case v: Int => writeInteger(output, v, BitSize.Short)
+      case v: BigInteger => writeBigInteger(output, v)
       case v: String => writeString(output, v)
       case v: Hash => writeHash(output, v)
       case _ => 0

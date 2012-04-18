@@ -1,4 +1,4 @@
-package perso.stealthnet.core.util
+package perso.stealthnet.util
 
 import org.slf4j.{Logger => Slf4jLogger, LoggerFactory}
 

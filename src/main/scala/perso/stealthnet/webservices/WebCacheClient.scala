@@ -1,6 +1,7 @@
 package perso.stealthnet.webservices
 
 import com.weiglewilczek.slf4s.Logging
+import perso.stealthnet.util.Peer
 
 /**
  * WebCache client.
@@ -13,7 +14,7 @@ object WebCacheClient extends Logging {
    * @param url URL to call
    * @return peer (ip:port) upon success
    */
-  def getPeer(url: String): Option[String] = {
+  def getPeer(url: String): Option[Peer] = {
     SoapClient.doRequest(url, <GetPeer xmlns="http://rshare.de/rshare.asmx" />) match {
       case Left(l) =>
         logger error ("Failed to get peer from service[" + url + "]: " + l)
@@ -22,12 +23,16 @@ object WebCacheClient extends Logging {
       case Right(r) =>
         (r \\ "GetPeerResult").text match {
           case "" =>
-            logger debug ("Got no peer from service[" + url + "]")
+            logger debug("Got no peer from service[" + url + "]")
             None
 
+          case Peer.regexp(host, port) =>
+            logger debug("Got host[" + host + "] port[" + port + "] from service[" + url + "]")
+            Some(Peer(host, Integer.parseInt(port)))
+
           case peer =>
-            logger debug ("Got peer[" + peer + "] from service[" + url + "]")
-            Some(peer)
+            logger debug("Got unhandled peer[" + peer + "] from service[" + url + "]")
+            None
         }
     }
   }

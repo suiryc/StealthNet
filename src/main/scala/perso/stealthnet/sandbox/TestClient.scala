@@ -3,7 +3,11 @@ package perso.stealthnet.sandbox
 import java.security.Security
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import perso.stealthnet.network.StealthNetClient
+import perso.stealthnet.network.StealthNetConnectionsManager
 import perso.stealthnet.webservices.{UpdateClient, WebCacheClient}
+import perso.stealthnet.network.protocol.SearchCommand
+import perso.stealthnet.network.WebCaches
+import perso.stealthnet.util.Peer
 
 object TestClient {
 
@@ -11,48 +15,31 @@ object TestClient {
     println("Started")
 
     Security.addProvider(new BouncyCastleProvider())
+    StealthNetConnectionsManager.start()
 
-    val webCaches = UpdateClient.getWebCaches("http://rshare.de/rshareupdates.asmx") match {
-      case Some(webCaches) => webCaches
-      case None => Nil
-    }
-
-    val online = true
+    val online = false
     val peerRe = "^([^:]+):(\\d+)$".r
-    var host: String = null
-    var port: Int = 0
-    if (online) {
-      for (webCache <- webCaches if (port == 0)) {
-        println("WebCache: " + webCache)
-        WebCacheClient.addPeer(webCache, 6097)
-        WebCacheClient.getPeer(webCache) match {
-          case Some(peer) => println("Got peer: " + peer)
-            peer match {
-              case peerRe(h, p) =>
-                host = h
-                port = Integer.parseInt(p)
-              case _ =>
-            }
-          case None =>
-        }
-        WebCacheClient.removePeer(webCache)
+    val peer = if (online) {
+        WebCaches.refresh()
+        WebCaches.addPeer()
+        val result = WebCaches.getPeer()
+        WebCaches.removePeer()
+        result
       }
-    }
+      else
+        Peer("127.0.0.1", 6097)
 
     var client1: StealthNetClient = null
     try {
-      client1 = if (online)
-          new StealthNetClient(host, port)
-        else
-          new StealthNetClient("127.0.0.1", 6097)
+      client1 = new StealthNetClient(peer)
       client1.start()
 
-      Thread.sleep(20000)
+      Thread.sleep(120000)
     }
     finally {
-      if (client1 != null) {
+      if (client1 != null)
         client1.stop()
-      }
+      StealthNetConnectionsManager.stop()
     }
   }
 

@@ -1,7 +1,13 @@
 package perso.stealthnet.network.protocol
 
-import java.io.{InputStream, OutputStream}
+import java.io.{
+  ByteArrayInputStream,
+  ByteArrayOutputStream,
+  InputStream,
+  OutputStream
+}
 import javax.crypto.{Cipher, CipherInputStream, CipherOutputStream}
+import scala.collection.mutable.WrappedArray
 import perso.stealthnet.core.cryptography.{
   Algorithm,
   Hash,
@@ -9,10 +15,9 @@ import perso.stealthnet.core.cryptography.{
   RSAKeys
 }
 import perso.stealthnet.core.cryptography.Ciphers._
-import perso.stealthnet.core.util.{HexDumper, UUID}
-import perso.stealthnet.network.{StealthNetConnection, StealthNetConnections}
+import perso.stealthnet.network.StealthNetConnection
 import perso.stealthnet.core.cryptography.io.{BCCipherInputStream, BCCipherOutputStream}
-import perso.stealthnet.core.util.{EmptyLoggingContext, Logging}
+import perso.stealthnet.util.{EmptyLoggingContext, HexDumper, Logging, UUID}
 
 trait CommandBuilder {
 
@@ -41,13 +46,6 @@ object Command extends Logging with EmptyLoggingContext {
     private var encryption: Encryption.Value = _
     private var length: Int = _
 
-    private def readHeader(input: InputStream) {
-      val header = new String(ProtocolStream.read(input, Constants.protocolRAW.length), "US-ASCII")
-      /* XXX - cleanly handle issues */
-      if (header != Constants.protocol)
-        throw new Exception("Invalid protocol header[" + header + "]")
-    }
-
     private def readContent(cnx: StealthNetConnection, input: InputStream): Command = {
       /* cipher-text section */
       val cipherInput: InputStream = encryption match {
@@ -67,10 +65,35 @@ object Command extends Logging with EmptyLoggingContext {
           builder.read(cipherInput)
 
         case None =>
-          logger error(cnx.loggerContext, "Unknown command code[0x%02X]".format(code))
+          logger error(cnx.loggerContext, "Unknown command code[0x%02X] with encryption[%s]".format(code, encryption))
           /* XXX - take error into account, and drop connection if too many ? */
           null
       }
+    }
+
+    def decryptCommand(cnx: StealthNetConnection, cipher: Array[Byte], offset: Int, lenght: Int): Array[Byte] = {
+      if (encryption == Encryption.None)
+        return cipher
+
+      val input: InputStream = new ByteArrayInputStream(cipher, offset, length)
+      val cipherInput: InputStream = encryption match {
+        case Encryption.RSA =>
+          new CipherInputStream(input, rsaDecrypter(RSAKeys.privateKey))
+
+        case Encryption.Rijndael =>
+          new BCCipherInputStream(input, rijndaelDecrypter(cnx.remoteRijndaelParameters))
+      }
+
+      val output = new ByteArrayOutputStream()
+      val buffer = new Array[Byte](1024)
+      var read = 1
+      while (read > 0) {
+        read = cipherInput.read(buffer)
+        if (read > 0)
+          output.write(buffer, 0, read)
+      }
+      output.close()
+      output.toByteArray()
     }
 
     def readCommand(cnx: StealthNetConnection, input: InputStream): Command = {
@@ -83,12 +106,18 @@ object Command extends Logging with EmptyLoggingContext {
     def readHeader(cnx: StealthNetConnection, input: InputStream): Int = {
       state match {
       case State.Header =>
-        readHeader(input)
+        val headerRAW = ProtocolStream.read(input, Constants.protocolRAW.length)
+        /* Note: bare Arrays cannot be compared with '==', unlike wrapped ones */
+        if ((headerRAW:WrappedArray[Byte]) != (Constants.protocolRAW:WrappedArray[Byte]))
+          throw new InvalidDataException("Invalid protocol header:\n" + HexDumper.dump(headerRAW), loggerContext = cnx.loggerContext)
         state = State.Encryption
         -1
 
       case State.Encryption =>
-        encryption = Encryption.value(ProtocolStream.readByte(input))
+        val encryptionRAW = ProtocolStream.readByte(input)
+        encryption = Encryption.value(encryptionRAW)
+        if (encryption == Encryption.Unknown)
+          throw new InvalidDataException("Invalid encryption[%02X]".format(encryptionRAW), loggerContext = cnx.loggerContext)
         state = State.Length
         -1
 

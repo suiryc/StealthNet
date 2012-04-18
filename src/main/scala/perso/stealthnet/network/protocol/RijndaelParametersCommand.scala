@@ -9,16 +9,15 @@ protected object RijndaelParametersCommand {
 
   def readRijndaelParameters(input: InputStream): RijndaelParameters = {
     val blockSize = ProtocolStream.readInteger(input, BitSize.Short).intValue
-    println(blockSize)
     val feedbackSize = ProtocolStream.readInteger(input, BitSize.Short).intValue
     val keySize = ProtocolStream.readInteger(input, BitSize.Short).intValue
     val cipherMode = CipherMode.value(ProtocolStream.readByte(input))
     val paddingMode = PaddingMode.value(ProtocolStream.readByte(input))
-    val key = ProtocolStream.readBytes(input, BitSize.Byte)
     val iv = ProtocolStream.readBytes(input, BitSize.Byte)
+    val key = ProtocolStream.readBytes(input, BitSize.Byte)
 
     new RijndaelParameters(blockSize, feedbackSize, keySize, cipherMode,
-      paddingMode, key, iv)
+      paddingMode, iv, key)
   }
 
 }
@@ -56,8 +55,8 @@ abstract class RijndaelParametersCommand extends Command {
     "keySize" -> parameters.keySize,
     "cipherMode" -> CipherMode.id(parameters.cipherMode),
     "paddingMode" -> PaddingMode.id(parameters.paddingMode),
-    "key" -> new ByteArrayArgument(parameters.iv, BitSize.Byte),
-    "iv" -> new ByteArrayArgument(parameters.key, BitSize.Byte)
+    "iv" -> new ByteArrayArgument(parameters.iv, BitSize.Byte),
+    "key" -> new ByteArrayArgument(parameters.key, BitSize.Byte)
   )
 
 }

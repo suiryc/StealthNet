@@ -2,7 +2,7 @@ package perso.stealthnet.network.protocol
 
 import java.io.OutputStream
 import perso.stealthnet.core.cryptography.Hash
-import perso.stealthnet.core.util.HexDumper
+import perso.stealthnet.util.HexDumper
 
 trait CommandArgument {
 

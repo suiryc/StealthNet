@@ -1,6 +1,7 @@
-package perso.stealthnet.core.util
+package perso.stealthnet.util
 
 import scala.collection.mutable.IndexedSeqView
+import perso.stealthnet.core.cryptography.Hash
 
 object HexDumper {
 
@@ -68,5 +69,16 @@ object HexDumper {
 
   def dump(data: Array[Byte]): StringBuilder =
     dump(data, 0, data.length)
+
+  private val lineFormat = "[^:]*:?([\\s-0-9A-Fa-f]+)\\|?".r
+  private val hexFormat = "([0-9A-Fa-f]{2})".r
+
+  def undump(dump: String): Array[Byte] = {
+    val data = for (lineFormat(data) <- lineFormat findAllIn dump;
+        hexFormat(hex) <- hexFormat findAllIn data)
+      yield hex
+    val hash: Hash = data.mkString("")
+    hash.bytes
+  }
 
 }

@@ -1,4 +1,4 @@
-package perso.stealthnet.core.util
+package perso.stealthnet.util
 
 trait Logging extends LoggingContext {
 

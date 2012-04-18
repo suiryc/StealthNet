@@ -2,28 +2,29 @@ package perso.stealthnet.network
 
 import java.net.InetSocketAddress
 import java.security.interfaces.RSAPublicKey
+import scala.actors.Actor
 import scala.collection.mutable.HashSet
 import org.jboss.netty.channel.Channel
 import org.jboss.netty.channel.ChannelLocal
 import org.jboss.netty.channel.group.ChannelGroup
 import perso.stealthnet.core.cryptography.RijndaelParameters
-import perso.stealthnet.core.util.{EmptyLoggingContext, Logging, LoggingContext}
+import perso.stealthnet.util.{EmptyLoggingContext, Logging, LoggingContext}
+import perso.stealthnet.util.Peer
 
 class StealthNetConnectionParameters(
     var group: ChannelGroup = null,
     var isClient: Boolean = false
-) extends Logging
+) extends LoggingContext
 {
 
   def loggerContext = {
-    if (host != null)
-      List("host" -> (host + ":" + port))
+    if (peer != null)
+      List("peer" -> peer)
     else
       List.empty
   }
 
-  var host: String = null
-  var port: Int = _
+  var peer: Peer = null
   var accepted: Boolean = true
   var established: Boolean = false
   var closing: Boolean = false
@@ -39,54 +40,74 @@ class StealthNetConnection protected[network] (val channel: Channel)
   assert(channel != null)
 }
 
-object StealthNetConnections extends Logging with EmptyLoggingContext {
+object StealthNetConnectionsManager extends Actor with Logging with EmptyLoggingContext {
 
   private val hosts = new HashSet[String]
   private val local: ChannelLocal[StealthNetConnection] = new ChannelLocal(false)
 
-  def add(host: String): Boolean = {
-    /* XXX - configuration */
-    //var avgCnxCount = 10
-    var avgCnxCount = 0.5
+  case class AddPeer(peer: Peer)
+  case class AddConnection(cnx: StealthNetConnection)
+  case class GetConnection(channel: Channel, create: Boolean = true)
+  case class ClosedChannel(channel: Channel)
+  case class Stop()
 
-    if (avgCnxCount > 10)
-      avgCnxCount = 10
+  /* XXX - configuration */
+  //protected val avgCnxCount = 10
+  protected var avgCnxCount = 1
 
-    synchronized {
-      if (hosts.size >= 1.25 * avgCnxCount) {
-        logger debug("Refused connection with host[" + host + "]: limit reached")
-        false
-      }
-      else if (hosts.contains(host)) {
-        logger debug("Refused connection with host[" + host + "]: already connected")
-        false
-      }
-      else {
-        logger debug("Accepted connection with host[" + host + "]")
-        hosts.add(host)
-        true
+  if (avgCnxCount > 10)
+    avgCnxCount = 10
+
+  def act() {
+    loop {
+      react {
+        case AddPeer(peer) =>
+          reply(add(peer))
+
+        case AddConnection(cnx) =>
+          reply(add(cnx))
+
+        case GetConnection(channel, create) =>
+          reply(get(channel, create))
+
+        case ClosedChannel(channel) =>
+          reply(closed(channel))
+
+        case Stop() =>
+          /* time to leave */
+          logger debug("Stopping")
+          exit()
       }
     }
   }
 
-  private def remove(host: String) = {
-    if (host != null) {
-      synchronized {
-        hosts.remove(host)
-      }
+  private def add(peer: Peer): Boolean = {
+    if (hosts.size >= 1.25 * avgCnxCount) {
+      /* XXX - ok here ? */
+      WebCaches.removePeer()
+      logger debug("Refused connection with peer[" + peer + "]: limit reached")
+      false
+    }
+    else if (hosts.contains(peer.host)) {
+      logger debug("Refused connection with peer[" + peer + "]: host already connected")
+      false
+    }
+    else {
+      logger debug("Accepted connection with peer[" + peer + "]")
+      hosts.add(peer.host)
+      true
     }
   }
 
-  def accept(cnx: StealthNetConnection): Boolean = {
+  private def add(cnx: StealthNetConnection): Boolean = {
     val remoteAddress = cnx.channel.getRemoteAddress
 
     cnx.accepted = remoteAddress match {
       case socketAddress: InetSocketAddress =>
         val address = socketAddress.getAddress.getHostAddress
-        cnx.host = address
-        cnx.port = socketAddress.getPort
+        cnx.peer = Peer(address, socketAddress.getPort)
         /* Client-side connection host was checked and added beforehand */
-        if (cnx.isClient || add(address))
+        if (cnx.isClient || add(cnx.peer))
           true
         else
           false
@@ -100,36 +121,54 @@ object StealthNetConnections extends Logging with EmptyLoggingContext {
     if (!cnx.accepted) {
       local.remove(cnx.channel)
       if (cnx.isClient)
-        remove(cnx.host)
+        remove(cnx.peer)
       return false
     }
 
     true
   }
 
-  def get(channel: Channel, create: Boolean = true): StealthNetConnection = {
+  private def get(channel: Channel, create: Boolean): StealthNetConnection = {
     var cnx = local.get(channel)
 
     if ((cnx == null) && create) {
       /* initialize the connection object */
       cnx = new StealthNetConnection(channel)
-      val tmp = local.setIfAbsent(channel, cnx)
-      if (tmp != null) {
-        /* woops, someone else striked first */
-        cnx = tmp
-      }
+      local.set(channel, cnx)
     }
 
     cnx
   }
 
-  def closed(channel: Channel) = {
+  private def closed(channel: Channel) = {
     val cnx = local.remove(channel)
 
     if ((cnx != null) && cnx.accepted)
-      remove(cnx.host)
+      remove(cnx.peer)
 
     cnx
   }
+
+  private def remove(peer: Peer) {
+    if (peer == null)
+      return
+
+    hosts.remove(peer.host)
+
+    /* XXX - ok here ? */
+    if (hosts.size < avgCnxCount)
+      WebCaches.addPeer()
+  }
+
+  def getConnection(channel: Channel, create: Boolean = true): StealthNetConnection =
+    (this !? GetConnection(channel, create)).asInstanceOf[StealthNetConnection]
+
+  def addConnection(cnx: StealthNetConnection): Boolean =
+    (this !? AddConnection(cnx)).asInstanceOf[Boolean]
+
+  def addPeer(peer: Peer): Boolean =
+    (this !? AddPeer(peer)).asInstanceOf[Boolean]
+
+  def stop() = this ! Stop()
 
 }

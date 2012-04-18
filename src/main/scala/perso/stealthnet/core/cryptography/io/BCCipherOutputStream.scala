@@ -18,11 +18,6 @@ class BCCipherOutputStream(output: OutputStream, cipher: BufferedBlockCipher)
     length = cipher.processByte(b.asInstanceOf[Byte], buffer, 0)
     if (length > 0)
       output.write(buffer, 0, length)
-    /* XXX */
-    if (length > 0)
-      println("%02X -> %s".format(b, perso.stealthnet.core.cryptography.Hash.bytesToHash(new String(buffer, 0, length).getBytes)))
-    else
-      println("%02X".format(b))
   }
 
   /* Note: parent class shall actually do the same */
@@ -38,11 +33,6 @@ class BCCipherOutputStream(output: OutputStream, cipher: BufferedBlockCipher)
     length = cipher.processBytes(b, off, len, buffer, 0)
     if (length > 0)
       output.write(buffer, 0, length)
-    /* XXX */
-    if (length > 0)
-      println("%s -> %s".format(perso.stealthnet.core.cryptography.Hash.bytesToHash(new String(b, off, len).getBytes), perso.stealthnet.core.cryptography.Hash.bytesToHash(new String(buffer, 0, length).getBytes)))
-    else
-      println(perso.stealthnet.core.cryptography.Hash.bytesToHash(new String(b, off, len).getBytes))
   }
 
   override def close() {
@@ -54,9 +44,6 @@ class BCCipherOutputStream(output: OutputStream, cipher: BufferedBlockCipher)
     length = cipher.doFinal(buffer, 0)
     if (length > 0)
       output.write(buffer, 0, length)
-    /* XXX */
-    if (length > 0)
-      println(perso.stealthnet.core.cryptography.Hash.bytesToHash(new String(buffer, 0, length).getBytes))
 
     /* Note: parent class shall actually do it too */
     flush()

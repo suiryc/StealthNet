@@ -3,7 +3,9 @@ package perso.stealthnet.sandbox
 import java.security.Security
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import perso.stealthnet.network.StealthNetServer
+import perso.stealthnet.network.StealthNetConnectionsManager
 import perso.stealthnet.webservices.{UpdateClient, WebCacheClient}
+import perso.stealthnet.network.WebCaches
 
 object TestServer {
 
@@ -11,23 +13,13 @@ object TestServer {
     println("Started")
 
     Security.addProvider(new BouncyCastleProvider())
-
-    val webCaches = UpdateClient.getWebCaches("http://rshare.de/rshareupdates.asmx") match {
-      case Some(webCaches) => webCaches
-      case None => Nil
-    }
+    StealthNetConnectionsManager.start()
 
     val online = true
     if (online) {
-      for (webCache <- webCaches) {
-        println("WebCache: " + webCache)
-        WebCacheClient.removePeer(webCache)
-        WebCacheClient.addPeer(webCache, 6097)
-        WebCacheClient.getPeer(webCache) match {
-          case Some(peer) => println("Got peer: " + peer)
-          case None =>
-        }
-      }
+      /* XXX - move to Server or Core ? */
+      WebCaches.refresh()
+      WebCaches.addPeer()
     }
 
     try {
@@ -38,12 +30,11 @@ object TestServer {
     finally {
       StealthNetServer.stop()
 
-      if (online) {
-        for (webCache <- webCaches) {
-          println("WebCache: " + webCache)
-          WebCacheClient.removePeer(webCache)
-        }
-      }
+      /* XXX - move to Server or Core ? */
+      if (online)
+        WebCaches.removePeer()
+
+      StealthNetConnectionsManager.stop()
     }
   }
 

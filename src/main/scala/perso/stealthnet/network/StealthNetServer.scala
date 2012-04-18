@@ -16,7 +16,8 @@ import org.jboss.netty.channel.group.{
   DefaultChannelGroup
 }
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
-import perso.stealthnet.core.util.{EmptyLoggingContext, Logging}
+import perso.stealthnet.core.Core
+import perso.stealthnet.util.{EmptyLoggingContext, Logging}
 
 object StealthNetServer extends Logging with EmptyLoggingContext {
 
@@ -39,12 +40,14 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
     var channel: Channel = bootstrap.bind(new InetSocketAddress(6097))
     group.add(channel)
     /* XXX - can be used to pause accept ? */
+    /* XXX - or do as StealthNet: removePeer once limit reached */
     //channel.close().awaitUninterruptibly()
     //channel = bootstrap.bind(new InetSocketAddress(8080))
   }
 
   def stop() {
     logger debug "Stopping"
+    Core.stopping = true
     val future: ChannelGroupFuture = group.close()
     future.awaitUninterruptibly()
     factory.releaseExternalResources()

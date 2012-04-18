@@ -17,8 +17,8 @@ import org.jboss.netty.channel.{
   SimpleChannelHandler
 }
 import org.jboss.netty.channel.group.ChannelGroup
+import org.jboss.netty.handler.timeout.ReadTimeoutException
 import perso.stealthnet.core.Core
-import perso.stealthnet.core.util.{EmptyLoggingContext, Logging}
 import perso.stealthnet.network.protocol.{
   Command,
   Constants,
@@ -27,6 +27,7 @@ import perso.stealthnet.network.protocol.{
   RSAParametersClientCommand,
   RSAParametersServerCommand
 }
+import perso.stealthnet.util.{EmptyLoggingContext, Logging}
 
 class CommandHandler(val group: ChannelGroup)
   extends SimpleChannelHandler
@@ -37,14 +38,17 @@ class CommandHandler(val group: ChannelGroup)
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     val command: Command = e.getMessage.asInstanceOf[Command]
 
-    logger debug(StealthNetConnections.get(e.getChannel).loggerContext, "Received command: " + command)
+    logger debug(StealthNetConnectionsManager.getConnection(e.getChannel).loggerContext, "Received command: " + command)
 
     Core.processCommand(command, e.getChannel)
   }
 
   override def writeRequested(ctx: ChannelHandlerContext, e: MessageEvent) {
+    if (!e.getChannel.isOpen)
+      return
+
     /* XXX - check we can write and block or drop ? */
-    val cnx = StealthNetConnections.get(e.getChannel)
+    val cnx = StealthNetConnectionsManager.getConnection(e.getChannel)
     val command: Command = e.getMessage.asInstanceOf[Command]
     val buf: ChannelBuffer = ChannelBuffers.dynamicBuffer(0)
     val output = new ChannelBufferOutputStream(buf)
@@ -66,22 +70,29 @@ class CommandHandler(val group: ChannelGroup)
   }
 
   override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
-    val cnx = StealthNetConnections.get(e.getChannel, create = false)
+    val cnx = StealthNetConnectionsManager.getConnection(e.getChannel, false)
 
+    logger debug(if (cnx != null) cnx.loggerContext else Nil, "Caught exception: " + e.getCause.getMessage())
     e.getCause match {
+      case e: ReadTimeoutException =>
+        logger debug(if (cnx != null) cnx.loggerContext else Nil, "Timeout waiting for remote host")
+
       case e: ClosedChannelException =>
         /* disconnection was or will be notified */
 
       case e: ConnectException =>
         /* connection failure was notified */
 
-      case _ =>
-        val host: Any = if ((cnx != null) && (cnx.host != null))
-            cnx.host
-          else
-            e.getChannel.getRemoteAddress
+      case _ if (cnx.closing || Core.stopping) =>
+        /* nothing to say here */
 
-        logger debug(if (cnx != null) cnx.loggerContext else Nil, "Unexpected exception!",  e.getCause)
+      case _ =>
+        val loggerContext: List[(String, Any)] = if ((cnx != null) && (cnx.loggerContext != Nil))
+            cnx.loggerContext
+          else
+            List("remote" -> e.getChannel.getRemoteAddress)
+
+        logger debug(loggerContext, "Unexpected exception!",  e.getCause)
     }
 
     if (cnx != null)

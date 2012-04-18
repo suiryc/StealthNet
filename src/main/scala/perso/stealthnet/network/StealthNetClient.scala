@@ -14,17 +14,18 @@ import org.jboss.netty.channel.{
 import org.jboss.netty.channel.group.{ChannelGroup, DefaultChannelGroup}
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import org.jboss.netty.channel.group.ChannelGroupFuture
-import perso.stealthnet.core.util.Logging
+import perso.stealthnet.util.Logging
+import perso.stealthnet.util.Peer
 
-class StealthNetClient(val host: String, val port: Int) extends Logging {
+class StealthNetClient(val peer: Peer) extends Logging {
 
-  protected def loggerContext = List("host" -> (host + ":" + port))
+  protected def loggerContext = List("peer" -> peer)
 
   private var factory: ChannelFactory = null
   private var future: ChannelFuture = null
 
   def start(): Boolean = {
-    if (!StealthNetConnections.add(host))
+    if (!StealthNetConnectionsManager.addPeer(peer))
       return false
 
     factory = new NioClientSocketChannelFactory(
@@ -42,7 +43,7 @@ class StealthNetClient(val host: String, val port: Int) extends Logging {
     /* XXX - configuration */
     bootstrap.setOption("connectTimeoutMillis", 5000)
 
-    future = bootstrap.connect(new InetSocketAddress(host, port))
+    future = bootstrap.connect(new InetSocketAddress(peer.host, peer.port))
     future.awaitUninterruptibly()
     if (!future.isSuccess) {
       logger error("Failed to connect", future.getCause)
@@ -60,7 +61,7 @@ class StealthNetClient(val host: String, val port: Int) extends Logging {
       if (channel.isOpen) {
         logger debug("Closing connection")
 
-        val cnx = StealthNetConnections.get(channel, create = false)
+        val cnx = StealthNetConnectionsManager.getConnection(channel, false)
         if (cnx != null)
           cnx.closing = true
         channel.close()
@@ -74,8 +75,8 @@ class StealthNetClient(val host: String, val port: Int) extends Logging {
     }
   }
 
-  def write() {
-    future.getChannel.write(1)
+  def write(obj: Any) {
+    future.getChannel.write(obj)
   }
 
 }

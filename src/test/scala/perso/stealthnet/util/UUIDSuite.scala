@@ -1,11 +1,9 @@
-package perso.stealthnet.core.util
+package perso.stealthnet.util
 
 import java.util.{UUID => jUUID}
-
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite
-
 import perso.stealthnet.core.cryptography.Hash
 
 @RunWith(classOf[JUnitRunner])

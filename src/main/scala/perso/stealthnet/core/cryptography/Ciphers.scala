@@ -50,21 +50,23 @@ object CipherMode extends Enumeration {
 
 object PaddingMode extends Enumeration {
 
-  val PKCS7, Zeros, ANSIX923, ISO10126, Unknown = Value
+  val None, PKCS7, Zeros, ANSIX923, ISO10126, Unknown = Value
 
   def id(v: PaddingMode.Value): Byte = v match {
-    case PKCS7 => 0x01 byteValue
-    case Zeros => 0x02 byteValue
-    case ANSIX923 => 0x03 byteValue
-    case ISO10126 => 0x04 byteValue
+    case None => 0x01 byteValue
+    case PKCS7 => 0x02 byteValue
+    case Zeros => 0x03 byteValue
+    case ANSIX923 => 0x04 byteValue
+    case ISO10126 => 0x05 byteValue
     case _ => 0xFF byteValue
   }
 
   def value(v: Byte): PaddingMode.Value = v match {
-    case 0x01 => PKCS7
-    case 0x02 => Zeros
-    case 0x03 => ANSIX923
-    case 0x04 => ISO10126
+    case 0x01 => None
+    case 0x02 => PKCS7
+    case 0x03 => Zeros
+    case 0x04 => ANSIX923
+    case 0x05 => ISO10126
     case _ => Unknown
   }
 
@@ -99,6 +101,7 @@ object Ciphers {
       case _ => throw new Exception()
     }
     val padding: BlockCipherPadding = rijndael.paddingMode match {
+      case PaddingMode.None => null
       case PaddingMode.PKCS7 => new PKCS7Padding()
       case PaddingMode.Zeros => new ZeroBytePadding()
       case PaddingMode.ANSIX923 => new X923Padding()
@@ -107,7 +110,10 @@ object Ciphers {
       case _ => throw new Exception()
     }
 
-    val cipher = new PaddedBufferedBlockCipher(blockCipher, padding)
+    val cipher = if (padding != null)
+        new PaddedBufferedBlockCipher(blockCipher, padding)
+      else
+        new BufferedBlockCipher(blockCipher)
     cipher.init(encryption, new ParametersWithIV(new KeyParameter(rijndael.key), rijndael.iv))
 
     cipher
