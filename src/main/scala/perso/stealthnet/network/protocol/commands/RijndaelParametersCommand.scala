@@ -1,9 +1,12 @@
-package perso.stealthnet.network.protocol
+package perso.stealthnet.network.protocol.commands
 
 import java.io.InputStream
-import perso.stealthnet.core.cryptography.RijndaelParameters
-import perso.stealthnet.core.cryptography.CipherMode
-import perso.stealthnet.core.cryptography.PaddingMode
+import perso.stealthnet.core.cryptography.{
+  RijndaelParameters,
+  CipherMode,
+  PaddingMode
+}
+import perso.stealthnet.network.protocol.{BitSize, Encryption, ProtocolStream}
 
 protected object RijndaelParametersCommand {
 
@@ -24,7 +27,7 @@ protected object RijndaelParametersCommand {
 
 object RijndaelParametersServerCommand extends CommandBuilder {
 
-  val code = 0x12 byteValue
+  val code: Byte = 0x12
 
   def read(input: InputStream): Command =
     new RijndaelParametersServerCommand(RijndaelParametersCommand.readRijndaelParameters(input))
@@ -33,7 +36,7 @@ object RijndaelParametersServerCommand extends CommandBuilder {
 
 object RijndaelParametersClientCommand extends CommandBuilder {
 
-  val code = 0x13 byteValue
+  val code: Byte = 0x13
 
   def read(input: InputStream): Command =
     new RijndaelParametersClientCommand(RijndaelParametersCommand.readRijndaelParameters(input))

@@ -24,7 +24,7 @@ object UUID {
 
     for (value <- List(uuid.getLeastSignificantBits(), uuid.getMostSignificantBits())) {
       for (idx <- 0 to 7) {
-        ((value >>> (idx * 8)) & 0xFF).byteValue() +=: result
+        ((value >>> (idx * 8)) & 0xFF).asInstanceOf[Byte] +=: result
       }
     }
 

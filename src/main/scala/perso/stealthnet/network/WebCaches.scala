@@ -1,10 +1,7 @@
 package perso.stealthnet.network
 
-import perso.stealthnet.util.EmptyLoggingContext
-import perso.stealthnet.util.Logging
-import perso.stealthnet.webservices.UpdateClient
-import perso.stealthnet.webservices.WebCacheClient
-import perso.stealthnet.util.Peer
+import perso.stealthnet.util.{EmptyLoggingContext, Logging, Peer}
+import perso.stealthnet.webservices.{UpdateClient, WebCacheClient}
 
 /* XXX - when needing connections, use both addPeer and getPeer ... */
 object WebCaches extends Logging with EmptyLoggingContext {

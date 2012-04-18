@@ -1,13 +1,12 @@
 package perso.stealthnet.core.cryptography
 
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class MessageSuite extends FunSuite {
 
-  DigestSuite.digests
   test("SHA digests") {
     for ((message, results) <- DigestSuite.digests) {
       val m = Message(message.getBytes("US-ASCII"))

@@ -1,9 +1,7 @@
 package perso.stealthnet.network
 
-import java.io.InputStream
 import java.net.ConnectException
 import java.nio.channels.ClosedChannelException
-import javax.crypto.{Cipher, CipherOutputStream}
 import org.jboss.netty.buffer.{
   ChannelBuffer,
   ChannelBufferOutputStream,
@@ -20,13 +18,11 @@ import org.jboss.netty.channel.group.ChannelGroup
 import org.jboss.netty.handler.timeout.ReadTimeoutException
 import perso.stealthnet.core.Core
 import perso.stealthnet.network.protocol.{
-  Command,
+  BitSize,
   Constants,
-  Encryption,
-  ProtocolStream,
-  RSAParametersClientCommand,
-  RSAParametersServerCommand
+  ProtocolStream
 }
+import perso.stealthnet.network.protocol.commands.Command
 import perso.stealthnet.util.{EmptyLoggingContext, Logging}
 
 class CommandHandler(val group: ChannelGroup)
@@ -64,7 +60,7 @@ class CommandHandler(val group: ChannelGroup)
     val cipherLength = buf.writerIndex - cipherStart
 
     /* set the cipher-text command length */
-    buf.setBytes(Constants.commandLengthOffset, ProtocolStream.convertShort(cipherLength))
+    buf.setBytes(Constants.commandLengthOffset, ProtocolStream.convertInteger(cipherLength, BitSize.Short))
 
     Channels.write(ctx, e.getFuture, output.buffer)
   }

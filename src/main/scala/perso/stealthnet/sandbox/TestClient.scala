@@ -5,7 +5,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import perso.stealthnet.network.StealthNetClient
 import perso.stealthnet.network.StealthNetConnectionsManager
 import perso.stealthnet.webservices.{UpdateClient, WebCacheClient}
-import perso.stealthnet.network.protocol.SearchCommand
+import perso.stealthnet.network.protocol.commands.SearchCommand
 import perso.stealthnet.network.WebCaches
 import perso.stealthnet.util.Peer
 

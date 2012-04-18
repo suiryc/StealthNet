@@ -8,8 +8,7 @@ import org.jboss.netty.channel.Channel
 import org.jboss.netty.channel.ChannelLocal
 import org.jboss.netty.channel.group.ChannelGroup
 import perso.stealthnet.core.cryptography.RijndaelParameters
-import perso.stealthnet.util.{EmptyLoggingContext, Logging, LoggingContext}
-import perso.stealthnet.util.Peer
+import perso.stealthnet.util.{EmptyLoggingContext, Logging, LoggingContext, Peer}
 
 class StealthNetConnectionParameters(
     var group: ChannelGroup = null,

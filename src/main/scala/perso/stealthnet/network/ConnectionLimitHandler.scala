@@ -1,17 +1,12 @@
 package perso.stealthnet.network
 
-import java.net.InetSocketAddress
-import org.jboss.netty.buffer.{ChannelBuffer, ChannelBuffers}
 import org.jboss.netty.channel.{
-  ChannelEvent,
   ChannelHandlerContext,
-  Channels,
-  ChannelState,
   ChannelStateEvent,
   SimpleChannelHandler
 }
-import perso.stealthnet.network.protocol.RSAParametersServerCommand
 import perso.stealthnet.core.Core
+import perso.stealthnet.network.protocol.commands.RSAParametersServerCommand
 import perso.stealthnet.util.{EmptyLoggingContext, Logging}
 
 class ConnectionLimitHandler

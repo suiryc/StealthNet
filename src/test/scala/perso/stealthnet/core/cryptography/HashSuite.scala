@@ -1,43 +1,36 @@
 package perso.stealthnet.core.cryptography
 
+import scala.collection.mutable.WrappedArray
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class HashSuite extends FunSuite {
 
   private val hex = "0123456789abcdef"
-  private val bytes = Array[Byte](0x01 byteValue, 0x23 byteValue, 0x45 byteValue,
-      0x67 byteValue, 0x89 byteValue, 0xab byteValue, 0xcd byteValue, 0xef byteValue)
+  private val bytes = Array[Byte](0x01, 0x23, 0x45, 0x67, 0x89.asInstanceOf[Byte],
+    0xab.asInstanceOf[Byte], 0xcd.asInstanceOf[Byte], 0xef.asInstanceOf[Byte])
 
   test("Hexadecimal representation shall match initial one") {
     val a = Hash(hex)
-    expect(hex) {
-      a.hex
-    }
+    assert(hex === a.hex)
   }
 
   test("Hexadecimal representation shall match initial bytes array") {
     val a = Hash(bytes)
-    expect(hex) {
-      a.hex
-    }
+    assert(hex === a.hex)
   }
 
   test("Bytes array shall match initial one") {
     val a = Hash(bytes)
-    expect(bytes) {
-      a.bytes
-    }
+    assert(bytes === a.bytes)
   }
 
   test("Bytes array shall match initial hexadecimal representation") {
     val a = Hash(hex)
-    /* Note: compare as List (content) and not as Array (instance) */
-    expect(bytes.toList) {
-      a.bytes.toList
-    }
+    /* Note: compare as Collection (content) and not as Array (instance) */
+    assert((bytes:WrappedArray[Byte]) === (a.bytes:WrappedArray[Byte]))
   }
 
   test("Object equality") {

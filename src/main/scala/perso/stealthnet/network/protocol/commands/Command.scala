@@ -1,4 +1,4 @@
-package perso.stealthnet.network.protocol
+package perso.stealthnet.network.protocol.commands
 
 import java.io.{
   ByteArrayInputStream,
@@ -6,7 +6,7 @@ import java.io.{
   InputStream,
   OutputStream
 }
-import javax.crypto.{Cipher, CipherInputStream, CipherOutputStream}
+import javax.crypto.{CipherInputStream, CipherOutputStream}
 import scala.collection.mutable.WrappedArray
 import perso.stealthnet.core.cryptography.{
   Algorithm,
@@ -15,8 +15,10 @@ import perso.stealthnet.core.cryptography.{
   RSAKeys
 }
 import perso.stealthnet.core.cryptography.Ciphers._
-import perso.stealthnet.network.StealthNetConnection
 import perso.stealthnet.core.cryptography.io.{BCCipherInputStream, BCCipherOutputStream}
+import perso.stealthnet.network.StealthNetConnection
+import perso.stealthnet.network.protocol.{BitSize, Constants, Encryption, ProtocolStream}
+import perso.stealthnet.network.protocol.exceptions.InvalidDataException
 import perso.stealthnet.util.{EmptyLoggingContext, HexDumper, Logging, UUID}
 
 trait CommandBuilder {

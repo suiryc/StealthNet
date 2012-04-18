@@ -1,11 +1,12 @@
-package perso.stealthnet.network.protocol
+package perso.stealthnet.network.protocol.commands
 
 import java.io.InputStream
 import perso.stealthnet.core.cryptography.Hash
+import perso.stealthnet.network.protocol.{Encryption, ProtocolStream}
 
 object SearchCommand extends CommandBuilder {
 
-  val code = 0x20 byteValue
+  val code: Byte = 0x20
 
   def read(input: InputStream): Command = {
     val commandId = ProtocolStream.readHash(input)

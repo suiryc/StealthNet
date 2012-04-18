@@ -21,7 +21,7 @@ object Hash {
     else
       hex
 
-    Hash(actual.grouped(2).map(Integer.parseInt(_, 16).byteValue).toArray)
+    Hash(actual.grouped(2).map(Integer.parseInt(_, 16).asInstanceOf[Byte]).toArray)
   }
 
   /** Implicit conversion from hexadecimal string. */

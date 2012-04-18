@@ -1,11 +1,11 @@
-package perso.stealthnet.network.protocol
+package perso.stealthnet.network.protocol.commands
 
 import java.io.InputStream
-import java.math.BigInteger
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.RSAPublicKeySpec
-import perso.stealthnet.core.cryptography.{Hash, RSAKeys}
+import perso.stealthnet.core.cryptography.RSAKeys
 import perso.stealthnet.core.cryptography.Ciphers._
+import perso.stealthnet.network.protocol.{Encryption, ProtocolStream}
 
 protected object RSAParametersCommand {
 
@@ -20,7 +20,7 @@ protected object RSAParametersCommand {
 
 object RSAParametersServerCommand extends CommandBuilder {
 
-  val code = 0x10 byteValue
+  val code: Byte = 0x10
 
   def read(input: InputStream): Command =
     new RSAParametersServerCommand(RSAParametersCommand.readKeySpec(input))
@@ -29,7 +29,7 @@ object RSAParametersServerCommand extends CommandBuilder {
 
 object RSAParametersClientCommand extends CommandBuilder {
 
-  val code = 0x11 byteValue
+  val code: Byte = 0x11
 
   def read(input: InputStream): Command =
     new RSAParametersClientCommand(RSAParametersCommand.readKeySpec(input))

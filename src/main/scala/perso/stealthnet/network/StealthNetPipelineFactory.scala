@@ -6,7 +6,6 @@ import org.jboss.netty.channel.{
   ChannelPipeline,
   ChannelPipelineFactory
 }
-import org.jboss.netty.channel.group.ChannelGroup
 import org.jboss.netty.handler.timeout.ReadTimeoutHandler
 import org.jboss.netty.util.{
   ExternalResourceReleasable,

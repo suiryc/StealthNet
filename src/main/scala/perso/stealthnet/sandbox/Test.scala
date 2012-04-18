@@ -30,6 +30,9 @@ object Test {
 
     Security.addProvider(new BouncyCastleProvider())
 
+    //println(org.scalatest.FunSuite.===(Array[Byte](0x01), Array[Byte](0x01)))
+    return
+
     if (false) {
     val input = "test".getBytes()
     val rijndael = RijndaelParameters()

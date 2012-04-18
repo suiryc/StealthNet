@@ -1,6 +1,5 @@
 package perso.stealthnet.network
 
-import java.net.InetSocketAddress
 import org.jboss.netty.channel.{
   ChannelHandlerContext,
   ChannelStateEvent,

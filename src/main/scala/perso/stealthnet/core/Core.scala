@@ -3,7 +3,7 @@ package perso.stealthnet.core
 import org.jboss.netty.channel.Channel
 import perso.stealthnet.network.StealthNetConnectionsManager
 import perso.stealthnet.core.cryptography.RijndaelParameters
-import perso.stealthnet.network.protocol.{
+import perso.stealthnet.network.protocol.commands.{
   Command,
   RSAParametersClientCommand,
   RSAParametersServerCommand,

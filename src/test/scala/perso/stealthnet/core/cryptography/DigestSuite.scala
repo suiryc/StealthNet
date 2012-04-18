@@ -1,8 +1,8 @@
 package perso.stealthnet.core.cryptography
 
 import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
 
 object DigestSuite {
   

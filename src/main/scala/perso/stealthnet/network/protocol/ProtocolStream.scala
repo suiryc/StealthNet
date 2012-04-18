@@ -1,12 +1,10 @@
 package perso.stealthnet.network.protocol
 
-import java.io.{
-  InputStream,
-  EOFException,
-  OutputStream
-}
+import java.io.{InputStream, EOFException, OutputStream}
 import java.math.BigInteger
 import perso.stealthnet.core.cryptography.Hash
+import perso.stealthnet.network.protocol.commands.CommandArgument
+import perso.stealthnet.network.protocol.exceptions.InvalidDataException
 
 object BitSize {
   val Byte = 8
@@ -15,24 +13,18 @@ object BitSize {
 
 object ProtocolStream {
 
-  /* XXX - do tests */
   /* XXX - since values are unsigned, we need to use more bits */
 
-  def convertShort(value: Int): Array[Byte] = {
-    if (value > 0xFFFF)
-      throw new IllegalArgumentException("Short value[" + value + "] exceeds capacity")
+  def convertInteger(value: Long, bitSize: Int): Array[Byte] = {
+    if (value > (-1L >>> (64 - bitSize)))
+      throw new IllegalArgumentException("Number value[" + value + "] exceeds capacity")
 
-    Array[Byte](
-      (value & 0xFF).byteValue,
-      ((value >>> 8) & 0xFF).byteValue
-    )
+    if (bitSize == 8)
+      Array[Byte](value.asInstanceOf[Byte])
+    else
+      (for (idx <- 0 until (bitSize / 8))
+        yield ((value >>> (8 * idx)) & 0xFF).asInstanceOf[Byte]).toArray
   }
-
-  /*
-  def convertShort(value: Array[Byte]): Int = {
-    (0xFF & value(0).asInstanceOf[Int]) | ((0xFF & value(1).asInstanceOf[Int]) << 8)
-  }
-  */
 
   def writeHeader(output: OutputStream): Int = {
     output.write(Constants.protocolRAW)
@@ -58,7 +50,7 @@ object ProtocolStream {
     if (value < 0)
       throw new EOFException()
     else
-      value byteValue
+      value.asInstanceOf[Byte]
   }
 
   def writeByte(output: OutputStream, value: Byte): Int = {
@@ -90,11 +82,7 @@ object ProtocolStream {
   }
 
   def writeInteger(output: OutputStream, value: Long, bitSize: Int): Int = {
-    if (value > (1L << (bitSize - 1)))
-      throw new IllegalArgumentException("Number value[" + value + "] exceeds capacity")
-
-    for (idx <- 0 until (bitSize / 8))
-      output.write(((value >>> (8 * idx)) & 0xFF).intValue)
+    output.write(convertInteger(value, bitSize))
     bitSize / 8
   }
 
@@ -182,7 +170,8 @@ object ProtocolStream {
       case v: BigInteger => writeBigInteger(output, v)
       case v: String => writeString(output, v)
       case v: Hash => writeHash(output, v)
-      case _ => 0
+      case _ => throw new InvalidDataException("Unhandled data[" + value + "] type[" +
+        (if (value != null) value.getClass().getName() else "") + "]")
     }
   }
 

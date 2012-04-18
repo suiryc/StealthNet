@@ -1,4 +1,4 @@
-package perso.stealthnet.network.protocol
+package perso.stealthnet.network.protocol.exceptions
 
 import perso.stealthnet.util.LoggingContext
 

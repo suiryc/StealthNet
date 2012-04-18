@@ -1,16 +1,19 @@
 package perso.stealthnet.network
 
 import java.io.EOFException
-import javax.crypto.{Cipher, CipherInputStream}
 import org.jboss.netty.buffer.{ChannelBuffer, ChannelBufferInputStream}
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.replay.{ReplayingDecoder, VoidEnum}
 import perso.stealthnet.core.Core
-import perso.stealthnet.core.cryptography.Hash
-import perso.stealthnet.network.protocol.{Command, Constants, ProtocolException, ProtocolStream}
+import perso.stealthnet.network.protocol.commands.Command
+import perso.stealthnet.network.protocol.exceptions.ProtocolException
 import perso.stealthnet.util.{EmptyLoggingContext, HexDumper, Logging}
 
-class CommandDecoder extends ReplayingDecoder[VoidEnum] with Logging with EmptyLoggingContext {
+class CommandDecoder
+  extends ReplayingDecoder[VoidEnum]
+  with Logging
+  with EmptyLoggingContext
+{
 
   /* XXX */
   private val debug = false
@@ -52,6 +55,7 @@ class CommandDecoder extends ReplayingDecoder[VoidEnum] with Logging with EmptyL
       command
     }
     catch {
+      /* XXX - closing channel is not done right away ... */
       case e: ProtocolException =>
         logger error(e.loggerContext, "Protocol exception", e)
         checkpoint()

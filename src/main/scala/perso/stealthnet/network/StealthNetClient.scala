@@ -1,21 +1,11 @@
 package perso.stealthnet.network
 
-import java.net.{InetAddress, InetSocketAddress}
+import java.net.InetSocketAddress
 import java.util.concurrent.Executors
 import org.jboss.netty.bootstrap.ClientBootstrap
-import org.jboss.netty.channel.{
-  Channels,
-  ChannelFactory,
-  ChannelFuture,
-  ChannelFutureListener,
-  ChannelPipeline,
-  ChannelPipelineFactory
-}
-import org.jboss.netty.channel.group.{ChannelGroup, DefaultChannelGroup}
+import org.jboss.netty.channel.{ChannelFactory, ChannelFuture}
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
-import org.jboss.netty.channel.group.ChannelGroupFuture
-import perso.stealthnet.util.Logging
-import perso.stealthnet.util.Peer
+import perso.stealthnet.util.{Logging, Peer}
 
 class StealthNetClient(val peer: Peer) extends Logging {
 

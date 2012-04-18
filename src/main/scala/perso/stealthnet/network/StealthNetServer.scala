@@ -3,13 +3,7 @@ package perso.stealthnet.network
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
 import org.jboss.netty.bootstrap.ServerBootstrap
-import org.jboss.netty.channel.{
-  Channel,
-  ChannelFactory,
-  ChannelPipeline,
-  ChannelPipelineFactory,
-  Channels
-}
+import org.jboss.netty.channel.{Channel, ChannelFactory}
 import org.jboss.netty.channel.group.{
   ChannelGroup,
   ChannelGroupFuture,

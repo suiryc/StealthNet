@@ -9,10 +9,10 @@ object Encryption extends Enumeration {
   val None, RSA, Rijndael, Unknown = Value
 
   def id(v: Encryption.Value): Byte = v match {
-    case None => 0x00 byteValue
-    case RSA => 0x01 byteValue
-    case Rijndael => 0x02 byteValue
-    case _ => 0xFF byteValue
+    case None => 0x00
+    case RSA => 0x01
+    case Rijndael => 0x02
+    case _ => 0xFF.asInstanceOf[Byte]
   }
 
   def value(v: Byte): Encryption.Value = v match {

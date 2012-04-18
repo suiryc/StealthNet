@@ -29,12 +29,12 @@ object CipherMode extends Enumeration {
   val CBC, ECB, OFB, CFB, CTS, Unknown = Value
 
   def id(v: CipherMode.Value): Byte = v match {
-    case CBC => 0x01 byteValue
-    case ECB => 0x02 byteValue
-    case OFB => 0x03 byteValue
-    case CFB => 0x04 byteValue
-    case CTS => 0x05 byteValue
-    case _ => 0xFF byteValue
+    case CBC => 0x01
+    case ECB => 0x02
+    case OFB => 0x03
+    case CFB => 0x04
+    case CTS => 0x05
+    case _ => 0xFF.asInstanceOf[Byte]
   }
 
   def value(v: Byte): CipherMode.Value = v match {
@@ -53,12 +53,12 @@ object PaddingMode extends Enumeration {
   val None, PKCS7, Zeros, ANSIX923, ISO10126, Unknown = Value
 
   def id(v: PaddingMode.Value): Byte = v match {
-    case None => 0x01 byteValue
-    case PKCS7 => 0x02 byteValue
-    case Zeros => 0x03 byteValue
-    case ANSIX923 => 0x04 byteValue
-    case ISO10126 => 0x05 byteValue
-    case _ => 0xFF byteValue
+    case None => 0x01
+    case PKCS7 => 0x02
+    case Zeros => 0x03
+    case ANSIX923 => 0x04
+    case ISO10126 => 0x05
+    case _ => 0xFF.asInstanceOf[Byte]
   }
 
   def value(v: Byte): PaddingMode.Value = v match {
