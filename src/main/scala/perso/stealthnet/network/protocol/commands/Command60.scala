@@ -4,9 +4,10 @@ import java.io.InputStream
 import perso.stealthnet.core.cryptography.Hash
 import perso.stealthnet.network.protocol.{Encryption, ProtocolStream}
 
-object Command50 extends CommandBuilder {
+/* XXX - same content as command 0x50 */
+object Command60 extends CommandBuilder {
 
-  val code: Byte = 0x50
+  val code: Byte = 0x60
 
   def argumentDefinitions = List(
     HashArgumentDefinition("commandId", 48),
@@ -24,13 +25,13 @@ object Command50 extends CommandBuilder {
     val sourceSearchID = arguments("sourceSearchID").asInstanceOf[Hash]
     val hashedFileHash = arguments("hashedFileHash").asInstanceOf[Hash]
 
-    new Command50(commandId, floodingHash, senderPeerID, sourceSearchID,
+    new Command60(commandId, floodingHash, senderPeerID, sourceSearchID,
       hashedFileHash)
   }
 
 }
 
-class Command50(
+class Command60(
   /* 48-bytes */
   val commandId: Hash,
   /* 48-bytes */
@@ -44,7 +45,7 @@ class Command50(
 ) extends Command
 {
 
-  val code = Command50.code
+  val code = Command60.code
 
   val encryption = Encryption.Rijndael
 
@@ -54,7 +55,7 @@ class Command50(
   assert(sourceSearchID != null)
   assert(hashedFileHash != null)
 
-  def argumentDefinitions = Command50.argumentDefinitions
+  def argumentDefinitions = Command60.argumentDefinitions
 
   def arguments = Map(
     "commandId" -> commandId,

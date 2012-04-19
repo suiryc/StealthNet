@@ -8,15 +8,23 @@ object Command23 extends CommandBuilder {
 
   val code: Byte = 0x23
 
-  def read(input: InputStream): Command = {
-    val commandId = ProtocolStream.readBytes(input, 48)
-    val senderPeerID = ProtocolStream.readBytes(input, 48)
-    val receiverPeerID = ProtocolStream.readBytes(input, 48)
-    val searchID = ProtocolStream.readBytes(input, 48)
+  def argumentDefinitions = List(
+    HashArgumentDefinition("commandId", 48),
+    HashArgumentDefinition("senderPeerID", 48),
+    HashArgumentDefinition("receiverPeerID", 48),
+    HashArgumentDefinition("searchID", 48),
+    ListArgumentDefinition("searchResults", SearchResult)
+  )
 
-    //new Command23(commandId, senderPeerID, receiverPeerID, searchID)
-    /* XXX */
-    null
+  def read(input: InputStream): Command = {
+    val arguments = readArguments(input)
+    val commandId = arguments("commandId").asInstanceOf[Hash]
+    val senderPeerID = arguments("senderPeerID").asInstanceOf[Hash]
+    val receiverPeerID = arguments("receiverPeerID").asInstanceOf[Hash]
+    val searchID = arguments("searchID").asInstanceOf[Hash]
+    val searchResults = arguments("searchResults").asInstanceOf[List[SearchResult]]
+
+    new Command23(commandId, senderPeerID, receiverPeerID, searchID, searchResults)
   }
 
 }
@@ -34,7 +42,7 @@ class Command23(
 ) extends Command
 {
 
-  val code = SearchCommand.code
+  val code = Command23.code
 
   val encryption = Encryption.Rijndael
 
@@ -44,25 +52,42 @@ class Command23(
   assert(searchID != null)
   assert(searchResults != null)
 
-  def arguments() = List(
-    "commandId" -> HashArgument(commandId, 48),
-    "senderPeerID" -> HashArgument(senderPeerID, 48),
-    "receiverPeerID" -> HashArgument(receiverPeerID, 48),
-    "searchID" -> HashArgument(searchID, 48),
-    "searchResults" -> ListArgument(searchResults)
+  def argumentDefinitions = Command23.argumentDefinitions
+
+  def arguments = Map(
+    "commandId" -> commandId,
+    "senderPeerID" -> senderPeerID,
+    "receiverPeerID" -> receiverPeerID,
+    "searchID" -> searchID,
+    "searchResults" -> searchResults
   )
 
 }
 
-object SearchResult extends CommandArgumentBuilder[SearchResult] {
+object SearchResult
+  extends CommandArgumentBuilder[SearchResult]
+  with CommandArgumentDefinitions
+{
+
+  def argumentDefinitions = List(
+    HashArgumentDefinition("fileHash", 64),
+    IntegerArgumentDefinition("fileSize", BitSize.Int),
+    StringArgumentDefinition("fileName"),
+    StringMapArgumentDefinition("metaData"),
+    StringArgumentDefinition("comment"),
+    ByteArgumentDefinition("rating")
+  )
 
   def read(input: InputStream): SearchResult = {
-    val fileHash = ProtocolStream.readBytes(input, 64)
-    val fileSize = ProtocolStream.readInteger(input, BitSize.Int)
-    val fileName = ProtocolStream.readString(input)
+    val arguments = readArguments(input)
+    val fileHash = arguments("fileHash").asInstanceOf[Hash]
+    val fileSize = arguments("fileSize").asInstanceOf[Long]
+    val fileName = arguments("fileName").asInstanceOf[String]
+    val metaData = arguments("metaData").asInstanceOf[Map[String, String]]
+    val comment = arguments("comment").asInstanceOf[String]
+    val rating = arguments("rating").asInstanceOf[Byte]
 
-    /* XXX */
-    null
+    new SearchResult(fileHash, fileSize, fileName, metaData, comment, rating)
   }
 
 }
@@ -70,10 +95,12 @@ object SearchResult extends CommandArgumentBuilder[SearchResult] {
 class SearchResult(
   /* 64-bytes */
   val fileHash: Hash,
+  /* unsigned int */
   val fileSize: Long,
   val fileName: String,
   val metaData: Map[String, String],
   val comment: String,
+  /* byte */
   val rating: Short
 ) extends CommandArguments
 {
@@ -84,13 +111,15 @@ class SearchResult(
   assert(comment != null)
   assert((rating >= 0) && (rating <= 3))
 
-  def arguments() = List(
-    "fileHash" -> HashArgument(fileHash, 64),
-    "fileSize" -> IntegerArgument(fileSize, BitSize.Int),
-    "fileName" -> StringArgument(fileName),
-    "metaData" -> StringMapArgument(metaData),
-    "comment" -> StringArgument(comment),
-    "rating" -> ByteArgument(rating.byteValue)
+  def argumentDefinitions = SearchResult.argumentDefinitions
+
+  def arguments = Map(
+    "fileHash" -> fileHash,
+    "fileSize" -> fileSize,
+    "fileName" -> fileName,
+    "metaData" -> metaData,
+    "comment" -> comment,
+    "rating" -> rating.byteValue
   )
 
 }

@@ -8,13 +8,23 @@ object Command21 extends CommandBuilder {
 
   val code: Byte = 0x21
 
+  def argumentDefinitions = List(
+    HashArgumentDefinition("commandId", 48),
+    IntegerArgumentDefinition("reserved", BitSize.Short),
+    IntegerArgumentDefinition("hopCount", BitSize.Short),
+    HashArgumentDefinition("senderPeerID", 48),
+    HashArgumentDefinition("searchID", 48),
+    StringArgumentDefinition("searchPattern")
+  )
+
   def read(input: InputStream): Command = {
-    val commandId = ProtocolStream.readBytes(input, 48)
-    val reserved = ProtocolStream.readInteger(input, BitSize.Short).intValue
-    val hopCount = ProtocolStream.readInteger(input, BitSize.Short).intValue
-    val senderPeerID = ProtocolStream.readBytes(input, 48)
-    val searchID = ProtocolStream.readBytes(input, 48)
-    val searchPattern = ProtocolStream.readString(input)
+    val arguments = readArguments(input)
+    val commandId = arguments("commandId").asInstanceOf[Hash]
+    val reserved = arguments("reserved").asInstanceOf[Long].intValue
+    val hopCount = arguments("hopCount").asInstanceOf[Long].intValue
+    val senderPeerID = arguments("senderPeerID").asInstanceOf[Hash]
+    val searchID = arguments("searchID").asInstanceOf[Hash]
+    val searchPattern = arguments("searchPattern").asInstanceOf[String]
 
     new Command21(commandId, reserved, hopCount, senderPeerID, searchID,
       searchPattern)
@@ -25,7 +35,9 @@ object Command21 extends CommandBuilder {
 class Command21(
   /* 48-bytes */
   val commandId: Hash,
+  /* unsigned short */
   val reserved: Int,
+  /* unsigned short */
   val hopCount: Int,
   /* 48-bytes */
   val senderPeerID: Hash,
@@ -44,13 +56,15 @@ class Command21(
   assert(searchID != null)
   assert(searchPattern != null)
 
-  def arguments() = List(
-    "commandId" -> HashArgument(commandId, 48),
-    "reserved" -> IntegerArgument(reserved, BitSize.Short),
-    "hopCount" -> IntegerArgument(hopCount, BitSize.Short),
-    "senderPeerID" -> HashArgument(senderPeerID, 48),
-    "searchID" -> HashArgument(searchID, 48),
-    "searchPattern" -> StringArgument(searchPattern)
+  def argumentDefinitions = Command21.argumentDefinitions
+
+  def arguments = Map(
+    "commandId" -> commandId,
+    "reserved" -> reserved,
+    "hopCount" -> hopCount,
+    "senderPeerID" -> senderPeerID,
+    "searchID" -> searchID,
+    "searchPattern" -> searchPattern
   )
 
 }

@@ -23,55 +23,67 @@ class CommandDecoder
   override protected def decode(ctx: ChannelHandlerContext, channel: Channel,
       buf: ChannelBuffer, state_unused: VoidEnum): Object = {
     val cnx = StealthNetConnectionsManager.getConnection(channel)
+    var encryptedDuplicate: ChannelBuffer = null
     try {
       val length = if (debug)
           builder.readHeader(cnx, new perso.stealthnet.util.DebugInputStream(new ChannelBufferInputStream(buf), cnx.loggerContext))
         else
           builder.readHeader(cnx, new ChannelBufferInputStream(buf))
-      if (length < 0) {
-        checkpoint()
+
+      /* Note: checkpoint since we could read data and advance one step */
+      checkpoint()
+      if (length < 0)
         return null
-      }
 
       val encrypted = buf.readBytes(length)
-      val encrypted2 = encrypted.duplicate()
+      encryptedDuplicate = encrypted.duplicate()
       val command = if (debug)
-          builder.readCommand(cnx, new perso.stealthnet.util.DebugInputStream(new ChannelBufferInputStream(encrypted), cnx.loggerContext))
+          builder.readCommand(cnx, new perso.stealthnet.util.DebugInputStream(new ChannelBufferInputStream(encrypted), cnx.loggerContext ++ List("step" -> "encrypted")))
         else
           builder.readCommand(cnx, new ChannelBufferInputStream(encrypted))
       checkpoint()
 
-      if (command == null) {
-        try {
-          val decrypted = builder.decryptCommand(cnx, encrypted2.array, encrypted2.readerIndex, encrypted2.readableBytes)
-          logger debug(cnx.loggerContext, "Command was:\n" + HexDumper.dump(decrypted))
-        }
-        catch {
-          case e =>
-            logger debug(cnx.loggerContext, "Could not decrypt command, encrypted data was:\n" + HexDumper.dump(encrypted2.array, encrypted2.readerIndex, encrypted2.readableBytes), e)
-        }
-      }
+      if (command == null)
+        logData(cnx, encryptedDuplicate)
 
       command
     }
     catch {
-      /* XXX - closing channel is not done right away ... */
-      case e: ProtocolException =>
-        logger error(e.loggerContext, "Protocol exception", e)
-        checkpoint()
-        channel.close
-        null
-
       case _ if (cnx.closing || Core.stopping) =>
         /* nothing to say here */
         checkpoint()
         null
 
+      /* XXX - closing channel is not done right away ... */
+      case e: ProtocolException =>
+        logger error(e.loggerContext, "Protocol exception", e)
+        checkpoint()
+        cnx.closing = true
+        channel.close
+        logData(cnx, encryptedDuplicate)
+        null
+
       case e: EOFException =>
         logger error(cnx.loggerContext, "Reached End-Of-Stream", e)
         checkpoint()
+        cnx.closing = true
         channel.close
+        logData(cnx, encryptedDuplicate)
         null
+    }
+  }
+
+  private def logData(cnx: StealthNetConnection, buf: ChannelBuffer) {
+    if (buf == null)
+      return
+
+    try {
+      val decrypted = builder.decryptCommand(cnx, buf.array, buf.readerIndex, buf.readableBytes)
+      logger debug(cnx.loggerContext, "Command was:\n" + HexDumper.dump(decrypted))
+    }
+    catch {
+      case e =>
+        logger debug(cnx.loggerContext, "Could not decrypt command, encrypted data was:\n" + HexDumper.dump(buf.array, buf.readerIndex, buf.readableBytes), e)
     }
   }
 

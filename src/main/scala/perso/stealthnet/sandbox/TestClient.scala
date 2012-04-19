@@ -34,6 +34,9 @@ object TestClient {
       client1 = new StealthNetClient(peer)
       client1.start()
 
+      Thread.sleep(10000)
+      client1.write(SearchCommand("intouchables"))
+
       Thread.sleep(120000)
     }
     finally {

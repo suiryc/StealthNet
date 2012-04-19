@@ -8,12 +8,21 @@ object SearchCommand extends CommandBuilder {
 
   val code: Byte = 0x20
 
+  def argumentDefinitions = List(
+    HashArgumentDefinition("commandId", 48),
+    HashArgumentDefinition("floodingHash", 48),
+    HashArgumentDefinition("senderPeerID", 48),
+    HashArgumentDefinition("searchID", 48),
+    StringArgumentDefinition("searchPattern")
+  )
+
   def read(input: InputStream): Command = {
-    val commandId = ProtocolStream.readBytes(input, 48)
-    val floodingHash = ProtocolStream.readBytes(input, 48)
-    val senderPeerID = ProtocolStream.readBytes(input, 48)
-    val searchID = ProtocolStream.readBytes(input, 48)
-    val searchPattern = ProtocolStream.readString(input)
+    val arguments = readArguments(input)
+    val commandId = arguments("commandId").asInstanceOf[Hash]
+    val floodingHash = arguments("floodingHash").asInstanceOf[Hash]
+    val senderPeerID = arguments("senderPeerID").asInstanceOf[Hash]
+    val searchID = arguments("searchID").asInstanceOf[Hash]
+    val searchPattern = arguments("searchPattern").asInstanceOf[String]
 
     new SearchCommand(commandId, floodingHash, senderPeerID, searchID,
       searchPattern)
@@ -63,12 +72,14 @@ class SearchCommand(
   assert(searchID != null)
   assert(searchPattern != null)
 
-  def arguments() = List(
-    "commandId" -> HashArgument(commandId, 48),
-    "floodingHash" -> HashArgument(floodingHash, 48),
-    "senderPeerID" -> HashArgument(senderPeerID, 48),
-    "searchID" -> HashArgument(searchID, 48),
-    "searchPattern" -> StringArgument(searchPattern)
+  def argumentDefinitions = SearchCommand.argumentDefinitions
+
+  def arguments = Map(
+    "commandId" -> commandId,
+    "floodingHash" -> floodingHash,
+    "senderPeerID" -> senderPeerID,
+    "searchID" -> searchID,
+    "searchPattern" -> searchPattern
   )
 
 }

@@ -59,7 +59,8 @@ class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
     }
 
     bufferOffset += 1
-    buffer(bufferOffset - 1)
+    /* Note: make sure to return the byte value in the range 0-255 as needed */
+    0xFF & buffer(bufferOffset - 1)
   }
 
   /* Note: parent class shall actually do the same */

@@ -43,6 +43,8 @@ class CommandHandler(val group: ChannelGroup)
     if (!e.getChannel.isOpen)
       return
 
+    /* XXX - queue messages (up to limit) until connection is established, then
+     * flush them */
     /* XXX - check we can write and block or drop ? */
     val cnx = StealthNetConnectionsManager.getConnection(e.getChannel)
     val command: Command = e.getMessage.asInstanceOf[Command]

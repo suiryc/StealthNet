@@ -9,34 +9,21 @@ import perso.stealthnet.network.protocol.{Encryption, ProtocolStream}
 
 protected object RSAParametersCommand {
 
-  def readKeySpec(input: InputStream): RSAPublicKeySpec = {
-    val modulus = ProtocolStream.readBigInteger(input)
-    val exponent = ProtocolStream.readBigInteger(input)
+  def argumentDefinitions = List(
+    BigIntegerArgumentDefinition("modulus"),
+    BigIntegerArgumentDefinition("exponent")
+  )
+
+  def readKeySpec(arguments: Map[String, Any]): RSAPublicKeySpec = {
+    val modulus = arguments("modulus").asInstanceOf[BigInt]
+    val exponent = arguments("exponent").asInstanceOf[BigInt]
 
     new RSAPublicKeySpec(modulus.bigInteger, exponent.bigInteger)
   }
 
 }
 
-object RSAParametersServerCommand extends CommandBuilder {
-
-  val code: Byte = 0x10
-
-  def read(input: InputStream): Command =
-    new RSAParametersServerCommand(RSAParametersCommand.readKeySpec(input))
-
-}
-
-object RSAParametersClientCommand extends CommandBuilder {
-
-  val code: Byte = 0x11
-
-  def read(input: InputStream): Command =
-    new RSAParametersClientCommand(RSAParametersCommand.readKeySpec(input))
-
-}
-
-abstract class RSAParametersCommand extends Command {
+protected abstract class RSAParametersCommand extends Command {
 
   val encryption = Encryption.None
 
@@ -44,10 +31,23 @@ abstract class RSAParametersCommand extends Command {
 
   assert(key != null)
 
-  def arguments() = List(
-    "modulus" -> BigIntegerArgument(key.getModulus),
-    "exponent" -> BigIntegerArgument(key.getPublicExponent)
+  def argumentDefinitions = RSAParametersCommand.argumentDefinitions
+
+  def arguments = Map(
+    "modulus" -> new BigInt(key.getModulus),
+    "exponent" -> new BigInt(key.getPublicExponent)
   )
+
+}
+
+object RSAParametersServerCommand extends CommandBuilder {
+
+  val code: Byte = 0x10
+
+  def argumentDefinitions = RSAParametersCommand.argumentDefinitions
+
+  def read(input: InputStream): Command =
+    new RSAParametersServerCommand(RSAParametersCommand.readKeySpec(readArguments(input)))
 
 }
 
@@ -58,6 +58,17 @@ class RSAParametersServerCommand(val key: RSAPublicKey)
   val code = RSAParametersServerCommand.code
 
   def this() = this(RSAKeys.publicKey)
+
+}
+
+object RSAParametersClientCommand extends CommandBuilder {
+
+  val code: Byte = 0x11
+
+  def argumentDefinitions = RSAParametersCommand.argumentDefinitions
+
+  def read(input: InputStream): Command =
+    new RSAParametersClientCommand(RSAParametersCommand.readKeySpec(readArguments(input)))
 
 }
 

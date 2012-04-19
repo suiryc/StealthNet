@@ -21,7 +21,7 @@ import perso.stealthnet.network.protocol.{BitSize, Constants, Encryption, Protoc
 import perso.stealthnet.network.protocol.exceptions.InvalidDataException
 import perso.stealthnet.util.{EmptyLoggingContext, HexDumper, Logging, UUID}
 
-trait CommandBuilder extends CommandArgumentBuilder[Command] {
+trait CommandBuilder extends CommandArgumentBuilder[Command] with CommandArgumentDefinitions {
 
   val code: Byte
 
@@ -32,11 +32,19 @@ object Command extends Logging with EmptyLoggingContext {
   private val builders: Map[Byte, CommandBuilder] =
     Map() ++ List[CommandBuilder](RSAParametersServerCommand, RSAParametersClientCommand,
         RijndaelParametersServerCommand, RijndaelParametersClientCommand,
-        SearchCommand, Command21, Command22).map(c => (c.code, c))
+        SearchCommand, Command21, Command22, Command23, Command50, Command51,
+        Command52, Command53, Command54, Command60, Command61, Command62,
+        Command63, Command64, Command70, Command71, Command72, Command74,
+        Command75, Command76, Command78, Command79, Command7A).map(c => (c.code, c))
 
   def generateId(): Hash = Message.hash(UUID.generate().bytes, Algorithm.SHA384)
 
+  def commandBuilder(code: Byte) = builders.get(code)
+
   class Builder {
+
+    /* XXX */
+    private val debug = false
 
     object State extends Enumeration {
       val Header, Encryption, Length, Content = Value
@@ -58,11 +66,15 @@ object Command extends Logging with EmptyLoggingContext {
         case Encryption.Rijndael =>
           new BCCipherInputStream(input, rijndaelDecrypter(cnx.remoteRijndaelParameters))
       }
+      val newInput = if (debug && (cipherInput ne input))
+          new perso.stealthnet.util.DebugInputStream(cipherInput, cnx.loggerContext ++ List("step" -> "decrypted"))
+        else
+          cipherInput
 
-      val code = ProtocolStream.readByte(cipherInput)
-      builders.get(code) match {
+      val code = ProtocolStream.readByte(newInput)
+      commandBuilder(code) match {
         case Some(builder) =>
-          builder.read(cipherInput)
+          builder.read(newInput)
 
         case None =>
           logger error(cnx.loggerContext, "Unknown command code[0x%02X] with encryption[%s]".format(code, encryption))

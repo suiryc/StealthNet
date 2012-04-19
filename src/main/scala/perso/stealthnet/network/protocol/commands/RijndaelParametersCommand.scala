@@ -10,14 +10,24 @@ import perso.stealthnet.network.protocol.{BitSize, Encryption, ProtocolStream}
 
 protected object RijndaelParametersCommand {
 
-  def readRijndaelParameters(input: InputStream): RijndaelParameters = {
-    val blockSize = ProtocolStream.readInteger(input, BitSize.Short).intValue
-    val feedbackSize = ProtocolStream.readInteger(input, BitSize.Short).intValue
-    val keySize = ProtocolStream.readInteger(input, BitSize.Short).intValue
-    val cipherMode = CipherMode.value(ProtocolStream.readByte(input))
-    val paddingMode = PaddingMode.value(ProtocolStream.readByte(input))
-    val iv = ProtocolStream.readBytes(input, BitSize.Byte)
-    val key = ProtocolStream.readBytes(input, BitSize.Byte)
+  def argumentDefinitions = List(
+    IntegerArgumentDefinition("blockSize", BitSize.Short),
+    IntegerArgumentDefinition("feedbackSize", BitSize.Short),
+    IntegerArgumentDefinition("keySize", BitSize.Short),
+    ByteArgumentDefinition("cipherMode"),
+    ByteArgumentDefinition("paddingMode"),
+    ByteArrayArgumentDefinition("iv", BitSize.Byte),
+    ByteArrayArgumentDefinition("key", BitSize.Byte)
+  )
+
+  def readRijndaelParameters(arguments: Map[String, Any]): RijndaelParameters = {
+    val blockSize = arguments("blockSize").asInstanceOf[Long].intValue
+    val feedbackSize = arguments("feedbackSize").asInstanceOf[Long].intValue
+    val keySize = arguments("keySize").asInstanceOf[Long].intValue
+    val cipherMode = CipherMode.value(arguments("cipherMode").asInstanceOf[Byte])
+    val paddingMode = PaddingMode.value(arguments("paddingMode").asInstanceOf[Byte])
+    val iv = arguments("iv").asInstanceOf[Array[Byte]]
+    val key = arguments("key").asInstanceOf[Array[Byte]]
 
     new RijndaelParameters(blockSize, feedbackSize, keySize, cipherMode,
       paddingMode, iv, key)
@@ -25,26 +35,7 @@ protected object RijndaelParametersCommand {
 
 }
 
-object RijndaelParametersServerCommand extends CommandBuilder {
-
-  val code: Byte = 0x12
-
-  def read(input: InputStream): Command =
-    new RijndaelParametersServerCommand(RijndaelParametersCommand.readRijndaelParameters(input))
-
-}
-
-object RijndaelParametersClientCommand extends CommandBuilder {
-
-  val code: Byte = 0x13
-
-  def read(input: InputStream): Command =
-    new RijndaelParametersClientCommand(RijndaelParametersCommand.readRijndaelParameters(input))
-
-}
-
-/* Note: public key modulus/exponent as big-endian byte array */
-abstract class RijndaelParametersCommand extends Command {
+protected abstract class RijndaelParametersCommand extends Command {
 
   val encryption = Encryption.RSA
 
@@ -52,15 +43,28 @@ abstract class RijndaelParametersCommand extends Command {
 
   assert(parameters != null)
 
-  def arguments() = List(
-    "blockSize" -> IntegerArgument(parameters.blockSize, BitSize.Short),
-    "feedbackSize" -> IntegerArgument(parameters.feedbackSize, BitSize.Short),
-    "keySize" -> IntegerArgument(parameters.keySize, BitSize.Short),
-    "cipherMode" -> ByteArgument(CipherMode.id(parameters.cipherMode)),
-    "paddingMode" -> ByteArgument(PaddingMode.id(parameters.paddingMode)),
-    "iv" -> ByteArrayArgument(parameters.iv, BitSize.Byte),
-    "key" -> ByteArrayArgument(parameters.key, BitSize.Byte)
+  def argumentDefinitions = RijndaelParametersCommand.argumentDefinitions
+
+  def arguments = Map(
+    "blockSize" -> parameters.blockSize,
+    "feedbackSize" -> parameters.feedbackSize,
+    "keySize" -> parameters.keySize,
+    "cipherMode" -> CipherMode.id(parameters.cipherMode),
+    "paddingMode" -> PaddingMode.id(parameters.paddingMode),
+    "iv" -> parameters.iv,
+    "key" -> parameters.key
   )
+
+}
+
+object RijndaelParametersServerCommand extends CommandBuilder {
+
+  val code: Byte = 0x12
+
+  def argumentDefinitions = RijndaelParametersCommand.argumentDefinitions
+
+  def read(input: InputStream): Command =
+    new RijndaelParametersServerCommand(RijndaelParametersCommand.readRijndaelParameters(readArguments(input)))
 
 }
 
@@ -69,6 +73,17 @@ class RijndaelParametersServerCommand(val parameters: RijndaelParameters)
 {
 
   val code = RijndaelParametersServerCommand.code
+
+}
+
+object RijndaelParametersClientCommand extends CommandBuilder {
+
+  val code: Byte = 0x13
+
+  def argumentDefinitions = RijndaelParametersCommand.argumentDefinitions
+
+  def read(input: InputStream): Command =
+    new RijndaelParametersClientCommand(RijndaelParametersCommand.readRijndaelParameters(readArguments(input)))
 
 }
 
