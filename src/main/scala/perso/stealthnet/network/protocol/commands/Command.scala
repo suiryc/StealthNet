@@ -21,11 +21,9 @@ import perso.stealthnet.network.protocol.{BitSize, Constants, Encryption, Protoc
 import perso.stealthnet.network.protocol.exceptions.InvalidDataException
 import perso.stealthnet.util.{EmptyLoggingContext, HexDumper, Logging, UUID}
 
-trait CommandBuilder {
+trait CommandBuilder extends CommandArgumentBuilder[Command] {
 
   val code: Byte
-
-  def read(input: InputStream): Command
 
 }
 
@@ -34,7 +32,7 @@ object Command extends Logging with EmptyLoggingContext {
   private val builders: Map[Byte, CommandBuilder] =
     Map() ++ List[CommandBuilder](RSAParametersServerCommand, RSAParametersClientCommand,
         RijndaelParametersServerCommand, RijndaelParametersClientCommand,
-        SearchCommand).map(c => (c.code, c))
+        SearchCommand, Command21, Command22).map(c => (c.code, c))
 
   def generateId(): Hash = Message.hash(UUID.generate().bytes, Algorithm.SHA384)
 
@@ -137,13 +135,11 @@ object Command extends Logging with EmptyLoggingContext {
 
 }
 
-abstract class Command extends Logging with EmptyLoggingContext {
+abstract class Command extends CommandArguments {
 
   val code: Byte
 
   val encryption: Encryption.Value
-
-  def arguments(): List[(String, Any)]
 
   def write(cnx: StealthNetConnection, output: OutputStream): Int = {
     /* plain-text section */
@@ -166,27 +162,11 @@ abstract class Command extends Logging with EmptyLoggingContext {
 
     var unencryptedLength: Int = 0
     unencryptedLength += ProtocolStream.writeByte(cipherOutput, code)
-    for (tuple <- arguments) {
-      val argument = tuple._2
-      /* XXX - really necessary ? (most, if not all, commands check ctor arguments) */
-      if (argument == null) {
-        logger error(cnx.loggerContext, "Missing command argument[" + tuple._1 + "] in " + this)
-        return -1
-      }
-
-      unencryptedLength += ProtocolStream.write(cipherOutput, argument)
-    }
+    unencryptedLength += write(cipherOutput)
     cipherOutput.flush()
     cipherOutput.close()
 
     unencryptedLength
   }
-
-  override def toString =
-    getClass.getSimpleName + arguments.map(tuple =>
-      tuple._1 + "=" + (tuple._2 match {
-      case v: Array[Byte] => "\n" + HexDumper.dump(v) + "\n"
-      case v => v
-    }))
 
 }

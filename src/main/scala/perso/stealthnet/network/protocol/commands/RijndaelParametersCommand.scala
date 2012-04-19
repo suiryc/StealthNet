@@ -52,14 +52,14 @@ abstract class RijndaelParametersCommand extends Command {
 
   assert(parameters != null)
 
-  def arguments(): List[(String, Any)] = List(
-    "blockSize" -> parameters.blockSize,
-    "feedbackSize" -> parameters.feedbackSize,
-    "keySize" -> parameters.keySize,
-    "cipherMode" -> CipherMode.id(parameters.cipherMode),
-    "paddingMode" -> PaddingMode.id(parameters.paddingMode),
-    "iv" -> new ByteArrayArgument(parameters.iv, BitSize.Byte),
-    "key" -> new ByteArrayArgument(parameters.key, BitSize.Byte)
+  def arguments() = List(
+    "blockSize" -> IntegerArgument(parameters.blockSize, BitSize.Short),
+    "feedbackSize" -> IntegerArgument(parameters.feedbackSize, BitSize.Short),
+    "keySize" -> IntegerArgument(parameters.keySize, BitSize.Short),
+    "cipherMode" -> ByteArgument(CipherMode.id(parameters.cipherMode)),
+    "paddingMode" -> ByteArgument(PaddingMode.id(parameters.paddingMode)),
+    "iv" -> ByteArrayArgument(parameters.iv, BitSize.Byte),
+    "key" -> ByteArrayArgument(parameters.key, BitSize.Byte)
   )
 
 }

@@ -2,13 +2,13 @@ package perso.stealthnet.network.protocol
 
 import java.io.{InputStream, EOFException, OutputStream}
 import java.math.BigInteger
-import perso.stealthnet.core.cryptography.Hash
 import perso.stealthnet.network.protocol.commands.CommandArgument
 import perso.stealthnet.network.protocol.exceptions.InvalidDataException
 
 object BitSize {
   val Byte = 8
   val Short = 16
+  val Int = 32
 }
 
 object ProtocolStream {
@@ -31,7 +31,9 @@ object ProtocolStream {
     Constants.protocolRAW.length
   }
 
-  private def _read(input: InputStream, buffer: Array[Byte], offset: Int, length: Int): Int =  {
+  private def _read(input: InputStream, buffer: Array[Byte], offset: Int,
+      length: Int): Int =
+  {
     var actual = 0
 
     while (actual < length) {
@@ -68,7 +70,8 @@ object ProtocolStream {
       bytes
   }
 
-  def writeBytes(output: OutputStream, value: Array[Byte], bitSize: Int): Int = {
+  def writeBytes(output: OutputStream, value: Array[Byte], bitSize: Int): Int =
+  {
     val sizeLength = writeInteger(output, value.length, bitSize)
     output.write(value)
     value.length + sizeLength
@@ -86,7 +89,7 @@ object ProtocolStream {
     bitSize / 8
   }
 
-  def readBigInteger(input: InputStream): BigInteger = {
+  def readBigInteger(input: InputStream): BigInt = {
     val length = readInteger(input, BitSize.Short).intValue
     val initial = readByte(input)
     val offset = if (initial < 0) 1 else 0
@@ -96,15 +99,15 @@ object ProtocolStream {
     if (_read(input, bytes, offset + 1, length - 1) != length - 1)
       throw new EOFException()
     else
-      new BigInteger(bytes)
+      BigInt(bytes)
   }
 
-  def writeBigInteger(output: OutputStream, value: BigInteger): Int = {
+  def writeBigInteger(output: OutputStream, value: BigInt): Int = {
     /* Note: big-endian byte array */
     val representation = value.toByteArray
-    /* Java's BigInteger may have a leading 0x00 byte because it is the sign
+    /* Scala's BigInt may have a leading 0x00 byte because it is the sign
      * value, while we expect an unsigned value in protocol; so strip it */
-    val bytes = if (representation(0) == 0)
+    val bytes = if ((representation(0) == 0) && (representation.length > 1))
         representation.tail
       else
         representation
@@ -132,25 +135,6 @@ object ProtocolStream {
     bytes.length + 2
   }
 
-  def readHash(input: InputStream): Hash = {
-    /* shall be a SHA384 hash */
-    val length = 48
-    val bytes = new Array[Byte](length)
-
-    if (_read(input, bytes, 0, length) != length)
-      throw new EOFException()
-    else
-      bytes
-  }
-
-  def writeHash(output: OutputStream, value: Hash): Int = {
-    /* shall be a SHA384 hash */
-    assert(value.bytes.length == 48)
-
-    output.write(value.bytes)
-    value.bytes.length
-  }
-
   def read(input: InputStream, length: Int): Array[Byte] = {
     val bytes = new Array[Byte](length)
 
@@ -160,19 +144,12 @@ object ProtocolStream {
       bytes
   }
 
-  def write(output: OutputStream, value: Any): Int = {
-    value match {
-      case v: CommandArgument => v.write(output)
-      case v: Byte => writeByte(output, v)
-      /* XXX - remove (replace by ByteArrayArgument) ? */
-      case v: Array[Byte] => writeBytes(output, v, BitSize.Short)
-      case v: Int => writeInteger(output, v, BitSize.Short)
-      case v: BigInteger => writeBigInteger(output, v)
-      case v: String => writeString(output, v)
-      case v: Hash => writeHash(output, v)
-      case _ => throw new InvalidDataException("Unhandled data[" + value + "] type[" +
-        (if (value != null) value.getClass().getName() else "") + "]")
-    }
+  def write(output: OutputStream, value: Array[Byte]): Int = {
+    output.write(value)
+    value.length
   }
+
+  def write(output: OutputStream, value: CommandArgument): Int =
+    value.write(output)
 
 }

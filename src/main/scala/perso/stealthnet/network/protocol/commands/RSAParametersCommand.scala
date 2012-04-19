@@ -13,7 +13,7 @@ protected object RSAParametersCommand {
     val modulus = ProtocolStream.readBigInteger(input)
     val exponent = ProtocolStream.readBigInteger(input)
 
-    new RSAPublicKeySpec(modulus, exponent)
+    new RSAPublicKeySpec(modulus.bigInteger, exponent.bigInteger)
   }
 
 }
@@ -44,9 +44,9 @@ abstract class RSAParametersCommand extends Command {
 
   assert(key != null)
 
-  def arguments(): List[(String, Any)] = List(
-    "modulus" -> key.getModulus,
-    "exponent" -> key.getPublicExponent
+  def arguments() = List(
+    "modulus" -> BigIntegerArgument(key.getModulus),
+    "exponent" -> BigIntegerArgument(key.getPublicExponent)
   )
 
 }
