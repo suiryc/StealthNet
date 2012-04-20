@@ -7,7 +7,7 @@ import scala.collection.mutable.HashSet
 import org.jboss.netty.channel.Channel
 import org.jboss.netty.channel.ChannelLocal
 import org.jboss.netty.channel.group.ChannelGroup
-import perso.stealthnet.core.cryptography.RijndaelParameters
+import perso.stealthnet.cryptography.RijndaelParameters
 import perso.stealthnet.util.{EmptyLoggingContext, Logging, LoggingContext, Peer}
 
 class StealthNetConnectionParameters(

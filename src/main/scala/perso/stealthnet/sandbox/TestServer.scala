@@ -25,7 +25,7 @@ object TestServer {
     try {
       StealthNetServer.start()
 
-      Thread.sleep(20000)
+      Thread.sleep(40000)
     }
     finally {
       StealthNetServer.stop()

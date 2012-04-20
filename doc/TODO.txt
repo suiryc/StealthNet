@@ -1,0 +1,31 @@
+Route commands
+See StealthNet source code.
+Strategy to hold/drop packets depending on time received queue length ?
+...
+
+Manage DL/UL limits
+How ? Netty or done by central object (e.g. Core) which blocks or drops routed data ?
+
+Manage global configuration
+Server port, ...
+Use Scala XML or parsing support to read/write file ?
+
+Have logging strategy ?
+Other than plain className loggers
+
+Manage logging
+Configuration file, programatically, or both ?
+
+Gather DL/UL speeds
+In central object (e.g. Core) ?
+How to make it so that it is easy to display it graphically (console or graphic) ? Gather transfer lengths by time (prevision of 1s, for the first X seconds, then per 5s, etc ...)
+
+Text-based interface
+Easy to do in Java/Scala ?
+Possible to have colors ?
+Possible to 'refresh' view (e.g. for speeds graphs) ?
+
+Manage data download/upload requests
+
+Have separate 'connection' timeouts
+One for handshaking, one for data reception

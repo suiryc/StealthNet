@@ -1,4 +1,4 @@
-package perso.stealthnet.core.cryptography
+package perso.stealthnet.cryptography
 
 /**
  * Hash class companion object.

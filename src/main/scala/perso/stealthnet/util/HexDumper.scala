@@ -1,7 +1,7 @@
 package perso.stealthnet.util
 
 import scala.collection.mutable.IndexedSeqView
-import perso.stealthnet.core.cryptography.Hash
+import perso.stealthnet.cryptography.Hash
 
 object HexDumper {
 

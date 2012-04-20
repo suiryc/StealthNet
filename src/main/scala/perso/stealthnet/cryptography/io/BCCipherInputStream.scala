@@ -1,4 +1,4 @@
-package perso.stealthnet.core.cryptography.io
+package perso.stealthnet.cryptography.io
 
 import java.io.{FilterInputStream, InputStream}
 import org.bouncycastle.crypto.BufferedBlockCipher

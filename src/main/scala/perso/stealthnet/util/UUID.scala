@@ -4,7 +4,7 @@ import java.util.{UUID => jUUID}
 
 import scala.collection.mutable.ListBuffer
 
-import perso.stealthnet.core.cryptography.Hash
+import perso.stealthnet.cryptography.Hash
 
 /**
  * UUID class companion object

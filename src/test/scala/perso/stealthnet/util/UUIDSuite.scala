@@ -5,7 +5,7 @@ import scala.collection.mutable.WrappedArray
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite
-import perso.stealthnet.core.cryptography.Hash
+import perso.stealthnet.cryptography.Hash
 
 @RunWith(classOf[JUnitRunner])
 class UUIDSuite extends FunSuite {

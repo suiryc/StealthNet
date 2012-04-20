@@ -3,8 +3,8 @@ package perso.stealthnet.network.protocol.commands
 import java.io.InputStream
 import java.security.interfaces.RSAPublicKey
 import java.security.spec.RSAPublicKeySpec
-import perso.stealthnet.core.cryptography.RSAKeys
-import perso.stealthnet.core.cryptography.Ciphers._
+import perso.stealthnet.cryptography.RSAKeys
+import perso.stealthnet.cryptography.Ciphers._
 import perso.stealthnet.network.protocol.{Encryption, ProtocolStream}
 
 protected object RSAParametersCommand {

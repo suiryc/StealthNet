@@ -1,6 +1,6 @@
 package perso.stealthnet.network.protocol
 
-import perso.stealthnet.core.cryptography.{PaddingMode, CipherMode}
+import perso.stealthnet.cryptography.{PaddingMode, CipherMode}
 
 object Constants {
 

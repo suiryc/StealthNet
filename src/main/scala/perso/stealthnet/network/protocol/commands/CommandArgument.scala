@@ -3,7 +3,7 @@ package perso.stealthnet.network.protocol.commands
 import java.io.{InputStream, OutputStream}
 import java.math.BigInteger
 import scala.collection.mutable
-import perso.stealthnet.core.cryptography.Hash
+import perso.stealthnet.cryptography.Hash
 import perso.stealthnet.network.protocol.{BitSize, ProtocolStream}
 import perso.stealthnet.util.HexDumper
 import perso.stealthnet.util.Logging

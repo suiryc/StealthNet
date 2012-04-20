@@ -8,14 +8,14 @@ import java.io.{
 }
 import javax.crypto.{CipherInputStream, CipherOutputStream}
 import scala.collection.mutable.WrappedArray
-import perso.stealthnet.core.cryptography.{
+import perso.stealthnet.cryptography.{
   Algorithm,
   Hash,
   Message,
   RSAKeys
 }
-import perso.stealthnet.core.cryptography.Ciphers._
-import perso.stealthnet.core.cryptography.io.{BCCipherInputStream, BCCipherOutputStream}
+import perso.stealthnet.cryptography.Ciphers._
+import perso.stealthnet.cryptography.io.{BCCipherInputStream, BCCipherOutputStream}
 import perso.stealthnet.network.StealthNetConnection
 import perso.stealthnet.network.protocol.{BitSize, Constants, Encryption, ProtocolStream}
 import perso.stealthnet.network.protocol.exceptions.InvalidDataException

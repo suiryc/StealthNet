@@ -1,4 +1,4 @@
-package perso.stealthnet.core.cryptography
+package perso.stealthnet.cryptography
 
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite

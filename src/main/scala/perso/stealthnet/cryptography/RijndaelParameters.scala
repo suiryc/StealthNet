@@ -1,4 +1,4 @@
-package perso.stealthnet.core.cryptography
+package perso.stealthnet.cryptography
 
 import java.security.SecureRandom
 import perso.stealthnet.network.protocol.Constants

@@ -1,7 +1,7 @@
 package perso.stealthnet.network.protocol.commands
 
 import java.io.InputStream
-import perso.stealthnet.core.cryptography.Hash
+import perso.stealthnet.cryptography.Hash
 import perso.stealthnet.network.protocol.{Encryption, ProtocolStream}
 
 object Command76 extends CommandBuilder {

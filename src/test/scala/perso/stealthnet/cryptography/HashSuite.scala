@@ -1,4 +1,4 @@
-package perso.stealthnet.core.cryptography
+package perso.stealthnet.cryptography
 
 import scala.collection.mutable.WrappedArray
 import org.junit.runner.RunWith

@@ -1,4 +1,4 @@
-package perso.stealthnet.core.cryptography
+package perso.stealthnet.cryptography
 
 import java.security.{Key, KeyFactory, PrivateKey, PublicKey}
 import java.security.interfaces.RSAPublicKey

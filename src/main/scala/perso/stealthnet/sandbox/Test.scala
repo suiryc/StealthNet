@@ -2,13 +2,13 @@ package perso.stealthnet.sandbox
 
 import java.security.Security
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import perso.stealthnet.core.cryptography.Ciphers
-import perso.stealthnet.core.cryptography.RijndaelParameters
-import perso.stealthnet.core.cryptography.io.BCCipherOutputStream
+import perso.stealthnet.cryptography.Ciphers
+import perso.stealthnet.cryptography.RijndaelParameters
+import perso.stealthnet.cryptography.io.BCCipherOutputStream
 import java.io.ByteArrayOutputStream
-import perso.stealthnet.core.cryptography.io.BCCipherInputStream
+import perso.stealthnet.cryptography.io.BCCipherInputStream
 import java.io.ByteArrayInputStream
-import perso.stealthnet.core.cryptography.RSAKeys
+import perso.stealthnet.cryptography.RSAKeys
 import javax.crypto.CipherOutputStream
 import javax.crypto.CipherInputStream
 import java.security.spec.RSAPublicKeySpec
@@ -16,12 +16,12 @@ import perso.stealthnet.util.HexDumper
 import java.security.KeyFactory
 import java.security.spec.RSAPrivateKeySpec
 import java.math.BigInteger
-import perso.stealthnet.core.cryptography.Hash
+import perso.stealthnet.cryptography.Hash
 import java.security.interfaces.RSAPrivateKey
 import perso.stealthnet.network.protocol.ProtocolStream
 import perso.stealthnet.util.DebugInputStream
-import perso.stealthnet.core.cryptography.CipherMode
-import perso.stealthnet.core.cryptography.PaddingMode
+import perso.stealthnet.cryptography.CipherMode
+import perso.stealthnet.cryptography.PaddingMode
 import perso.stealthnet.network.protocol.commands.Command
 
 object Test {

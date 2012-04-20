@@ -1,7 +1,7 @@
 package perso.stealthnet.network.protocol.commands
 
 import java.io.InputStream
-import perso.stealthnet.core.cryptography.{
+import perso.stealthnet.cryptography.{
   RijndaelParameters,
   CipherMode,
   PaddingMode
