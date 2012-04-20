@@ -1,38 +1,58 @@
 package perso.stealthnet.core
 
-import org.jboss.netty.channel.Channel
-import perso.stealthnet.network.StealthNetConnectionsManager
-import perso.stealthnet.cryptography.RijndaelParameters
+import perso.stealthnet.network.{StealthNetConnection, StealthNetConnectionsManager}
+import perso.stealthnet.cryptography.{RijndaelParameters, RSAKeys}
 import perso.stealthnet.network.protocol.commands._
 import perso.stealthnet.util.{EmptyLoggingContext, Logging}
 
+/**
+ * Core object, processing commands.
+ */
 object Core extends Logging with EmptyLoggingContext {
 
+  /** Whether we are stopping the application. */
   var stopping = false
 
-  def processCommand(command: Command, channel: Channel) {
+  /**
+   * Process incoming command.
+   *
+   * @param command command to process
+   * @param cnx related connection
+   */
+  def processCommand(command: Command, cnx: StealthNetConnection) {
     command match {
       case c: RSAParametersServerCommand =>
-        /* XXX - check this is not our public key */
-        StealthNetConnectionsManager.getConnection(channel).remoteRSAKey = c.key
-        channel.write(new RSAParametersClientCommand())
+        if ((c.key.getModulus == RSAKeys.publicKey.getModulus)
+            && (c.key.getPublicExponent == RSAKeys.publicKey.getPublicExponent))
+        {
+          /* connecting to ourselves ? */
+          cnx.closing = true
+          cnx.channel.close
+          return
+        }
+        cnx.remoteRSAKey = c.key
+        cnx.channel.write(new RSAParametersClientCommand())
 
       case c: RSAParametersClientCommand =>
-        /* XXX - check this is not our public key */
-        val cnx = StealthNetConnectionsManager.getConnection(channel)
+        if ((c.key.getModulus == RSAKeys.publicKey.getModulus)
+            && (c.key.getPublicExponent == RSAKeys.publicKey.getPublicExponent))
+        {
+          /* connecting to ourselves ? */
+          cnx.closing = true
+          cnx.channel.close
+          return
+        }
         cnx.remoteRSAKey = c.key
         cnx.localRijndaelParameters = RijndaelParameters()
-        channel.write(new RijndaelParametersServerCommand(cnx.localRijndaelParameters))
+        cnx.channel.write(new RijndaelParametersServerCommand(cnx.localRijndaelParameters))
 
       case c: RijndaelParametersServerCommand =>
-        val cnx = StealthNetConnectionsManager.getConnection(channel)
         cnx.remoteRijndaelParameters = c.parameters
         cnx.localRijndaelParameters = RijndaelParameters()
-        channel.write(new RijndaelParametersClientCommand(cnx.localRijndaelParameters))
+        cnx.channel.write(new RijndaelParametersClientCommand(cnx.localRijndaelParameters))
         cnx.established = true
 
       case c: RijndaelParametersClientCommand =>
-        val cnx = StealthNetConnectionsManager.getConnection(channel)
         cnx.remoteRijndaelParameters = c.parameters
         cnx.established = true
 
@@ -103,7 +123,7 @@ object Core extends Logging with EmptyLoggingContext {
         /* XXX - handle */
 
       case _ =>
-        logger error("Unhandled command " + command)
+        logger error(cnx.loggerContext, "Unhandled command " + command)
     }
   }
 

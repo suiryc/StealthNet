@@ -55,14 +55,19 @@ trait Digest {
  */
 object Digest {
 
+  /** Gets a new SHA-1 message digest. */
   def sha1: Digest = new MessageDigest(Algorithm.SHA1)
 
+  /** Gets a new SHA-256 message digest. */
   def sha256: Digest = new MessageDigest(Algorithm.SHA256)
 
+  /** Gets a new SHA-384 message digest. */
   def sha384: Digest = new MessageDigest(Algorithm.SHA384)
 
+  /** Gets a new SHA-512 message digest. */
   def sha512: Digest = new MessageDigest(Algorithm.SHA512)
 
+  /** Factory method from algorithm. */
   def apply(algorithm: Algorithm.Value): Digest = algorithm match {
     case Algorithm.SHA1 => sha1
     case Algorithm.SHA256 => sha256

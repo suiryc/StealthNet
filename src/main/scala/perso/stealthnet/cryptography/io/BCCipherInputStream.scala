@@ -3,20 +3,23 @@ package perso.stealthnet.cryptography.io
 import java.io.{FilterInputStream, InputStream}
 import org.bouncycastle.crypto.BufferedBlockCipher
 
-/* Note: BouncyCastle's implementation may not be optimal with some kind of
- * InputStream (may read one byte at a time).
+/**
+ * Input stream filter decrypting data using <i>BouncyCastle</i>.
+ * <p>
+ * Note: <i>BouncyCastle</i>'s <tt>CipherInputStream</tt> may not be optimal with some
+ * kind of <tt>InputStream</tt> (may read one byte at a time).
  */
 class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
   extends FilterInputStream(input)
 {
 
-  var inputBuffer: Array[Byte] = new Array[Byte](1024)
-  var buffer: Array[Byte] = new Array[Byte](1024)
-  var bufferLength = 0
-  var bufferOffset = 0
-  var finalized = false
+  protected var inputBuffer: Array[Byte] = new Array[Byte](1024)
+  protected var buffer: Array[Byte] = new Array[Byte](1024)
+  protected var bufferLength = 0
+  protected var bufferOffset = 0
+  protected var finalized = false
 
-  private def fillBuffer(last: Boolean): Int = {
+  protected def fillBuffer(last: Boolean): Int = {
     if (finalized)
       return -1
 
@@ -50,8 +53,14 @@ class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
       bufferLength
   }
 
+  /**
+   * {@inheritDoc}
+   */
   override def available(): Int = bufferLength - bufferOffset
 
+  /**
+   * {@inheritDoc}
+   */
   override def read(): Int = {
     while (available == 0) {
       if (fillBuffer(false) == -1)
@@ -63,11 +72,17 @@ class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
     0xFF & buffer(bufferOffset - 1)
   }
 
-  /* Note: parent class shall actually do the same */
+  /**
+   * {@inheritDoc}
+   */
   override def read(b: Array[Byte]) = read(b, 0, b.length)
 
+  /**
+   * {@inheritDoc}
+   *
+   * XXX - shall we check parameters (as does parent class) ?
+   */
   override def read(b: Array[Byte], off: Int, len: Int): Int = {
-    /* XXX - shall we check parameters (as does parent class) ? */
     if (len <= 0)
       return 0
 
@@ -83,6 +98,12 @@ class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
     length
   }
 
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This implementation do <tt>read</tt> if necessary until the requested
+   * number of bytes are skipped of EOF is reached.
+   */
   override def skip(n: Long): Long = {
     if (n <= 0)
       return 0
@@ -101,11 +122,22 @@ class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
     n - remaining
   }
 
+  /**
+   * {@inheritDoc}
+   * <p>
+   * This implementation does <tt>reset</tt> the cipher.
+   */
   override def close() {
     cipher.reset()
     super.close()
   }
 
+  /**
+   * This input stream does not support <tt>mark</tt> and <tt>reset</tt>
+   * methods.
+   *
+   * @return <tt>false</tt>
+   */
   override def markSupported(): Boolean = false
 
 }

@@ -4,10 +4,11 @@ import java.io.EOFException
 import org.jboss.netty.buffer.{ChannelBuffer, ChannelBufferInputStream}
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.replay.{ReplayingDecoder, VoidEnum}
+import perso.stealthnet.Config
 import perso.stealthnet.core.Core
 import perso.stealthnet.network.protocol.commands.Command
 import perso.stealthnet.network.protocol.exceptions.ProtocolException
-import perso.stealthnet.util.{EmptyLoggingContext, HexDumper, Logging}
+import perso.stealthnet.util.{DebugInputStream, EmptyLoggingContext, HexDumper, Logging}
 
 class CommandDecoder
   extends ReplayingDecoder[VoidEnum]
@@ -15,18 +16,23 @@ class CommandDecoder
   with EmptyLoggingContext
 {
 
-  /* XXX */
-  private val debug = false
-
   private var builder: Command.Builder = new Command.Builder()
 
   override protected def decode(ctx: ChannelHandlerContext, channel: Channel,
-      buf: ChannelBuffer, state_unused: VoidEnum): Object = {
+      buf: ChannelBuffer, state_unused: VoidEnum): Object =
+  {
     val cnx = StealthNetConnectionsManager.getConnection(channel)
+    if (cnx.closing || Core.stopping) {
+      /* drop data */
+      buf.skipBytes(buf.readableBytes)
+      checkpoint()
+      return null
+    }
+
     var encryptedDuplicate: ChannelBuffer = null
     try {
-      val length = if (debug)
-          builder.readHeader(cnx, new perso.stealthnet.util.DebugInputStream(new ChannelBufferInputStream(buf), cnx.loggerContext))
+      val length = if (Config.debugIO)
+          builder.readHeader(cnx, new DebugInputStream(new ChannelBufferInputStream(buf), cnx.loggerContext ++ List("step" -> "header")))
         else
           builder.readHeader(cnx, new ChannelBufferInputStream(buf))
 
@@ -37,8 +43,8 @@ class CommandDecoder
 
       val encrypted = buf.readBytes(length)
       encryptedDuplicate = encrypted.duplicate()
-      val command = if (debug)
-          builder.readCommand(cnx, new perso.stealthnet.util.DebugInputStream(new ChannelBufferInputStream(encrypted), cnx.loggerContext ++ List("step" -> "encrypted")))
+      val command = if (Config.debugIO)
+          builder.readCommand(cnx, new DebugInputStream(new ChannelBufferInputStream(encrypted), cnx.loggerContext ++ List("step" -> "encrypted")))
         else
           builder.readCommand(cnx, new ChannelBufferInputStream(encrypted))
       checkpoint()
@@ -54,19 +60,11 @@ class CommandDecoder
         checkpoint()
         null
 
-      /* XXX - closing channel is not done right away ... */
-      case e: ProtocolException =>
-        logger error(e.loggerContext, "Protocol exception", e)
+      case e =>
+        logger error(cnx.loggerContext, "Protocol issue", e)
         checkpoint()
         cnx.closing = true
-        channel.close
-        logData(cnx, encryptedDuplicate)
-        null
-
-      case e: EOFException =>
-        logger error(cnx.loggerContext, "Reached End-Of-Stream", e)
-        checkpoint()
-        cnx.closing = true
+        /* Note: closing channel is not done right away ... */
         channel.close
         logData(cnx, encryptedDuplicate)
         null

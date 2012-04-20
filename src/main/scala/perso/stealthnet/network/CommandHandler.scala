@@ -33,10 +33,11 @@ class CommandHandler(val group: ChannelGroup)
 
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     val command: Command = e.getMessage.asInstanceOf[Command]
+    val cnx = StealthNetConnectionsManager.getConnection(e.getChannel)
 
-    logger debug(StealthNetConnectionsManager.getConnection(e.getChannel).loggerContext, "Received command: " + command)
+    logger debug(cnx.loggerContext, "Received command: " + command)
 
-    Core.processCommand(command, e.getChannel)
+    Core.processCommand(command, cnx)
   }
 
   override def writeRequested(ctx: ChannelHandlerContext, e: MessageEvent) {

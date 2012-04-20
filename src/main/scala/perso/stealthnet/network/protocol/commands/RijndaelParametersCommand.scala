@@ -7,6 +7,7 @@ import perso.stealthnet.cryptography.{
   PaddingMode
 }
 import perso.stealthnet.network.protocol.{BitSize, Encryption, ProtocolStream}
+import perso.stealthnet.network.protocol.exceptions.InvalidDataException
 
 protected object RijndaelParametersCommand {
 
@@ -24,8 +25,22 @@ protected object RijndaelParametersCommand {
     val blockSize = arguments("blockSize").asInstanceOf[Long].intValue
     val feedbackSize = arguments("feedbackSize").asInstanceOf[Long].intValue
     val keySize = arguments("keySize").asInstanceOf[Long].intValue
-    val cipherMode = CipherMode.value(arguments("cipherMode").asInstanceOf[Byte])
-    val paddingMode = PaddingMode.value(arguments("paddingMode").asInstanceOf[Byte])
+    val cipherModeId = arguments("cipherMode").asInstanceOf[Byte]
+    val cipherMode = CipherMode.value(cipherModeId) match {
+      case Some(mode) =>
+        mode
+
+      case None =>
+        throw new InvalidDataException("Invalid cipher mode[%02X]".format(cipherModeId))
+    }
+    val paddingModeId = arguments("paddingMode").asInstanceOf[Byte]
+    val paddingMode = PaddingMode.value(paddingModeId) match {
+      case Some(mode) =>
+        mode
+
+      case None =>
+        throw new InvalidDataException("Invalid padding mode[%02X]".format(paddingModeId))
+    }
     val iv = arguments("iv").asInstanceOf[Array[Byte]]
     val key = arguments("key").asInstanceOf[Array[Byte]]
 

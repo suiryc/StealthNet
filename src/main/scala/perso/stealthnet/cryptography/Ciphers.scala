@@ -23,59 +23,105 @@ import org.bouncycastle.crypto.modes.{
 }
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 
+/**
+ * Cipher modes.
+ * <p>
+ * The different modes and values are the ones available in C# (on which rely
+ * original StealthNet).
+ */
 object CipherMode extends Enumeration {
 
-  /** Available modes */
-  val CBC, ECB, OFB, CFB, CTS, Unknown = Value
+  /** Available modes. */
+  val CBC, ECB, OFB, CFB, CTS = Value
 
+  /**
+   * Gets the id (protocol value) corresponding to a mode.
+   *
+   * @param v the mode for which to determine the id
+   * @return the corresponding protocol value
+   */
   def id(v: CipherMode.Value): Byte = v match {
     case CBC => 0x01
     case ECB => 0x02
     case OFB => 0x03
     case CFB => 0x04
     case CTS => 0x05
-    case _ => 0xFF.asInstanceOf[Byte]
   }
 
-  def value(v: Byte): CipherMode.Value = v match {
-    case 0x01 => CBC
-    case 0x02 => ECB
-    case 0x03 => OFB
-    case 0x04 => CFB
-    case 0x05 => CTS
-    case _ => Unknown
+  /**
+   * Gets the mode corresponding to an id.
+   *
+   * @param v the id for which to determine the mode
+   * @return an option value containing the corresponding mode,
+   *   or None if none exists
+   */
+  def value(v: Byte): Option[CipherMode.Value] = v match {
+    case 0x01 => Some(CBC)
+    case 0x02 => Some(ECB)
+    case 0x03 => Some(OFB)
+    case 0x04 => Some(CFB)
+    case 0x05 => Some(CTS)
+    case _ => None
   }
 
 }
 
+/**
+ * Padding modes.
+ * <p>
+ * The different modes and values are the ones available in C# (on which rely
+ * original StealthNet).
+ */
 object PaddingMode extends Enumeration {
 
-  val None, PKCS7, Zeros, ANSIX923, ISO10126, Unknown = Value
+  /** Available modes. */
+  val None, PKCS7, Zeros, ANSIX923, ISO10126 = Value
 
+  /**
+   * Gets the id (protocol value) corresponding to a mode.
+   *
+   * @param v the mode for which to determine the id
+   * @return the corresponding protocol value
+   */
   def id(v: PaddingMode.Value): Byte = v match {
     case None => 0x01
     case PKCS7 => 0x02
     case Zeros => 0x03
     case ANSIX923 => 0x04
     case ISO10126 => 0x05
-    case _ => 0xFF.asInstanceOf[Byte]
   }
 
-  def value(v: Byte): PaddingMode.Value = v match {
-    case 0x01 => None
-    case 0x02 => PKCS7
-    case 0x03 => Zeros
-    case 0x04 => ANSIX923
-    case 0x05 => ISO10126
-    case _ => Unknown
+  /**
+   * Gets the mode corresponding to an id.
+   *
+   * @param v the id for which to determine the mode
+   * @return an option value containing the corresponding mode,
+   *   or None if none exists
+   */
+  def value(v: Byte): Option[PaddingMode.Value] = v match {
+    case 0x01 => Some(None)
+    case 0x02 => Some(PKCS7)
+    case 0x03 => Some(Zeros)
+    case 0x04 => Some(ANSIX923)
+    case 0x05 => Some(ISO10126)
+    case _ => scala.None
   }
 
 }
 
+/**
+ * Cipher helper.
+ * <p>
+ * Provides necessary ciphers (RSA and Rijndael) to encrypt/decrypt data.
+ *
+ * XXX - should we call BouncyCastle directly for RSA, instead of using JCE ?
+ */
 object Ciphers {
 
-  /* XXX - call BouncyCastle directly for RSA ? */
-
+  /**
+   * Implicit conversion from RSA public key specification (modulus and
+   * exponent) to proper RSA public key.
+   */
   implicit def keySpecToKey(keySpec: RSAPublicKeySpec): RSAPublicKey =
     KeyFactory.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME).generatePublic(keySpec).asInstanceOf[RSAPublicKey]
 
@@ -85,11 +131,24 @@ object Ciphers {
     cipher
   }
 
+  /**
+   * Gets new RSA cipher to encrypt.
+   *
+   * @param key RSA public key
+   * @return RSA cipher using key to encrypt
+   */
   def rsaEncrypter(key: PublicKey) = rsaCipher(key, Cipher.ENCRYPT_MODE)
 
+  /**
+   * Gets new RSA cipher to decrypt.
+   *
+   * @param key RSA private key
+   * @return RSA cipher using key to decrypt
+   */
   def rsaDecrypter(key: PrivateKey) = rsaCipher(key, Cipher.DECRYPT_MODE)
 
-  private def rijndaelCipher(rijndael: RijndaelParameters, encryption: Boolean): BufferedBlockCipher = {
+  private def rijndaelCipher(rijndael: RijndaelParameters, encryption: Boolean): BufferedBlockCipher =
+  {
     val engine = new RijndaelEngine(rijndael.blockSize)
     val blockCipher: BlockCipher = rijndael.cipherMode match {
       case CipherMode.CBC => new CBCBlockCipher(engine)
@@ -97,8 +156,6 @@ object Ciphers {
       case CipherMode.OFB => new OFBBlockCipher(engine, rijndael.feedbackSize)
       case CipherMode.CFB => new CFBBlockCipher(engine, rijndael.feedbackSize)
       case CipherMode.CTS => return new CTSBlockCipher(engine)
-      /* XXX - cleanly handle issue */
-      case _ => throw new Exception()
     }
     val padding: BlockCipherPadding = rijndael.paddingMode match {
       case PaddingMode.None => null
@@ -106,8 +163,6 @@ object Ciphers {
       case PaddingMode.Zeros => new ZeroBytePadding()
       case PaddingMode.ANSIX923 => new X923Padding()
       case PaddingMode.ISO10126 => new ISO10126d2Padding()
-      /* XXX - cleanly handle issue */
-      case _ => throw new Exception()
     }
 
     val cipher = if (padding != null)
@@ -119,8 +174,22 @@ object Ciphers {
     cipher
   }
 
-  def rijndaelEncrypter(rijndael: RijndaelParameters) = rijndaelCipher(rijndael, true)
+  /**
+   * Gets new Rijndael cipher to encrypt.
+   *
+   * @param rijndael Rijndael parameters
+   * @return Rijndael cipher using parameters to encrypt
+   */
+  def rijndaelEncrypter(rijndael: RijndaelParameters) =
+    rijndaelCipher(rijndael, true)
 
-  def rijndaelDecrypter(rijndael: RijndaelParameters) = rijndaelCipher(rijndael, false)
+  /**
+   * Gets new Rijndael cipher to decrypt.
+   *
+   * @param rijndael Rijndael parameters
+   * @return Rijndael cipher using parameters to decrypt
+   */
+  def rijndaelDecrypter(rijndael: RijndaelParameters) =
+    rijndaelCipher(rijndael, false)
 
 }
