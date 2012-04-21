@@ -20,10 +20,11 @@ Gather DL/UL speeds
 In central object (e.g. Core) ?
 How to make it so that it is easy to display it graphically (console or graphic) ? Gather transfer lengths by time (prevision of 1s, for the first X seconds, then per 5s, etc ...)
 
-Text-based interface
+Text-based interface ?
 Easy to do in Java/Scala ?
 Possible to have colors ?
 Possible to 'refresh' view (e.g. for speeds graphs) ?
+Or better: Web access to administration interface :)
 
 Manage data download/upload requests
 
