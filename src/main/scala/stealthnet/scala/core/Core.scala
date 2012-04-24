@@ -1,7 +1,14 @@
 package stealthnet.scala.core
 
-import stealthnet.scala.network.{StealthNetConnection, StealthNetConnectionsManager}
+import java.util.{Timer, TimerTask}
+import stealthnet.scala.Config
 import stealthnet.scala.cryptography.{RijndaelParameters, RSAKeys}
+import stealthnet.scala.network.{
+  StealthNetConnection,
+  StealthNetConnectionsManager,
+  StealthNetServer,
+  WebCaches
+}
 import stealthnet.scala.network.protocol.commands._
 import stealthnet.scala.util.{EmptyLoggingContext, Logging}
 
@@ -10,24 +17,27 @@ import stealthnet.scala.util.{EmptyLoggingContext, Logging}
  */
 object Core extends Logging with EmptyLoggingContext {
 
+  /** Shared timer. */
+  val timer = new Timer()
+
   /** Whether we are stopping the application. */
   var stopping = false
 
   /**
-   * Process incoming command.
+   * Process received command.
    *
+   * @todo handle all commands
    * @param command command to process
    * @param cnx related connection
    */
-  def processCommand(command: Command, cnx: StealthNetConnection) {
+  def receivedCommand(command: Command, cnx: StealthNetConnection) {
     command match {
       case c: RSAParametersServerCommand =>
         if ((c.key.getModulus == RSAKeys.publicKey.getModulus)
             && (c.key.getPublicExponent == RSAKeys.publicKey.getPublicExponent))
         {
-          /* connecting to ourselves ? */
-          cnx.closing = true
-          cnx.channel.close
+          /* connecting to ourself ? */
+          cnx.close()
           return
         }
         cnx.remoteRSAKey = c.key
@@ -37,9 +47,8 @@ object Core extends Logging with EmptyLoggingContext {
         if ((c.key.getModulus == RSAKeys.publicKey.getModulus)
             && (c.key.getPublicExponent == RSAKeys.publicKey.getPublicExponent))
         {
-          /* connecting to ourselves ? */
-          cnx.closing = true
-          cnx.channel.close
+          /* connecting to ourself ? */
+          cnx.close()
           return
         }
         cnx.remoteRSAKey = c.key
@@ -56,75 +65,112 @@ object Core extends Logging with EmptyLoggingContext {
         cnx.remoteRijndaelParameters = c.parameters
         cnx.established = true
 
+      case c: SearchCommand =>
+
       case c: Command21 =>
-        /* XXX - handle */
 
       case c: Command22 =>
-        /* XXX - handle */
 
       case c: Command23 =>
-        /* XXX - handle */
 
       case c: Command50 =>
-        /* XXX - handle */
 
       case c: Command51 =>
-        /* XXX - handle */
 
       case c: Command52 =>
-        /* XXX - handle */
 
       case c: Command53 =>
-        /* XXX - handle */
 
       case c: Command54 =>
-        /* XXX - handle */
 
       case c: Command60 =>
-        /* XXX - handle */
 
       case c: Command61 =>
-        /* XXX - handle */
 
       case c: Command62 =>
-        /* XXX - handle */
 
       case c: Command63 =>
-        /* XXX - handle */
 
       case c: Command64 =>
-        /* XXX - handle */
 
       case c: Command70 =>
-        /* XXX - handle */
 
       case c: Command71 =>
-        /* XXX - handle */
 
       case c: Command72 =>
-        /* XXX - handle */
 
       case c: Command74 =>
-        /* XXX - handle */
 
       case c: Command75 =>
-        /* XXX - handle */
 
       case c: Command76 =>
-        /* XXX - handle */
 
       case c: Command78 =>
-        /* XXX - handle */
 
       case c: Command79 =>
-        /* XXX - handle */
 
       case c: Command7A =>
-        /* XXX - handle */
 
       case _ =>
         logger error(cnx.loggerContext, "Unhandled command " + command)
     }
+  }
+
+  /**
+   * Starts core.
+   *
+   * Shall be called only once.
+   *
+   * Performs the following actions:
+   *   - refreshes the WebCaches list
+   *   - starts the ''StealthNet'' server
+   *   - starts the connections manager
+   *
+   * @see [[stealthnet.scala.network.WebCaches]]
+   * @see [[stealthnet.scala.network.StealthNetServer]]
+   * @see [[stealthnet.scala.network.StealthNetConnectionsManager]]
+   */
+  def start() {
+    stopping = false
+    WebCaches.refresh()
+    if (Config.enableServerConnections)
+      StealthNetServer.start()
+    StealthNetConnectionsManager.start()
+  }
+
+  /**
+   * Stops core.
+   *
+   * Performs the following actions:
+   *   - removes ourself from WebCaches if necessary
+   *     - this is also done by the connections manager upon stopping, but it is
+   *       better to do it as soon as possible
+   *   - stops the ''StealthNet'' server
+   *   - stops the connections manager
+   *   - terminates the shared timer
+   *
+   * @see [[stealthnet.scala.network.WebCaches]]
+   * @see [[stealthnet.scala.network.StealthNetServer]]
+   * @see [[stealthnet.scala.network.StealthNetConnectionsManager]]
+   */
+  def stop() {
+    stopping = true
+    WebCaches.removePeer()
+    StealthNetServer.stop()
+    StealthNetConnectionsManager.stop()
+    timer.cancel()
+  }
+
+  /**
+   * Schedules a delayed task.
+   *
+   * @param action task to perform
+   * @param delay delay (ms) before performing task
+   */
+  def schedule(action: => Unit, delay: Long) {
+    timer.schedule(new TimerTask() {
+      def run() = action
+    }, delay)
   }
 
 }

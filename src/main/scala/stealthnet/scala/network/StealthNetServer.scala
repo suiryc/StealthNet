@@ -10,6 +10,7 @@ import org.jboss.netty.channel.group.{
   DefaultChannelGroup
 }
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
+import stealthnet.scala.Config
 import stealthnet.scala.core.Core
 import stealthnet.scala.util.{EmptyLoggingContext, Logging}
 
@@ -28,15 +29,11 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
     bootstrap.setPipelineFactory(StealthNetPipelineFactory(new StealthNetConnectionParameters(group = group)))
 
     /* XXX - useful ? */
-    bootstrap.setOption("child.tcpNoDelay", true);
-    bootstrap.setOption("child.keepAlive", true);
+    bootstrap.setOption("child.tcpNoDelay", true)
+    bootstrap.setOption("child.keepAlive", true)
  
-    var channel: Channel = bootstrap.bind(new InetSocketAddress(6097))
+    var channel: Channel = bootstrap.bind(new InetSocketAddress(Config.serverPort))
     group.add(channel)
-    /* XXX - can be used to pause accept ? */
-    /* XXX - or do as StealthNet: removePeer once limit reached */
-    //channel.close().awaitUninterruptibly()
-    //channel = bootstrap.bind(new InetSocketAddress(8080))
   }
 
   def stop() {

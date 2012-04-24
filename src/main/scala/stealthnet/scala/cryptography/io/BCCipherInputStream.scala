@@ -7,28 +7,39 @@ import org.bouncycastle.crypto.BufferedBlockCipher
  * Input stream filter decrypting data using ''BouncyCastle''.
  *
  * @note ''BouncyCastle'' provides `CipherInputStream` which may not be
- * optimal with some kind of `InputStream` (may read one byte at a time).
+ *   optimal with some kind of `InputStream` (may read one byte at a time).
  */
 class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
   extends FilterInputStream(input)
 {
 
+  /** Filtered input stream buffer. */
   protected var inputBuffer: Array[Byte] = new Array[Byte](1024)
+  /** Decrypted data buffer. */
   protected var buffer: Array[Byte] = new Array[Byte](1024)
-  protected var bufferLength = 0
+  /** Decrypted data buffer end offset. */
+  protected var bufferEnd = 0
+  /** Decrypted data buffer start offset. */
   protected var bufferOffset = 0
+  /** Whether cipher was finalized (''EOF'' reached on filtered input stream). */
   protected var finalized = false
 
-  protected def fillBuffer(last: Boolean): Int = {
+  /**
+   * Reads encrypted data and decrypt them.
+   *
+   * This method resets the decrypted data buffer and thus should only be
+   * called when it is empty.
+   *
+   * @return available decrypted bytes, or `-1` for ''EOF''
+   */
+  protected def fillBuffer(): Int = {
     if (finalized)
       return -1
 
-    var doLast = last
     val read = input.read(inputBuffer)
-    if (read == -1)
-      doLast = true
+    val eof = if (read == -1) true else false
 
-    val length = if (doLast)
+    val length = if (eof)
         cipher.getOutputSize(if (read > 0) read else 0)
       else
         cipher.getUpdateOutputSize(read)
@@ -37,23 +48,23 @@ class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
       buffer = new Array[Byte](length)
 
     bufferOffset = 0
-    bufferLength = if (read > 0)
+    bufferEnd = if (read > 0)
         cipher.processBytes(inputBuffer, 0, read, buffer, 0)
       else
         0
 
-    if (doLast) {
-      bufferLength += cipher.doFinal(buffer, bufferLength)
+    if (eof) {
+      bufferEnd += cipher.doFinal(buffer, bufferEnd)
       finalized = true
     }
 
-    if (finalized && (bufferLength == 0))
+    if (finalized && (bufferEnd == 0))
       -1
     else
-      bufferLength
+      bufferEnd
   }
 
-  override def available(): Int = bufferLength - bufferOffset
+  override def available(): Int = bufferEnd - bufferOffset
 
   /**
    * @todo test suite to ensure that 0x80-0xFF bytes are correctly read as
@@ -61,7 +72,7 @@ class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
    */
   override def read(): Int = {
     while (available == 0) {
-      if (fillBuffer(false) == -1)
+      if (fillBuffer() == -1)
         return -1
     }
 
@@ -80,7 +91,7 @@ class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
       return 0
 
     while (available == 0) {
-      if (fillBuffer(false) == -1)
+      if (fillBuffer() == -1)
         return -1
     }
 
@@ -93,7 +104,7 @@ class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
 
   /**
    * This implementation do `read` if necessary until the requested number
-   * of bytes are skipped or `EOF` is reached.
+   * of bytes are skipped or ''EOF'' is reached.
    */
   override def skip(n: Long): Long = {
     if (n <= 0)

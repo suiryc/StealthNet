@@ -8,7 +8,12 @@ import stealthnet.scala.Config
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.protocol.commands.Command
 import stealthnet.scala.network.protocol.exceptions.ProtocolException
-import stealthnet.scala.util.{DebugInputStream, EmptyLoggingContext, HexDumper, Logging}
+import stealthnet.scala.util.{
+  DebugInputStream,
+  EmptyLoggingContext,
+  HexDumper,
+  Logging
+}
 
 /**
  * Upstream command decoder.
@@ -19,15 +24,17 @@ class CommandDecoder
   with EmptyLoggingContext
 {
 
+  /** Command builder. */
   private var builder: Command.Builder = new Command.Builder()
 
   /**
-   * Reads incoming data and rebuilds a [[stealthnet.scala.network.protocol.commandss.Command]].
+   * Reads incoming data and rebuilds a
+   * [[stealthnet.scala.network.protocol.commands.Command]].
    */
   override protected def decode(ctx: ChannelHandlerContext, channel: Channel,
     buf: ChannelBuffer, state_unused: VoidEnum): Object =
   {
-    val cnx = StealthNetConnectionsManager.getConnection(channel)
+    val cnx = StealthNetConnectionsManager.connection(channel)
     if (cnx.closing || Core.stopping) {
       /* drop data */
       buf.skipBytes(buf.readableBytes)
@@ -69,14 +76,22 @@ class CommandDecoder
       case e =>
         logger error(cnx.loggerContext, "Protocol issue", e)
         checkpoint()
-        cnx.closing = true
         /* Note: closing channel is not done right away ... */
-        channel.close
+        cnx.close()
         logData(cnx, encryptedDuplicate)
         null
     }
   }
 
+  /**
+   * Logs command data.
+   *
+   * Used upon issue to help investigate cause. Tries to decrypt data, otherwise
+   * just logs encrypted data.
+   *
+   * @param cnx connection
+   * @param buf channel buffer
+   */
   private def logData(cnx: StealthNetConnection, buf: ChannelBuffer) {
     if (buf == null)
       return
@@ -88,6 +103,7 @@ class CommandDecoder
     catch {
       case e =>
         logger debug(cnx.loggerContext, "Could not decrypt command, encrypted data was:\n" + HexDumper.dump(buf.array, buf.readerIndex, buf.readableBytes), e)
+        logger debug(cnx.loggerContext, "Decrypting data are: " + builder.decryptingData(cnx))
     }
   }
 

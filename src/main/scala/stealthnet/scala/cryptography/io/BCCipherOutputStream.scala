@@ -7,13 +7,14 @@ import org.bouncycastle.crypto.BufferedBlockCipher
  * Output stream filter encrypting data using ''BouncyCastle''.
  *
  * @note ''BouncyCastle'' provides `CipherOutputStream` which may be sufficient,
- * but we stay consistent with the fact we have
- * [[stealthnet.scala.cryptography.io.BCCipherInputStream]].
+ *   but we stay consistent with the fact we have
+ *   [[stealthnet.scala.cryptography.io.BCCipherInputStream]].
  */
 class BCCipherOutputStream(output: OutputStream, cipher: BufferedBlockCipher)
   extends FilterOutputStream(output)
 {
 
+  /** Encrypted data buffer. */
   protected var buffer = new Array[Byte](1024)
 
   override def write(b: Int) {

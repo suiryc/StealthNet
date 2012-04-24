@@ -56,6 +56,8 @@ object Command extends Logging with EmptyLoggingContext {
 
     private def readContent(cnx: StealthNetConnection, input: InputStream): Command = {
       /* cipher-text section */
+      /* XXX - is it more efficient to create the decrypter once and reset it
+       * when needed ? */
       val cipherInput: InputStream = encryption match {
         case Encryption.None =>
           input
@@ -106,6 +108,17 @@ object Command extends Logging with EmptyLoggingContext {
       }
       output.close()
       output.toByteArray()
+    }
+
+    def decryptingData(cnx: StealthNetConnection): String = encryption match {
+      case Encryption.None =>
+        "Data is not encrypted"
+
+      case Encryption.RSA =>
+        RSAKeys.privateKey.toString()
+
+      case Encryption.Rijndael =>
+        cnx.remoteRijndaelParameters.toString()
     }
 
     def readCommand(cnx: StealthNetConnection, input: InputStream): Command = {
@@ -161,6 +174,8 @@ abstract class Command extends CommandArguments {
     output.flush()
 
     /* cipher-text section */
+    /* XXX - is it more efficient to create the encrypter once and reset it
+     * when needed ? */
     val cipherOutput: OutputStream = encryption match {
       case Encryption.None =>
         output

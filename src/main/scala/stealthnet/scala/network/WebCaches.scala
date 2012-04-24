@@ -34,27 +34,29 @@ object WebCaches extends Logging with EmptyLoggingContext {
       addedPeer = false
     }
 
-  def addPeer() = {
-    removePeer()
+  def addPeer() = 
+    if (!addedPeer) {
+      removePeer()
 
-    for (webCache <- webCaches)
-      /* XXX - Configuration */
-      WebCacheClient.addPeer(webCache, 6097)
+      for (webCache <- webCaches)
+        /* XXX - Configuration */
+        WebCacheClient.addPeer(webCache, 6097)
 
-    addedPeer = true
-  }
-
-  def getPeer(): Peer = {
-    /* XXX - iterate over WebCaches for successive calls */
-    for (webCache <- webCaches)
-      WebCacheClient.getPeer(webCache) match {
-        case Some(peer) =>
-          return peer
-
-        case None =>
-      }
-
-      return null
+      addedPeer = true
     }
+
+  def getPeer(): Option[Peer] = {
+    /* XXX - iterate over WebCaches for successive calls */
+    for (webCache <- webCaches) {
+      WebCacheClient.getPeer(webCache) match {
+        case None =>
+
+        case v =>
+          return v
+      }
+    }
+
+    return None
+  }
 
 }

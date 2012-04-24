@@ -14,6 +14,7 @@ object Algorithm extends Enumeration {
   /** Available algorithm: ''SHA-512''. */
   val SHA512 = Value
 
+  /** Map between algorithm values and names. */
   private val names: Map[Value, String] = Map(
     SHA1 -> "SHA-1",
     SHA256 -> "SHA-256",
@@ -84,7 +85,7 @@ object Digest {
 }
 
 /**
- * Message digest derived from `Java`.
+ * Message digest derived from ''Java''.
  */
 private class MessageDigest(val algorithm: Algorithm.Value)
   extends Digest

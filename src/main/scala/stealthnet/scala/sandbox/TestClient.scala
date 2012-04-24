@@ -8,6 +8,8 @@ import stealthnet.scala.webservices.{UpdateClient, WebCacheClient}
 import stealthnet.scala.network.protocol.commands.SearchCommand
 import stealthnet.scala.network.WebCaches
 import stealthnet.scala.util.Peer
+import stealthnet.scala.Config
+import stealthnet.scala.core.Core
 
 object TestClient {
 
@@ -17,32 +19,20 @@ object TestClient {
     Security.addProvider(new BouncyCastleProvider())
     StealthNetConnectionsManager.start()
 
-    val online = false
-    val peerRe = "^([^:]+):(\\d+)$".r
-    val peer = if (online) {
-        WebCaches.refresh()
-        WebCaches.addPeer()
-        val result = WebCaches.getPeer()
-        WebCaches.removePeer()
-        result
-      }
-      else
-        Peer("127.0.0.1", 6097)
-
-    var client1: StealthNetClient = null
+    var client: StealthNetClient = null
     try {
-      client1 = new StealthNetClient(peer)
-      client1.start()
+      client = new StealthNetClient(Peer("127.0.0.1", Config.serverPort))
+      client.start()
 
       Thread.sleep(10000)
-      client1.write(SearchCommand("intouchables"))
+      client.write(SearchCommand("intouchables"))
 
-      Thread.sleep(120000)
+      Thread.sleep(10000)
     }
     finally {
-      if (client1 != null)
-        client1.stop()
-      StealthNetConnectionsManager.stop()
+      if (client != null)
+        client.stop()
+      Core.stop()
     }
   }
 

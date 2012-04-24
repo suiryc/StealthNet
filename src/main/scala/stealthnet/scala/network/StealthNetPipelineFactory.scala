@@ -6,26 +6,57 @@ import org.jboss.netty.channel.{
   ChannelPipeline,
   ChannelPipelineFactory
 }
-import org.jboss.netty.handler.timeout.ReadTimeoutHandler
+import org.jboss.netty.handler.timeout.{
+  ReadTimeoutHandler,
+  WriteTimeoutHandler
+}
 import org.jboss.netty.util.{
   ExternalResourceReleasable,
   HashedWheelTimer,
   Timer
 }
+import stealthnet.scala.Config
 
+/**
+ * ''StealthNet'' pipeline factory companion object.
+ *
+ * Holds a shared timer, used by timeout handlers.
+ */
 object StealthNetPipelineFactory extends ExternalResourceReleasable {
 
+  /** Shared timer. */
   val timer: Timer = new HashedWheelTimer()
 
+  /** Factory method. */
   def apply(parameters: StealthNetConnectionParameters) =
     new StealthNetPipelineFactory(parameters)
 
+  /**
+   * Releases external resources.
+   *
+   * Stops shared timer.
+   *
+   * This method has to be called before closing the application.
+   */
   def releaseExternalResources() {
     timer.stop()
   }
 
 }
 
+/**
+ * ''StealthNet'' pipeline factory.
+ *
+ * Creates a pipeline with the following handlers (in order):
+ *   - [[stealthnet.scala.network.ParametersHandler]]
+ *   - [[stealthnet.scala.network.ConnectionLimitHandler]]
+ *   - [[org.jboss.netty.handler.timeout.ReadTimeoutHandler]]
+ *     - with configured read timeout
+ *   - [[org.jboss.netty.handler.timeout.WriteTimeoutHandler]]
+ *     - with configured write timeout
+ *   - [[stealthnet.scala.network.CommandDecoder]]
+ *   - [[stealthnet.scala.network.CommandHandler]]
+ */
 class StealthNetPipelineFactory(val parameters: StealthNetConnectionParameters)
   extends ChannelPipelineFactory
 {
@@ -45,9 +76,15 @@ class StealthNetPipelineFactory(val parameters: StealthNetConnectionParameters)
     /* upstream connection limiter */
     pipeline.addLast("connection limiter", new ConnectionLimitHandler())
 
-    /* upstream timeout handler */
-    /* XXX - possible to change timeout dynamically */
-    pipeline.addLast("timeout handler", new ReadTimeoutHandler(StealthNetPipelineFactory.timer, 30000, TimeUnit.MILLISECONDS))
+    /* upstream read timeout handler */
+    pipeline.addLast("read timeout handler",
+      new ReadTimeoutHandler(StealthNetPipelineFactory.timer,
+        Config.readTimeout, TimeUnit.MILLISECONDS))
+
+    /* downstream write timeout handler */
+    pipeline.addLast("write timeout handler",
+      new WriteTimeoutHandler(StealthNetPipelineFactory.timer,
+        Config.writeTimeout, TimeUnit.MILLISECONDS))
 
     /* upstream command decoder */
     pipeline.addLast("command decoder", new CommandDecoder())

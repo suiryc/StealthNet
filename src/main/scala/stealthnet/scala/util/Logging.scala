@@ -8,8 +8,10 @@ trait Logging extends LoggingContext {
 
 trait LoggingContext {
 
+  /** Log context type. */
   type LogContext = List[(String, Any)]
 
+  /** General log context. */
   protected def loggerContext: LogContext
 
 }

@@ -15,7 +15,10 @@ import org.jboss.netty.channel.{
   SimpleChannelHandler
 }
 import org.jboss.netty.channel.group.ChannelGroup
-import org.jboss.netty.handler.timeout.ReadTimeoutException
+import org.jboss.netty.handler.timeout.{
+  ReadTimeoutException,
+  WriteTimeoutException
+}
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.protocol.{
   BitSize,
@@ -25,31 +28,49 @@ import stealthnet.scala.network.protocol.{
 import stealthnet.scala.network.protocol.commands.Command
 import stealthnet.scala.util.{EmptyLoggingContext, Logging}
 
+/**
+ * Upstream/downstream command handler.
+ *
+ * Handles received/to send commands.
+ */
 class CommandHandler(val group: ChannelGroup)
   extends SimpleChannelHandler
   with Logging
   with EmptyLoggingContext
 {
 
+  /**
+   * Handles received [[stealthnet.scala.network.protocol.commands.Command]].
+   *
+   * Actual processing is delegated to [[stealthnet.scala.core.Core]].`receivedCommand`.
+   */
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     val command: Command = e.getMessage.asInstanceOf[Command]
-    val cnx = StealthNetConnectionsManager.getConnection(e.getChannel)
+    val cnx = StealthNetConnectionsManager.connection(e.getChannel)
 
     logger debug(cnx.loggerContext, "Received command: " + command)
 
-    Core.processCommand(command, cnx)
+    Core.receivedCommand(command, cnx)
   }
 
+  /**
+   * Handles [[stealthnet.scala.network.protocol.commands.Command]] to send.
+   *
+   * Writes the command into a new channel buffer propagated downstream.
+   *
+   * @see [[stealthnet.scala.network.protocol.commands.Command]].`write`
+   * @todo queue messages (up to limit) until connection is established, then
+   *   flush them
+   * @todo check we can write and block or drop if not ?
+   */
   override def writeRequested(ctx: ChannelHandlerContext, e: MessageEvent) {
-    if (!e.getChannel.isOpen)
+    val cnx = StealthNetConnectionsManager.connection(e.getChannel)
+    if (!cnx.channel.isOpen || cnx.closing || Core.stopping)
+      /* drop data */
       return
 
-    /* XXX - queue messages (up to limit) until connection is established, then
-     * flush them */
-    /* XXX - check we can write and block or drop ? */
-    val cnx = StealthNetConnectionsManager.getConnection(e.getChannel)
     val command: Command = e.getMessage.asInstanceOf[Command]
-    val buf: ChannelBuffer = ChannelBuffers.dynamicBuffer(0)
+    val buf: ChannelBuffer = ChannelBuffers.dynamicBuffer(512)
     val output = new ChannelBufferOutputStream(buf)
 
     logger debug(cnx.loggerContext, "Sending command: " + command)
@@ -68,13 +89,25 @@ class CommandHandler(val group: ChannelGroup)
     Channels.write(ctx, e.getFuture, output.buffer)
   }
 
+  /**
+   * Handles caught exceptions.
+   *
+   * Closes related channel.
+   */
   override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
-    val cnx = StealthNetConnectionsManager.getConnection(e.getChannel, false)
+    val cnx = StealthNetConnectionsManager.getConnection(e.getChannel) match {
+      case Some(cnx) => cnx
+      case None => null
+    }
+    val loggerContext = if (cnx != null) cnx.loggerContext else Nil
 
-    logger debug(if (cnx != null) cnx.loggerContext else Nil, "Caught exception: " + e.getCause.getMessage())
+    logger trace(loggerContext, "Caught exception: " + e.getCause.getMessage())
     e.getCause match {
       case e: ReadTimeoutException =>
-        logger debug(if (cnx != null) cnx.loggerContext else Nil, "Timeout waiting for remote host")
+        logger debug(loggerContext, "Read timeout")
+
+      case e: WriteTimeoutException =>
+        logger debug(loggerContext, "Write timeout")
 
       case e: ClosedChannelException =>
         /* disconnection was or will be notified */
@@ -82,22 +115,22 @@ class CommandHandler(val group: ChannelGroup)
       case e: ConnectException =>
         /* connection failure was notified */
 
-      case _ if (cnx.closing || Core.stopping) =>
-        /* nothing to say here */
-
       case _ =>
-        val loggerContext: List[(String, Any)] = if ((cnx != null) && (cnx.loggerContext != Nil))
-            cnx.loggerContext
-          else
-            List("remote" -> e.getChannel.getRemoteAddress)
+        if (((cnx == null) || !cnx.closing) && !Core.stopping) {
+          val context: List[(String, Any)] = if (loggerContext != Nil)
+              loggerContext
+            else
+              List("remote" -> e.getChannel.getRemoteAddress)
 
-        logger debug(loggerContext, "Unexpected exception!",  e.getCause)
+          logger debug(context, "Unexpected exception!",  e.getCause)
+        }
+        /*else: nothing to say here */
     }
 
     if (cnx != null)
-      cnx.closing = true
-
-    e.getChannel.close
+      cnx.close()
+    else
+      e.getChannel.close()
   }
 
 }

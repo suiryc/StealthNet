@@ -2,6 +2,7 @@ package stealthnet.scala.sandbox
 
 import java.security.Security
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import stealthnet.scala.core.Core
 import stealthnet.scala.network.StealthNetServer
 import stealthnet.scala.network.StealthNetConnectionsManager
 import stealthnet.scala.webservices.{UpdateClient, WebCacheClient}
@@ -13,28 +14,13 @@ object TestServer {
     println("Started")
 
     Security.addProvider(new BouncyCastleProvider())
-    StealthNetConnectionsManager.start()
-
-    val online = true
-    if (online) {
-      /* XXX - move to Server or Core ? */
-      WebCaches.refresh()
-      WebCaches.addPeer()
-    }
-
     try {
-      StealthNetServer.start()
+      Core.start()
 
-      Thread.sleep(40000)
+      Thread.sleep(10000)
     }
     finally {
-      StealthNetServer.stop()
-
-      /* XXX - move to Server or Core ? */
-      if (online)
-        WebCaches.removePeer()
-
-      StealthNetConnectionsManager.stop()
+      Core.stop()
     }
   }
 

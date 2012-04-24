@@ -2,6 +2,7 @@ package stealthnet.scala.cryptography
 
 import java.security.SecureRandom
 import stealthnet.scala.network.protocol.Constants
+import stealthnet.scala.util.HexDumper
 
 /**
  * ''Rijndael'' class companion object.
@@ -24,7 +25,7 @@ object RijndaelParameters {
    *   - random key
    *
    * @todo are random bytes secure enough for initialization vector and key, or
-   * should we use a specific generator ?
+   *   should we use a specific generator ?
    */
   def apply(): RijndaelParameters = {
     val blockSize = Constants.RijndaelBlockSize
@@ -55,4 +56,15 @@ class RijndaelParameters(
   val paddingMode: PaddingMode.Value,
   val iv: Array[Byte],
   val key: Array[Byte]
-)
+) {
+
+  override def toString() = getClass.getSimpleName + '(' +
+    "blockSize=" + blockSize + ", " +
+    "feedbackSize=" + feedbackSize + ", " +
+    "keySize=" + keySize + ", " +
+    "cipherMode=" + cipherMode + ", " +
+    "paddingMode=" + paddingMode + ", " +
+    "iv=\n" + HexDumper.dump(iv) + "\n, " +
+    "key=\n" + HexDumper.dump(key) + "\n)"
+
+}

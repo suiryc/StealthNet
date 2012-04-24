@@ -142,6 +142,13 @@ object Ciphers {
   implicit def keySpecToKey(keySpec: RSAPublicKeySpec): RSAPublicKey =
     KeyFactory.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME).generatePublic(keySpec).asInstanceOf[RSAPublicKey]
 
+  /**
+   * Gets new ''RSA'' cipher.
+   *
+   * @param key ''RSA'' key: public one for encrypting,
+   *   private one for decrypting
+   * @param mode cipher mode: `Cipher.ENCRYPT_MODE` or `Cipher.DECRYPT_MODE`
+   */
   private def rsaCipher(key: Key, mode: Int): Cipher = {
     val cipher = Cipher.getInstance("RSA")
     cipher.init(mode, key)
@@ -164,6 +171,13 @@ object Ciphers {
    */
   def rsaDecrypter(key: PrivateKey) = rsaCipher(key, Cipher.DECRYPT_MODE)
 
+  /**
+   * Gets new ''Rijndael'' cipher.
+   *
+   * @param rijndael ''Rijndael'' parameters
+   * @param encryption whether the cipher is initialized for encryption (`true`)
+   *   or decryption (`false`)
+   */
   private def rijndaelCipher(rijndael: RijndaelParameters, encryption: Boolean): BufferedBlockCipher =
   {
     val engine = new RijndaelEngine(rijndael.blockSize)
