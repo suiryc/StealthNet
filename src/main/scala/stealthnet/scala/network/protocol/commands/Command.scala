@@ -8,6 +8,7 @@ import java.io.{
 }
 import javax.crypto.{CipherInputStream, CipherOutputStream}
 import scala.collection.mutable.WrappedArray
+import stealthnet.scala.Constants
 import stealthnet.scala.cryptography.{
   Algorithm,
   Hash,
@@ -15,9 +16,12 @@ import stealthnet.scala.cryptography.{
   RSAKeys
 }
 import stealthnet.scala.cryptography.Ciphers._
-import stealthnet.scala.cryptography.io.{BCCipherInputStream, BCCipherOutputStream}
+import stealthnet.scala.cryptography.io.{
+  BCCipherInputStream,
+  BCCipherOutputStream
+}
 import stealthnet.scala.network.StealthNetConnection
-import stealthnet.scala.network.protocol.{BitSize, Constants, Encryption, ProtocolStream}
+import stealthnet.scala.network.protocol.{BitSize, Encryption, ProtocolStream}
 import stealthnet.scala.network.protocol.exceptions.InvalidDataException
 import stealthnet.scala.util.{EmptyLoggingContext, HexDumper, Logging, UUID}
 
@@ -140,9 +144,13 @@ object Command extends Logging with EmptyLoggingContext {
 
       case State.Encryption =>
         val encryptionRAW = ProtocolStream.readByte(input)
-        encryption = Encryption.value(encryptionRAW)
-        if (encryption == Encryption.Unknown)
-          throw new InvalidDataException("Invalid encryption[%02X]".format(encryptionRAW), loggerContext = cnx.loggerContext)
+        encryption = Encryption.value(encryptionRAW) match {
+          case Some(mode) =>
+            mode
+
+          case None =>
+            throw new InvalidDataException("Invalid encryption[%02X]".format(encryptionRAW), loggerContext = cnx.loggerContext)
+        }
         state = State.Length
         -1
 

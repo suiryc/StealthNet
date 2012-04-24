@@ -1,7 +1,7 @@
 package stealthnet.scala.cryptography
 
 import java.security.SecureRandom
-import stealthnet.scala.network.protocol.Constants
+import stealthnet.scala.Constants
 import stealthnet.scala.util.HexDumper
 
 /**

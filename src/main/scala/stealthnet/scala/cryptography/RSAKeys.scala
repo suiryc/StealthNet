@@ -3,7 +3,7 @@ package stealthnet.scala.cryptography
 import java.security.KeyPairGenerator
 import java.security.interfaces.{RSAPublicKey, RSAPrivateKey}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import stealthnet.scala.network.protocol.Constants
+import stealthnet.scala.Constants
 
 /**
  * ''RSA'' public/private keys.

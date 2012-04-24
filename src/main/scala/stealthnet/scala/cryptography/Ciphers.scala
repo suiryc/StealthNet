@@ -27,7 +27,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
  * Cipher modes.
  *
  * The different modes and values are the ones available in ''C#'' (on which
- * rely original ''StealthNet'').
+ * rely original ''StealthNet'' application).
  */
 object CipherMode extends Enumeration {
 
@@ -78,7 +78,7 @@ object CipherMode extends Enumeration {
  * Padding modes.
  *
  * The different modes and values are the ones available in ''C#'' (on which
- * rely original ''StealthNet'').
+ * rely original ''StealthNet'' application).
  */
 object PaddingMode extends Enumeration {
 

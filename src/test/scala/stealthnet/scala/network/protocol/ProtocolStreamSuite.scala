@@ -8,6 +8,8 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
+import stealthnet.scala.Constants
+
 @RunWith(classOf[JUnitRunner])
 class ProtocolStreamSuite extends FunSuite {
 

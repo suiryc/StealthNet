@@ -19,12 +19,9 @@ import org.jboss.netty.handler.timeout.{
   ReadTimeoutException,
   WriteTimeoutException
 }
+import stealthnet.scala.Constants
 import stealthnet.scala.core.Core
-import stealthnet.scala.network.protocol.{
-  BitSize,
-  Constants,
-  ProtocolStream
-}
+import stealthnet.scala.network.protocol.{BitSize, ProtocolStream}
 import stealthnet.scala.network.protocol.commands.Command
 import stealthnet.scala.util.{EmptyLoggingContext, Logging}
 
