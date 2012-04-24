@@ -53,22 +53,18 @@ class StealthNetClient(
     bootstrap.setPipelineFactory(StealthNetPipelineFactory(
       new StealthNetConnectionParameters(client = this, peer = peer)))
 
-    /* XXX - useful ? */
-    bootstrap.setOption("tcpNoDelay", true)
-    bootstrap.setOption("keepAlive", true)
     bootstrap.setOption("connectTimeoutMillis", Config.connectTimeout)
 
     val future = bootstrap.connect(new InetSocketAddress(peer.host, peer.port))
     future.awaitUninterruptibly()
     if (!future.isSuccess) {
-      logger error("Failed to connect", future.getCause)
+      logger debug("Failed to connect", future.getCause)
       stop()
       false
     }
     else {
       channel = future.getChannel
       /* Add the channel to the (server) group: will be closed with server. */
-      /* XXX - so no need to do it in connections manager ? */
       StealthNetServer.group.add(channel)
       true
     }
@@ -96,7 +92,7 @@ class StealthNetClient(
 
     if (factory != null)
       factory.releaseExternalResources()
-    /* Note: pipeline factory resources are released globally */
+    /* Note: pipeline factory resources are released by server */
   }
 
   /** Writes to the channel. */

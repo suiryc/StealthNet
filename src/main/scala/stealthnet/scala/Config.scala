@@ -21,7 +21,7 @@ object Config {
   val serverPort = 6097
 
   /** Whether to enable server connections. For testing purposes. */
-  val enableServerConnections = false
+  val enableServerConnections = true
 
   /** Whether to enable client connections. For testing purposes. */
   val enableClientConnections = true

@@ -1,14 +1,33 @@
 package stealthnet.scala.network
 
+import stealthnet.scala.Config
+import stealthnet.scala.core.Core
 import stealthnet.scala.util.{EmptyLoggingContext, Logging, Peer}
 import stealthnet.scala.webservices.{UpdateClient, WebCacheClient}
 
-/* XXX - when needing connections, use both addPeer and getPeer ... */
+/**
+ * Manages WebCaches.
+ */
 object WebCaches extends Logging with EmptyLoggingContext {
 
+  /** Known WebCaches. */
   protected var webCaches: List[String] = List()
+  /** Cyclic iterator on WebCaches. */
+  private var cyclicIt: Iterator[String] = null
+  /** Whether we are currently added on WebCaches. */
   protected var addedPeer = false
 
+  /**
+   * Refreshes WebCaches.
+   *
+   * Removes ourself, get updated list of WebCaches, and re-adds ourself if needed.
+   *
+   * If no WebCache could be retrieved, use default:
+   *   - `http://rshare.de/rshare.asmx`
+   *   - `http://webcache.stealthnet.at/rwpmws.php`
+   *
+   * @todo configuration: allow manual list of WebCaches without refresh
+   */
   def refresh() = {
     val readd = addedPeer
     removePeer()
@@ -27,6 +46,11 @@ object WebCaches extends Logging with EmptyLoggingContext {
       addPeer()
   }
 
+  /**
+   * Removes ourself from WebCaches.
+   *
+   * Done if we were added.
+   */
   def removePeer() =
     if (addedPeer) {
       for (webCache <- webCaches)
@@ -34,20 +58,46 @@ object WebCaches extends Logging with EmptyLoggingContext {
       addedPeer = false
     }
 
+  /**
+   * Adds ourself on WebCaches.
+   *
+   * Done if we were not already added.
+   */
   def addPeer() = 
-    if (!addedPeer) {
+    if (!addedPeer && !Core.stopping) {
       removePeer()
 
       for (webCache <- webCaches)
-        /* XXX - Configuration */
-        WebCacheClient.addPeer(webCache, 6097)
+        WebCacheClient.addPeer(webCache, Config.serverPort)
 
       addedPeer = true
     }
 
+  /**
+   * Gets a peer.
+   *
+   * Each WebCache is requested until a peer is retrieved. The last requested
+   * WebCache is remembered, and successive calls do start from the next one.
+   *
+   * Adds ourself on WebCaches if needed before requesting a peer.
+   *
+   * @return an option value containing the retrieved peer, or `None` if none
+   */
   def getPeer(): Option[Peer] = {
-    /* XXX - iterate over WebCaches for successive calls */
-    for (webCache <- webCaches) {
+    if (webCaches.size == 0)
+      return None
+
+    if (!addedPeer)
+      addPeer()
+
+    if (cyclicIt == null)
+      cyclicIt = webCaches.iterator
+
+    for (i <- 1 to webCaches.size) {
+      val webCache = cyclicIt.next
+      if (!cyclicIt.hasNext)
+        cyclicIt = webCaches.iterator
+
       WebCacheClient.getPeer(webCache) match {
         case None =>
 

@@ -74,11 +74,8 @@ class ConnectionLimitHandler
       case None => null
     }
 
-    if ((cnx != null) && !cnx.closing && !Core.stopping && (cnx.isClient || cnx.accepted)) {
+    if ((cnx != null) && !cnx.closing && !Core.stopping && (cnx.isClient || cnx.accepted))
       logger debug(cnx.loggerContext, "Remote host disconnected")
-      /* XXX - necessary, not done automatically ? */
-      cnx.close()
-    }
     else
       logger debug(if (cnx != null) cnx.loggerContext else List("remote" -> e.getChannel.getRemoteAddress), "Disconnected")
 

@@ -68,17 +68,17 @@ class CommandDecoder
       command
     }
     catch {
-      case _ if (cnx.closing || Core.stopping) =>
-        /* nothing to say here */
+      /* Note: do not catch Errors because ReplayError (which is protected) is
+       * what is thrown by ReplayingDecoder buffer. */
+      case e: Exception =>
         checkpoint()
-        null
-
-      case e =>
-        logger error(cnx.loggerContext, "Protocol issue", e)
-        checkpoint()
-        /* Note: closing channel is not done right away ... */
-        cnx.close()
-        logData(cnx, encryptedDuplicate)
+        if (!cnx.closing && !Core.stopping) {
+          logger error(cnx.loggerContext, "Protocol issue", e)
+          /* Note: closing channel is not done right away ... */
+          cnx.close()
+          logData(cnx, encryptedDuplicate)
+        }
+        /* else: nothing to say here */
         null
     }
   }

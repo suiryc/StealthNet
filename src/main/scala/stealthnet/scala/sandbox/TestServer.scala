@@ -17,7 +17,7 @@ object TestServer {
     try {
       Core.start()
 
-      Thread.sleep(10000)
+      Thread.sleep(40000)
     }
     finally {
       Core.stop()

@@ -110,7 +110,7 @@ object StealthNetConnectionsManager
 {
 
   /** Connected hosts. */
-  private val hosts = mutable.Map[String, StealthNetConnection]()
+  private val hosts = mutable.Set[String]()
 
   /** Channel/connection association. */
   private val local: ChannelLocal[StealthNetConnection] =
@@ -236,7 +236,7 @@ object StealthNetConnectionsManager
           peerRequestSent = false
 
         case AddPeer(peer) =>
-          reply(add(peer, null))
+          reply(add(peer))
 
         case RemovePeer(peer) =>
           remove(peer)
@@ -266,11 +266,9 @@ object StealthNetConnectionsManager
            * close */
           stopping = true
           WebCaches.removePeer()
-          for ((host, cnx) <- hosts) {
-            if ((cnx != null) && cnx.isClient())
-              StealthNetClientConnectionsManager !
-                StealthNetClientConnectionsManager.CloseClient(cnx)
-          }
+          /* Note: as caller is expected to be stopping right now, WebCaches
+           * won't allow re-adding ourself before we really do leave.
+           */
       }
     }
   }
@@ -281,11 +279,10 @@ object StealthNetConnectionsManager
    * If peer is accepted, the number of connections is checked.
    *
    * @param peer the peer to add
-   * @param cnx peer connection, may be `null` upon starting client connection
    * @return `true` if peer was accepted (no limit reached), `false` otherwise
    * @see [[stealthnet.scala.network.StealthNetConnectionsManager]].`checkConnectionsLimit`
    */
-  protected def add(peer: Peer, cnx: StealthNetConnection): Boolean = {
+  protected def add(peer: Peer): Boolean = {
     if (stopping) {
       logger debug("Refused connection with peer[" + peer + "]: stop pending")
       false
@@ -300,7 +297,7 @@ object StealthNetConnectionsManager
     }
     else {
       logger debug("Accepted connection with peer[" + peer + "]")
-      hosts.put(peer.host, cnx)
+      hosts.add(peer.host)
       checkConnectionsLimit()
       true
     }
@@ -321,16 +318,13 @@ object StealthNetConnectionsManager
       case socketAddress: InetSocketAddress =>
         /* Client-side connection host was checked and added beforehand */
         if (cnx.isClient) {
-          /* Now we know the peer connection */
-          hosts(cnx.peer.host) = cnx
-
           /* If we are stopping, don't accept this connection. */
           if (stopping) false else true
         }
         else {
           val address = socketAddress.getAddress.getHostAddress
           cnx.peer = Peer(address, socketAddress.getPort)
-          add(cnx.peer, cnx)
+          add(cnx.peer)
         }
 
       case _ =>
