@@ -9,10 +9,10 @@ import stealthnet.scala.util.Peer
 object WebCacheClient extends Logging {
 
   /**
-   * GetPeer SOAP action.
+   * ''GetPeer'' ''SOAP'' action.
    *
-   * @param url URL to call
-   * @return peer (ip:port) upon success
+   * @param url ''URL'' to call
+   * @return an option value containing the retrieved peer, or `None` if none
    */
   def getPeer(url: String): Option[Peer] = {
     SoapClient.doRequest(url, <GetPeer xmlns="http://rshare.de/rshare.asmx" />) match {
@@ -38,9 +38,9 @@ object WebCacheClient extends Logging {
   }
 
   /**
-   * AddPeer SOAP action.
+   * ''AddPeer'' ''SOAP'' action.
    *
-   * @param url URL to call
+   * @param url ''URL'' to call
    * @param port local port accepting incoming connections
    * @return true upon success
    */
@@ -48,7 +48,6 @@ object WebCacheClient extends Logging {
     SoapClient.doRequest(url, <AddPeer xmlns="http://rshare.de/rshare.asmx"><port>{port}</port></AddPeer>) match {
       case Left(l) =>
         logger error ("Failed to add (self) peer on service[" + url + "]: " + l)
-        println("Failed: " + l)
         false
 
       case Right(r) =>
@@ -58,9 +57,9 @@ object WebCacheClient extends Logging {
   }
 
   /**
-   * RemovePeer SOAP action.
+   * ''RemovePeer'' ''SOAP'' action.
    *
-   * @param url URL to call
+   * @param url ''URL'' to call
    * @return true upon success
    */
   def removePeer(url: String): Boolean = {

@@ -2,7 +2,8 @@ package stealthnet.scala.network
 
 import stealthnet.scala.Config
 import stealthnet.scala.core.Core
-import stealthnet.scala.util.{EmptyLoggingContext, Logging, Peer}
+import stealthnet.scala.util.Peer
+import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 import stealthnet.scala.webservices.{UpdateClient, WebCacheClient}
 
 /**

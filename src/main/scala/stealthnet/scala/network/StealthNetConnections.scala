@@ -8,13 +8,20 @@ import scala.collection.mutable
 import org.jboss.netty.channel.Channel
 import org.jboss.netty.channel.ChannelLocal
 import org.jboss.netty.channel.group.ChannelGroup
+import org.bouncycastle.crypto.BufferedBlockCipher
 import stealthnet.scala.Config
 import stealthnet.scala.core.Core
-import stealthnet.scala.cryptography.RijndaelParameters
-import stealthnet.scala.util.{EmptyLoggingContext, Logging, LoggingContext, Peer}
+import stealthnet.scala.cryptography.{Ciphers, RijndaelParameters}
+import stealthnet.scala.util.Peer
+import stealthnet.scala.util.log.{EmptyLoggingContext, Logging, LoggingContext}
 
 /**
  * Bare ''StealthNet'' connection parameters.
+ *
+ * @note When setting the local or remote ''Rijndael'' parameters, the
+ *   corresponding encrypter/decrypter is created as a side effect. It is to be
+ *   reseted and used when necessary, instead of creating a new one each time.
+ *   This is not done for ''RSA'' which is used only once during handshaking.
  */
 class StealthNetConnectionParameters(
   /** Channel group to which register an opened channel. */
@@ -41,10 +48,42 @@ class StealthNetConnectionParameters(
   var closing: Boolean = false
   /** Remote ''RSA'' public key to encrypt data. */
   var remoteRSAKey: RSAPublicKey = null
+
   /** Local ''Rijndael'' parameters to encrypt data. */
-  var localRijndaelParameters: RijndaelParameters = null
+  private[this] var localRijndaelParams: RijndaelParameters = null
+  /** ''Rijndael'' encrypter. */
+  var rijndaelEncrypter: BufferedBlockCipher = null
+
+  /** Gets local ''Rijndael'' parameters to encrypt data. */
+  def localRijndaelParameters: RijndaelParameters = localRijndaelParams
+
+  /**
+   * Sets local ''Rijndael'' parameters to encrypt data.
+   *
+   * As a side effect, also creates the related encrypter.
+   */
+  def localRijndaelParameters_=(params: RijndaelParameters) {
+    localRijndaelParams = params
+    rijndaelEncrypter = Ciphers.rijndaelEncrypter(localRijndaelParams)
+  }
+
   /** Remote ''Rijndael'' parameters to decrypt data. */
-  var remoteRijndaelParameters: RijndaelParameters = null
+  private[this] var remoteRijndaelParams: RijndaelParameters = null
+  /** ''Rijndael'' decrypter. */
+  var rijndaelDecrypter: BufferedBlockCipher = null
+
+  /** Gets remote ''Rijndael'' parameters to decrypt data. */
+  def remoteRijndaelParameters: RijndaelParameters = remoteRijndaelParams
+
+  /**
+   * Sets remote ''Rijndael'' parameters to decrypt data.
+   *
+   * As a side effect, also creates the related decrypter.
+   */
+  def remoteRijndaelParameters_=(params: RijndaelParameters) {
+    remoteRijndaelParams = params
+    rijndaelDecrypter = Ciphers.rijndaelDecrypter(remoteRijndaelParams)
+  }
 
   /** Gets whether this connection is a client one. */
   def isClient() = if (client != null) true else false
@@ -93,10 +132,10 @@ class StealthNetConnection protected[network] (val channel: Channel)
  *   - channel closed: `closedChannel`
  *
  * This manager delegates client connections actions to another manager
- * ([[StealthNetClientConnectionsManager]]). This is actually necessary due to
- * the way the actor-based implementation is used (synchronous message/reply),
- * to prevent deadlocks (closing a client connection will call back the
- * connections manager).
+ * ([[stealthnet.scala.network.StealthNetClientConnectionsManager]]).
+ * This is actually necessary due to the way the actor-based implementation is
+ * used (synchronous message/reply), to prevent deadlocks (closing a client
+ * connection will call back the connections manager).
  * Thus, when necessary a new peer connection request will be sent to the
  * client connections manager, which will return a response once a new client
  * has been instantiated. Similarly, upon receiving a channel closing message on
@@ -134,7 +173,8 @@ object StealthNetConnectionsManager
   /**
    * Actor message: remove remote peer.
    *
-   * This message is sent by [[StealthNetClientConnectionsManager]] in response
+   * This message is sent by
+   * [[stealthnet.scala.network.StealthNetClientConnectionsManager]] in response
    * to a peer request. This is used to ensure we request one peer at a time.
    */
   protected[network] case class RequestedPeer()
@@ -151,7 +191,8 @@ object StealthNetConnectionsManager
   /**
    * Actor message: remove remote peer.
    *
-   * This message is sent by [[StealthNetClientConnectionsManager]] in response
+   * This message is sent by
+   * [[stealthnet.scala.network.StealthNetClientConnectionsManager]] in response
    * to a connection closing.
    */
   protected[network] case class RemovePeer(peer: Peer)
@@ -215,7 +256,7 @@ object StealthNetConnectionsManager
       react {
         case RequestPeer() =>
           peerRequestOngoing = false
-          if (!upperLimitReached()) {
+          if (!upperLimitReached() || peerRequestSent) {
             /* one request at a time */
             if (!peerRequestSent) {
               StealthNetClientConnectionsManager !

@@ -7,7 +7,7 @@ import org.jboss.netty.channel.{
 }
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.protocol.commands.RSAParametersServerCommand
-import stealthnet.scala.util.{EmptyLoggingContext, Logging}
+import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 /**
  * Upstream connection limiter.

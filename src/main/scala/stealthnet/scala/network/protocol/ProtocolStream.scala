@@ -3,7 +3,7 @@ package stealthnet.scala.network.protocol
 import java.io.{InputStream, EOFException, OutputStream}
 import java.math.BigInteger
 import stealthnet.scala.Constants
-import stealthnet.scala.network.protocol.commands.CommandArgument
+import stealthnet.scala.network.protocol.commands.CommandArguments
 import stealthnet.scala.network.protocol.exceptions.InvalidDataException
 
 /**
@@ -289,14 +289,14 @@ object ProtocolStream {
   }
 
   /**
-   * Writes a command argument.
+   * Writes command arguments.
    *
    * @param output stream to write to
    * @param value value to write
    * @return number of written bytes
-   * @see [[stealthnet.scala.network.protocol.commands.CommandArgument]].`write`
+   * @see [[stealthnet.scala.network.protocol.commands.CommandArguments]].`write`
    */
-  def write(output: OutputStream, value: CommandArgument): Int =
+  def write(output: OutputStream, value: CommandArguments): Int =
     value.write(output)
 
 }

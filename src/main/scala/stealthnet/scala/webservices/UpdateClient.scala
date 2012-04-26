@@ -4,15 +4,15 @@ import com.weiglewilczek.slf4s.Logging
 import scala.xml.XML
 
 /**
- * RShare update client.
+ * ''RShare'' update client.
  */
 object UpdateClient extends Logging {
 
   /**
-   * GetWebCaches SOAP action.
+   * ''GetWebCaches'' ''SOAP'' action.
    *
-   * @param url URL to call
-   * @return webcache (URL) list upon success
+   * @param url ''URL'' to call
+   * @return webcache (''URL'') list upon success
    */
   def getWebCaches(url: String): Option[List[String]] = {
     SoapClient.doRequest(url, <GetWebCaches xmlns="http://rshare.de/rshareupdates.asmx" />) match {

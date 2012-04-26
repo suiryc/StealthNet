@@ -8,7 +8,7 @@ import java.io.{
 }
 import javax.crypto.{CipherInputStream, CipherOutputStream}
 import scala.collection.mutable.WrappedArray
-import stealthnet.scala.Constants
+import stealthnet.scala.{Config, Constants}
 import stealthnet.scala.cryptography.{
   Algorithm,
   Hash,
@@ -23,16 +23,29 @@ import stealthnet.scala.cryptography.io.{
 import stealthnet.scala.network.StealthNetConnection
 import stealthnet.scala.network.protocol.{BitSize, Encryption, ProtocolStream}
 import stealthnet.scala.network.protocol.exceptions.InvalidDataException
-import stealthnet.scala.util.{EmptyLoggingContext, HexDumper, Logging, UUID}
+import stealthnet.scala.util.{HexDumper, UUID}
+import stealthnet.scala.util.io.DebugInputStream
+import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
-trait CommandBuilder extends CommandArgumentBuilder[Command] with CommandArgumentDefinitions {
+/**
+ * Command builder.
+ */
+trait CommandBuilder
+  extends CommandArgumentsReader[Command]
+  with CommandArgumentDefinitions
+{
 
+  /** Command code handled by this builder. */
   val code: Byte
 
 }
 
+/**
+ * Command class companion object.
+ */
 object Command extends Logging with EmptyLoggingContext {
 
+  /** Known command builders. */
   private val builders: Map[Byte, CommandBuilder] =
     Map() ++ List[CommandBuilder](RSAParametersServerCommand, RSAParametersClientCommand,
         RijndaelParametersServerCommand, RijndaelParametersClientCommand,
@@ -41,55 +54,78 @@ object Command extends Logging with EmptyLoggingContext {
         Command63, Command64, Command70, Command71, Command72, Command74,
         Command75, Command76, Command78, Command79, Command7A).map(c => (c.code, c))
 
-  def generateId(): Hash = Message.hash(UUID.generate().bytes, Algorithm.SHA384)
+  /**
+   * Generates a new random id.
+   *
+   * ''SHA-384'' hash of a random ''UUID''.
+   *
+   * @see [[stealthnet.scala.util.UUID]].`generate`
+   */
+  def generateId(): Hash =
+    Message.hash(UUID.generate().bytes, Algorithm.SHA384)
 
+  /**
+   * Gets the command builder handling a given command code.
+   *
+   * @param code command code to handle
+   * @return an option value containing the builder, or `None` if none
+   */
   def commandBuilder(code: Byte) = builders.get(code)
 
+  /**
+   * Builder helper.
+   *
+   * State machine which can rebuild a command by reading an input stream.
+   *
+   * This state machine has many steps and provides two methods to advance:
+   * `readHeader` and `readCommand`.
+   *
+   * Each time `readHeader` is called, it reads the data related to the current
+   * state if it is one of (in order):
+   *   - protocol header
+   *   - encryption mode
+   *   - command length
+   *
+   * Once the command length is reached, and until the command is fully read
+   * with `readCommand`, `readHeader` returns the command length. In any other
+   * state, `-1` is returned, indicating it needs to be called again to
+   * advance one step until reaching the next command length.
+   */
   class Builder {
 
-    /* XXX */
-    private val debug = false
-
-    object State extends Enumeration {
-      val Header, Encryption, Length, Content = Value
+    /** Available states. */
+    private object State extends Enumeration {
+      /** State: reading protocol header. */
+      val Header = Value
+      /** State: reading encryption mode. */
+      val Encryption = Value
+      /** State: reading command length. */
+      val Length = Value
+      /** State: reading command. */
+      val Content = Value
     }
 
+    /** Current state. */
     private var state = State.Header
+    /** Current encryption mode. */
     private var encryption: Encryption.Value = _
+    /** Current command length. */
     private var length: Int = _
 
-    private def readContent(cnx: StealthNetConnection, input: InputStream): Command = {
-      /* cipher-text section */
-      /* XXX - is it more efficient to create the decrypter once and reset it
-       * when needed ? */
-      val cipherInput: InputStream = encryption match {
-        case Encryption.None =>
-          input
-
-        case Encryption.RSA =>
-          new CipherInputStream(input, rsaDecrypter(RSAKeys.privateKey))
-
-        case Encryption.Rijndael =>
-          new BCCipherInputStream(input, rijndaelDecrypter(cnx.remoteRijndaelParameters))
-      }
-      val newInput = if (debug && (cipherInput ne input))
-          new stealthnet.scala.util.DebugInputStream(cipherInput, cnx.loggerContext ++ List("step" -> "decrypted"))
-        else
-          cipherInput
-
-      val code = ProtocolStream.readByte(newInput)
-      commandBuilder(code) match {
-        case Some(builder) =>
-          builder.read(newInput)
-
-        case None =>
-          logger error(cnx.loggerContext, "Unknown command code[0x%02X] with encryption[%s]".format(code, encryption))
-          /* XXX - take error into account, and drop connection if too many ? */
-          null
-      }
-    }
-
-    def decryptCommand(cnx: StealthNetConnection, cipher: Array[Byte], offset: Int, lenght: Int): Array[Byte] = {
+    /**
+     * Decrypts data.
+     *
+     * Used for debugging purposes.
+     *
+     * @param cnx concerned connection
+     * @param cipher encrypted data
+     * @param offset data offset
+     * @param length data length
+     * @return decrypted data
+     */
+    def decryptData(cnx: StealthNetConnection, cipher: Array[Byte],
+      offset: Int, lenght: Int): Array[Byte] =
+    {
       if (encryption == Encryption.None)
         return cipher
 
@@ -99,7 +135,8 @@ object Command extends Logging with EmptyLoggingContext {
           new CipherInputStream(input, rsaDecrypter(RSAKeys.privateKey))
 
         case Encryption.Rijndael =>
-          new BCCipherInputStream(input, rijndaelDecrypter(cnx.remoteRijndaelParameters))
+          cnx.rijndaelDecrypter.reset()
+          new BCCipherInputStream(input, cnx.rijndaelDecrypter)
       }
 
       val output = new ByteArrayOutputStream()
@@ -114,6 +151,14 @@ object Command extends Logging with EmptyLoggingContext {
       output.toByteArray()
     }
 
+    /**
+     * Gets decrypting data.
+     *
+     * Used for debugging purposes.
+     *
+     * @param cnx concerned connection
+     * @return decrypting data
+     */
     def decryptingData(cnx: StealthNetConnection): String = encryption match {
       case Encryption.None =>
         "Data is not encrypted"
@@ -125,13 +170,56 @@ object Command extends Logging with EmptyLoggingContext {
         cnx.remoteRijndaelParameters.toString()
     }
 
+    /**
+     * Reads and decrypts command.
+     *
+     * @param cnx concerned connection
+     * @param input stream to read from
+     * @return rebuilt command
+     * @todo When receiving unknown commands, instead of skipping, increment
+     *   counter and drop connection if too many ?
+     */
     def readCommand(cnx: StealthNetConnection, input: InputStream): Command = {
       assert(state == State.Content)
-      val command = readContent(cnx, input)
+
+      /* cipher-text section */
+      val cipherInput: InputStream = encryption match {
+        case Encryption.None =>
+          input
+
+        case Encryption.RSA =>
+          new CipherInputStream(input, rsaDecrypter(RSAKeys.privateKey))
+
+        case Encryption.Rijndael =>
+          cnx.rijndaelDecrypter.reset()
+          new BCCipherInputStream(input, cnx.rijndaelDecrypter)
+      }
+      val newInput = if (Config.debugIO && (cipherInput ne input))
+          new DebugInputStream(cipherInput, cnx.loggerContext ++ List("step" -> "decrypted"))
+        else
+          cipherInput
+
+      val code = ProtocolStream.readByte(newInput)
+      val command = commandBuilder(code) match {
+        case Some(builder) =>
+          builder.read(newInput)
+
+        case None =>
+          logger error(cnx.loggerContext, "Unknown command code[0x%02X] with encryption[%s]".format(code, encryption))
+          null
+      }
+
       state = State.Header
       command
     }
 
+    /**
+     * Reads protocol packet header.
+     *
+     * @param cnx concerned connection
+     * @param input stream to read from
+     * @return command length if read, or `-1`
+     */
     def readHeader(cnx: StealthNetConnection, input: InputStream): Int = {
       state match {
       case State.Header =>
@@ -168,12 +256,27 @@ object Command extends Logging with EmptyLoggingContext {
 
 }
 
+/**
+ * Protocol command.
+ */
 abstract class Command extends CommandArguments {
 
+  /** Command code. */
   val code: Byte
 
+  /** Encryption mode. */
   val encryption: Encryption.Value
 
+  /**
+   * Writes this command.
+   *
+   * Writes the protocol header, encryption mode, command length and command
+   * arguments.
+   *
+   * @param cnx concerned connection
+   * @param output stream to write to
+   * @return number of (unencrypted) written bytes for command arguments
+   */
   def write(cnx: StealthNetConnection, output: OutputStream): Int = {
     /* plain-text section */
     ProtocolStream.writeHeader(output)
@@ -182,8 +285,6 @@ abstract class Command extends CommandArguments {
     output.flush()
 
     /* cipher-text section */
-    /* XXX - is it more efficient to create the encrypter once and reset it
-     * when needed ? */
     val cipherOutput: OutputStream = encryption match {
       case Encryption.None =>
         output
@@ -192,7 +293,8 @@ abstract class Command extends CommandArguments {
         new CipherOutputStream(output, rsaEncrypter(cnx.remoteRSAKey))
 
       case Encryption.Rijndael =>
-        new BCCipherOutputStream(output, rijndaelEncrypter(cnx.localRijndaelParameters))
+        cnx.rijndaelEncrypter.reset()
+        new BCCipherOutputStream(output, cnx.rijndaelEncrypter)
     }
 
     var unencryptedLength: Int = 0

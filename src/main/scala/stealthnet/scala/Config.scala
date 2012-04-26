@@ -21,7 +21,7 @@ object Config {
   val serverPort = 6097
 
   /** Whether to enable server connections. For testing purposes. */
-  val enableServerConnections = true
+  val enableServerConnections = false
 
   /** Whether to enable client connections. For testing purposes. */
   val enableClientConnections = true
@@ -31,6 +31,6 @@ object Config {
    * allowed: new connections are sought when being below the average count
    * and until the maximum is reached.
    */
-  val avgCnxCount = 1
+  val avgCnxCount = 3
 
 }

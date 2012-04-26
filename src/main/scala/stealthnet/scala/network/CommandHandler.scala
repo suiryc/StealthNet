@@ -23,7 +23,7 @@ import stealthnet.scala.Constants
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.protocol.{BitSize, ProtocolStream}
 import stealthnet.scala.network.protocol.commands.Command
-import stealthnet.scala.util.{EmptyLoggingContext, Logging}
+import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 /**
  * Upstream/downstream command handler.

@@ -1,0 +1,48 @@
+Lors d'une tentative de connexion cliente, Netty 3.4(.1.Final) provoque fréquemment des erreurs du type:
+
+java.net.ConnectException: connection timed out
+	at org.jboss.netty.channel.socket.nio.NioClientSocketPipelineSink$Boss.processConnectTimeout(NioClientSocketPipelineSink.java:386) ~[netty-3.4.1.Final.jar:na]
+	at org.jboss.netty.channel.socket.nio.NioClientSocketPipelineSink$Boss.run(NioClientSocketPipelineSink.java:284) ~[netty-3.4.1.Final.jar:na]
+	at org.jboss.netty.util.internal.DeadLockProofWorker$1.run(DeadLockProofWorker.java:42) ~[netty-3.4.1.Final.jar:na]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(Unknown Source) ~[na:1.6.0_31]
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source) ~[na:1.6.0_31]
+	at java.lang.Thread.run(Unknown Source) ~[na:1.6.0_31]
+25 avr. 2012 18:42:55 org.jboss.netty.channel.DefaultChannelPipeline
+ATTENTION: An exception was thrown by an exception handler.
+org.jboss.netty.channel.ChannelException: Failed to create a selector.
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.start(AbstractNioWorker.java:154)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.executeInIoThread(AbstractNioWorker.java:306)
+	at org.jboss.netty.channel.socket.nio.NioWorker.executeInIoThread(NioWorker.java:38)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.executeInIoThread(AbstractNioWorker.java:290)
+	at org.jboss.netty.channel.socket.nio.NioWorker.executeInIoThread(NioWorker.java:38)
+	at org.jboss.netty.channel.socket.nio.AbstractNioChannelSink.execute(AbstractNioChannelSink.java:34)
+	at org.jboss.netty.channel.Channels.fireExceptionCaughtLater(Channels.java:504)
+	at org.jboss.netty.channel.AbstractChannelSink.exceptionCaught(AbstractChannelSink.java:47)
+	at org.jboss.netty.channel.Channels.close(Channels.java:821)
+	at org.jboss.netty.channel.AbstractChannel.close(AbstractChannel.java:194)
+	at org.jboss.netty.channel.ChannelFutureListener$2.operationComplete(ChannelFutureListener.java:52)
+	at org.jboss.netty.channel.DefaultChannelFuture.notifyListener(DefaultChannelFuture.java:399)
+	at org.jboss.netty.channel.DefaultChannelFuture.notifyListeners(DefaultChannelFuture.java:385)
+	at org.jboss.netty.channel.DefaultChannelFuture.setFailure(DefaultChannelFuture.java:352)
+	at org.jboss.netty.channel.socket.nio.NioClientSocketPipelineSink$Boss.processConnectTimeout(NioClientSocketPipelineSink.java:389)
+	at org.jboss.netty.channel.socket.nio.NioClientSocketPipelineSink$Boss.run(NioClientSocketPipelineSink.java:284)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.runTask(Unknown Source)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(Unknown Source)
+	at java.lang.Thread.run(Unknown Source)
+Caused by: java.io.IOException: Unable to establish loopback connection
+	at sun.nio.ch.PipeImpl$Initializer.run(Unknown Source)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at sun.nio.ch.PipeImpl.<init>(Unknown Source)
+	at sun.nio.ch.SelectorProviderImpl.openPipe(Unknown Source)
+	at java.nio.channels.Pipe.open(Unknown Source)
+	at sun.nio.ch.WindowsSelectorImpl.<init>(Unknown Source)
+	at sun.nio.ch.WindowsSelectorProvider.openSelector(Unknown Source)
+	at java.nio.channels.Selector.open(Unknown Source)
+	at org.jboss.netty.channel.socket.nio.AbstractNioWorker.start(AbstractNioWorker.java:152)
+	... 18 more
+Caused by: java.nio.channels.ClosedByInterruptException
+	at java.nio.channels.spi.AbstractInterruptibleChannel.end(Unknown Source)
+	at sun.nio.ch.SocketChannelImpl.connect(Unknown Source)
+	at java.nio.channels.SocketChannel.open(Unknown Source)
+	... 27 more
+

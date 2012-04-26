@@ -4,6 +4,9 @@ import java.io.InputStream
 import stealthnet.scala.cryptography.Hash
 import stealthnet.scala.network.protocol.{Encryption, ProtocolStream}
 
+/**
+ * Search command companion object.
+ */
 object SearchCommand extends CommandBuilder {
 
   val code: Byte = 0x20
@@ -28,6 +31,13 @@ object SearchCommand extends CommandBuilder {
       searchPattern)
   }
 
+  /**
+   * Factory method from search pattern.
+   *
+   * @param searchPattern search pattern
+   * @return new [[stealthnet.scala.network.protocol.commands.SearchCommand]]
+   *   for the given search pattern
+   */
   def apply(searchPattern: String) = new SearchCommand(
     commandId = Command.generateId(),
     floodingHash = generateFloodingHash(),
@@ -36,7 +46,12 @@ object SearchCommand extends CommandBuilder {
     searchPattern = searchPattern
   )
 
-  /* http://www.scribd.com/doc/28681327/69/Stealthnet-decloaked */
+  /**
+   * Generates a new flooding hash.
+   *
+   * The flooding hash needs special care, see 
+   * http://www.scribd.com/doc/28681327/69/Stealthnet-decloaked.
+   */
   def generateFloodingHash(): Hash = {
     var hash: Hash = Command.generateId()
 
@@ -49,6 +64,11 @@ object SearchCommand extends CommandBuilder {
 
 }
 
+/**
+ * Search command.
+ *
+ * Command code: `0x20`
+ */
 class SearchCommand(
   /* 48-bytes */
   val commandId: Hash,

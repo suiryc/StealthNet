@@ -6,7 +6,8 @@ import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel.{Channel, ChannelFactory}
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import stealthnet.scala.Config
-import stealthnet.scala.util.{Logging, Peer}
+import stealthnet.scala.util.Peer
+import stealthnet.scala.util.log.Logging
 
 /**
  * ''StealthNet'' client.

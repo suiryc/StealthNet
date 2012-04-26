@@ -9,8 +9,12 @@ import stealthnet.scala.cryptography.{
 import stealthnet.scala.network.protocol.{BitSize, Encryption, ProtocolStream}
 import stealthnet.scala.network.protocol.exceptions.InvalidDataException
 
+/**
+ * ''Rijndael'' parameters command helper object.
+ */
 protected object RijndaelParametersCommand {
 
+  /** Gets the arguments definition. */
   def argumentDefinitions = List(
     IntegerArgumentDefinition("blockSize", BitSize.Short),
     IntegerArgumentDefinition("feedbackSize", BitSize.Short),
@@ -21,6 +25,13 @@ protected object RijndaelParametersCommand {
     ByteArrayArgumentDefinition("key", BitSize.Byte)
   )
 
+  /**
+   * Reads the ''Rijndael'' parameters.
+   *
+   * @param arguments map of read arguments
+   * @return a new [[stealthnet.scala.cryptography.RijndaelParameters]]
+   *   representing the read parameters
+   */
   def readRijndaelParameters(arguments: Map[String, Any]): RijndaelParameters = {
     val blockSize = arguments("blockSize").asInstanceOf[Long].intValue
     val feedbackSize = arguments("feedbackSize").asInstanceOf[Long].intValue
@@ -50,10 +61,22 @@ protected object RijndaelParametersCommand {
 
 }
 
+/**
+ * ''Rijndael'' parameters command base class.
+ *
+ * The protocol do use two commands to exchange ''Rijndael'' parameters:
+ *   - [[stealthnet.scala.network.protocol.commands.RijndaelParametersServerCommand]]
+ *     sent by the server
+ *   - [[stealthnet.scala.network.protocol.commands.RijndaelParametersClientCommand]]
+ *     sent by the client
+ *
+ * This class gathers the properties shared by both.
+ */
 protected abstract class RijndaelParametersCommand extends Command {
 
   val encryption = Encryption.RSA
 
+  /** The actual ''Rijndael'' parameters. */
   val parameters: RijndaelParameters
 
   assert(parameters != null)
@@ -72,6 +95,7 @@ protected abstract class RijndaelParametersCommand extends Command {
 
 }
 
+/** ''Rijndael'' server parameters command companion object. */
 object RijndaelParametersServerCommand extends CommandBuilder {
 
   val code: Byte = 0x12
@@ -83,6 +107,11 @@ object RijndaelParametersServerCommand extends CommandBuilder {
 
 }
 
+/**
+ * ''Rijndael'' server parameters command.
+ *
+ * Command code: `0x12`
+ */
 class RijndaelParametersServerCommand(val parameters: RijndaelParameters)
   extends RijndaelParametersCommand
 {
@@ -91,6 +120,7 @@ class RijndaelParametersServerCommand(val parameters: RijndaelParameters)
 
 }
 
+/** ''Rijndael'' client parameters command companion object. */
 object RijndaelParametersClientCommand extends CommandBuilder {
 
   val code: Byte = 0x13
@@ -102,6 +132,11 @@ object RijndaelParametersClientCommand extends CommandBuilder {
 
 }
 
+/**
+ * ''Rijndael'' client parameters command.
+ *
+ * Command code: `0x13`
+ */
 class RijndaelParametersClientCommand(val parameters: RijndaelParameters)
   extends RijndaelParametersCommand
 {

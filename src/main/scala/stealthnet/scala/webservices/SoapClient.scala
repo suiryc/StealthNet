@@ -6,15 +6,15 @@ import scala.io.Source
 import scala.xml.{Elem, XML}
 
 /**
- * Minimal SOAP client.
+ * Minimal ''SOAP'' client.
  */
 object SoapClient {
 
   /**
-   * Wraps XML node inside SOAP envelope/body.
+   * Wraps ''XML'' node inside ''SOAP'' envelope/body.
    *
-   * @param elem XML node to wrap
-   * @return XML string
+   * @param elem ''XML'' node to wrap
+   * @return ''XML'' string
    */
   def wrap(elem: Elem): String = {
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"  + <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
@@ -25,10 +25,10 @@ object SoapClient {
   }
 
   /**
-   * Invokes SOAP request.
+   * Invokes ''SOAP'' request.
    *
-   * @param url URL to call
-   * @param req SOAP request
+   * @param url ''URL'' to call
+   * @param req ''SOAP'' request
    * @return either error message or response document
    */
   def doRequest(url: String, req: Elem): Either[String, Elem] = {

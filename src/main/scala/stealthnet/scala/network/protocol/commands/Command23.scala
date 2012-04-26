@@ -13,7 +13,7 @@ object Command23 extends CommandBuilder {
     HashArgumentDefinition("senderPeerID", 48),
     HashArgumentDefinition("receiverPeerID", 48),
     HashArgumentDefinition("searchID", 48),
-    ListArgumentDefinition("searchResults", SearchResult)
+    ListArgumentsDefinition("searchResults", SearchResult)
   )
 
   def read(input: InputStream): Command = {
@@ -64,8 +64,11 @@ class Command23(
 
 }
 
+/**
+ * Search result companion object.
+ */
 object SearchResult
-  extends CommandArgumentBuilder[SearchResult]
+  extends CommandArgumentsReader[SearchResult]
   with CommandArgumentDefinitions
 {
 
@@ -92,6 +95,11 @@ object SearchResult
 
 }
 
+/**
+ * Search result.
+ *
+ * @todo Use enumeration for rating.
+ */
 class SearchResult(
   /* 64-bytes */
   val fileHash: Hash,

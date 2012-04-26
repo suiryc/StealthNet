@@ -41,9 +41,7 @@ object UUID {
 
 /**
  * UUID
+ *
+ * @todo Override toString ?
  */
-class UUID private (val bytes: Array[Byte]) {
-
-  /* XXX - toString ? */
-
-}
+class UUID private (val bytes: Array[Byte])

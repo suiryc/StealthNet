@@ -1,7 +1,10 @@
 package stealthnet.scala.network.protocol.exceptions
 
-import stealthnet.scala.util.LoggingContext
+import stealthnet.scala.util.log.LoggingContext
 
+/**
+ * Protocol exception.
+ */
 class ProtocolException(
   msg: String = null,
   cause: Throwable = null,

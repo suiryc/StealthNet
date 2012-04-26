@@ -19,7 +19,7 @@ import java.math.BigInteger
 import stealthnet.scala.cryptography.Hash
 import java.security.interfaces.RSAPrivateKey
 import stealthnet.scala.network.protocol.ProtocolStream
-import stealthnet.scala.util.DebugInputStream
+import stealthnet.scala.util.io.DebugInputStream
 import stealthnet.scala.cryptography.CipherMode
 import stealthnet.scala.cryptography.PaddingMode
 import stealthnet.scala.network.protocol.commands.Command

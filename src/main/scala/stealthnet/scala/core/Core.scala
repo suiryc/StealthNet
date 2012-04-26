@@ -10,7 +10,7 @@ import stealthnet.scala.network.{
   WebCaches
 }
 import stealthnet.scala.network.protocol.commands._
-import stealthnet.scala.util.{EmptyLoggingContext, Logging}
+import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 /**
  * Core object, processing commands.

@@ -1,7 +1,14 @@
-package stealthnet.scala.util
+package stealthnet.scala.util.io
 
 import java.io.{FilterInputStream, InputStream}
+import stealthnet.scala.util.HexDumper
+import stealthnet.scala.util.log.{Logging, LoggingContext}
 
+/**
+ * Debug input stream.
+ *
+ * This input stream logs read data.
+ */
 class DebugInputStream(
   input: InputStream,
   override protected val loggerContext: LoggingContext#LogContext

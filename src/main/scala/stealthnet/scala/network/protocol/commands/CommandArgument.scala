@@ -5,66 +5,100 @@ import java.math.BigInteger
 import scala.collection.mutable
 import stealthnet.scala.cryptography.Hash
 import stealthnet.scala.network.protocol.{BitSize, ProtocolStream}
+import stealthnet.scala.network.protocol.exceptions.ProtocolException
 import stealthnet.scala.util.HexDumper
-import stealthnet.scala.util.Logging
-import stealthnet.scala.util.EmptyLoggingContext
 
-trait CommandArgument {
-
-  def write(output: OutputStream): Int
-
-}
-
+/**
+ * Command argument definition.
+ *
+ * Used to automate command arguments handling.
+ */
 abstract class CommandArgumentDefinition(val name: String)
 
+/** Byte argument definition. */
 case class ByteArgumentDefinition(override val name: String)
   extends CommandArgumentDefinition(name)
 
+/** Bytes array argument definition. */
 case class ByteArrayArgumentDefinition(override val name: String, bitSize: Int)
   extends CommandArgumentDefinition(name)
 {
   assert((bitSize % 8) == 0)
 }
 
+/** Integer argument definition. */
 case class IntegerArgumentDefinition(override val name: String, bitSize: Int)
   extends CommandArgumentDefinition(name)
 {
   assert((bitSize % 8) == 0)
 }
 
+/** Big integer argument definition. */
 case class BigIntegerArgumentDefinition(override val name: String)
   extends CommandArgumentDefinition(name)
 
+/** String argument definition. */
 case class StringArgumentDefinition(override val name: String)
   extends CommandArgumentDefinition(name)
 
+/** Hash argument definition. */
 case class HashArgumentDefinition(override val name: String, length: Int)
   extends CommandArgumentDefinition(name)
 
-case class ListArgumentDefinition(override val name: String, builder: CommandArgumentBuilder[_])
+/** List of arguments definition. */
+case class ListArgumentsDefinition(override val name: String, builder: CommandArgumentsReader[_])
   extends CommandArgumentDefinition(name)
 
+/** Map of strings argument definition. */
 case class StringMapArgumentDefinition(override val name: String)
   extends CommandArgumentDefinition(name)
 
+/**
+ * Command argument definitions.
+ */
 trait CommandArgumentDefinitions {
 
+  /** Gets the arguments definition of this command. */
   def argumentDefinitions: List[CommandArgumentDefinition]
 
 }
 
-trait CommandArgumentBuilder[T] extends Logging with EmptyLoggingContext {
+/**
+ * Command arguments reader.
+ *
+ * Used when reading and building received commands.
+ */
+trait CommandArgumentsReader[T] {
 
   this: CommandArgumentDefinitions =>
 
+  /**
+   * Reads arguments.
+   *
+   * Produces a new object representing the read command arguments.
+   *
+   * @param input stream to read from
+   * @return object built from read arguments
+   */
   def read(input: InputStream): T
 
+  /**
+   * Reads arguments.
+   *
+   * Sequentially reads this command arguments, determined through the
+   * available list of arguments definitions.
+   *
+   * @param input stream to read from
+   * @return map which associates each argument name to its read value
+   */
   def readArguments(input: InputStream): Map[String, Any] = {
     var result: mutable.Map[String, Any] = mutable.Map()
 
+    var argumentName: String = null
     try {
       for (definition <- argumentDefinitions) {
-        result += definition.name -> (definition match {
+        argumentName = definition.name
+        result += argumentName -> (definition match {
           case ByteArgumentDefinition(name) =>
             ProtocolStream.readByte(input)
 
@@ -83,7 +117,7 @@ trait CommandArgumentBuilder[T] extends Logging with EmptyLoggingContext {
           case HashArgumentDefinition(name, length) =>
             ProtocolStream.read(input, length):Hash
 
-          case ListArgumentDefinition(name, builder) =>
+          case ListArgumentsDefinition(name, builder) =>
             var list: mutable.ListBuffer[Any] = mutable.ListBuffer()
             val size = ProtocolStream.readInteger(input, BitSize.Short).intValue
             for (i <- 0 until size) {
@@ -106,13 +140,8 @@ trait CommandArgumentBuilder[T] extends Logging with EmptyLoggingContext {
       }
     }
     catch {
-      /* XXX - wrap e (which is throwable) into another error which will be logged
-       * by caller ? (may be cleaner than trying to log here ...) If so, remove
-       * Logging trait etc */
       case e =>
-        logger error("Cannot read command arguments. Currently known: " + result)
-        /* propagate issue */
-        throw e
+        throw new ProtocolException("Cannot read command argument[" + argumentName + "]. Arguments that could be read: " + result, e)
     }
 
     /* no need to be immutable anymore */
@@ -121,10 +150,28 @@ trait CommandArgumentBuilder[T] extends Logging with EmptyLoggingContext {
 
 }
 
-trait CommandArguments extends CommandArgument with CommandArgumentDefinitions {
+/**
+ * Command arguments.
+ */
+trait CommandArguments extends CommandArgumentDefinitions {
 
+  /**
+   * Gets the list of available arguments.
+   *
+   * @return a map associating each argument with its value
+   */
   def arguments: Map[String, Any]
 
+  /**
+   * Writes this command arguments.
+   *
+   * Sequentially writes this command arguments, determined through the
+   * available list of arguments definitions and the corresponding list of
+   * arguments values.
+   *
+   * @param output stream to write to
+   * @return number of written bytes
+   */
   def write(output: OutputStream): Int = {
     var unencryptedLength: Int = 0
 
@@ -151,8 +198,8 @@ trait CommandArguments extends CommandArgument with CommandArgumentDefinitions {
           assert(hash.bytes.length == length)
           ProtocolStream.write(output, hash.bytes)
 
-        case ListArgumentDefinition(name, builder) =>
-          val list = value.asInstanceOf[List[CommandArgument]]
+        case ListArgumentsDefinition(name, builder) =>
+          val list = value.asInstanceOf[List[CommandArguments]]
           var result = ProtocolStream.writeInteger(output, list.length, BitSize.Short)
           for (argument <- list)
             result += argument.write(output)
@@ -194,7 +241,7 @@ trait CommandArguments extends CommandArgument with CommandArgumentDefinitions {
       case HashArgumentDefinition(name, length) =>
         value.toString()
 
-      case ListArgumentDefinition(name, builder) =>
+      case ListArgumentsDefinition(name, builder) =>
         value.toString()
 
       case StringMapArgumentDefinition(name) =>

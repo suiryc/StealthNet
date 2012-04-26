@@ -8,12 +8,9 @@ import stealthnet.scala.Config
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.protocol.commands.Command
 import stealthnet.scala.network.protocol.exceptions.ProtocolException
-import stealthnet.scala.util.{
-  DebugInputStream,
-  EmptyLoggingContext,
-  HexDumper,
-  Logging
-}
+import stealthnet.scala.util.HexDumper
+import stealthnet.scala.util.io.DebugInputStream
+import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 /**
  * Upstream command decoder.
@@ -97,12 +94,12 @@ class CommandDecoder
       return
 
     try {
-      val decrypted = builder.decryptCommand(cnx, buf.array, buf.readerIndex, buf.readableBytes)
-      logger debug(cnx.loggerContext, "Command was:\n" + HexDumper.dump(decrypted))
+      val decrypted = builder.decryptData(cnx, buf.array, buf.readerIndex, buf.readableBytes)
+      logger debug(cnx.loggerContext, "Data was:\n" + HexDumper.dump(decrypted))
     }
     catch {
       case e =>
-        logger debug(cnx.loggerContext, "Could not decrypt command, encrypted data was:\n" + HexDumper.dump(buf.array, buf.readerIndex, buf.readableBytes), e)
+        logger debug(cnx.loggerContext, "Could not decrypt data:\n" + HexDumper.dump(buf.array, buf.readerIndex, buf.readableBytes), e)
         logger debug(cnx.loggerContext, "Decrypting data are: " + builder.decryptingData(cnx))
     }
   }
