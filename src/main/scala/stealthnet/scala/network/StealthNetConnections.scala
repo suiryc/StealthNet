@@ -14,6 +14,10 @@ import stealthnet.scala.core.Core
 import stealthnet.scala.cryptography.{Ciphers, RijndaelParameters}
 import stealthnet.scala.util.Peer
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging, LoggingContext}
+import stealthnet.scala.ui.web.comet.{
+  ConnectionsUpdaterServer,
+  NewConnection
+}
 
 /**
  * Bare ''StealthNet'' connection parameters.
@@ -373,6 +377,9 @@ object StealthNetConnectionsManager
         logger debug("Refused connection with endpoint[" + remoteAddress + "]: unhandled address type")
         false
     }
+
+    if (cnx.accepted)
+      ConnectionsUpdaterServer ! NewConnection(cnx)
 
     /* Note: if connection is not accepted, caller is expected to close the
      * channel, which will trigger a ClosedChannel message: this is when we do

@@ -1,0 +1,18 @@
+<lift:surround with="default" at="content">
+
+  <table id="connections_list">
+    <tr>
+      <th>Host</th>
+      <th>Port</th>
+      <th>Misc</th>
+    </tr>
+    <lift:comet type="ConnectionsUpdater">
+    <tr>
+      <td><connection:host /></td>
+      <td><connection:port /></td>
+      <td><connection:misc /></td>
+    </tr>
+    </lift:comet>
+  </table>
+
+</lift:surround>

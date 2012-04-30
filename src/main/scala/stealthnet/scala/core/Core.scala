@@ -10,6 +10,7 @@ import stealthnet.scala.network.{
   WebCaches
 }
 import stealthnet.scala.network.protocol.commands._
+import stealthnet.scala.ui.web.JettyServer
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 /**
@@ -125,10 +126,12 @@ object Core extends Logging with EmptyLoggingContext {
    *   - refreshes the WebCaches list
    *   - starts the ''StealthNet'' server
    *   - starts the connections manager
+   *   - starts the web server
    *
    * @see [[stealthnet.scala.network.WebCaches]]
    * @see [[stealthnet.scala.network.StealthNetServer]]
    * @see [[stealthnet.scala.network.StealthNetConnectionsManager]]
+   * @see [[stealthnet.scala.ui.web.JettyServer]]
    */
   def start() {
     stopping = false
@@ -136,6 +139,7 @@ object Core extends Logging with EmptyLoggingContext {
     if (Config.enableServerConnections)
       StealthNetServer.start()
     StealthNetConnectionsManager.start()
+    JettyServer.start()
   }
 
   /**
@@ -147,17 +151,20 @@ object Core extends Logging with EmptyLoggingContext {
    *       better to do it as soon as possible
    *   - stops the ''StealthNet'' server
    *   - stops the connections manager
+   *   - stops the web server
    *   - terminates the shared timer
    *
    * @see [[stealthnet.scala.network.WebCaches]]
    * @see [[stealthnet.scala.network.StealthNetServer]]
    * @see [[stealthnet.scala.network.StealthNetConnectionsManager]]
+   * @see [[stealthnet.scala.ui.web.JettyServer]]
    */
   def stop() {
     stopping = true
     WebCaches.removePeer()
     StealthNetServer.stop()
     StealthNetConnectionsManager.stop()
+    JettyServer.stop()
     timer.cancel()
   }
 

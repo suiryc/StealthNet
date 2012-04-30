@@ -21,7 +21,7 @@ object Config {
   val serverPort = 6097
 
   /** Whether to enable server connections. For testing purposes. */
-  val enableServerConnections = false
+  val enableServerConnections = true
 
   /** Whether to enable client connections. For testing purposes. */
   val enableClientConnections = true
@@ -32,5 +32,8 @@ object Config {
    * and until the maximum is reached.
    */
   val avgCnxCount = 3
+
+  /** Web server port. */
+  val webServerPort = 8080
 
 }

@@ -36,6 +36,7 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
    */
   def start() {
     logger debug "Starting"
+
     val bootstrap: ServerBootstrap = new ServerBootstrap(factory)
 
     bootstrap.setPipelineFactory(StealthNetPipelineFactory(new StealthNetConnectionParameters(group = group)))
@@ -51,11 +52,14 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
    */
   def stop() {
     logger debug "Stopping"
+
     Core.stopping = true
     val future: ChannelGroupFuture = group.close()
     future.awaitUninterruptibly()
     factory.releaseExternalResources()
     StealthNetPipelineFactory.releaseExternalResources()
+
+    logger debug "Stopped"
   }
 
 }

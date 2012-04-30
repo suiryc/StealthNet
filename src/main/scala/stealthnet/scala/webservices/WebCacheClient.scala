@@ -1,12 +1,12 @@
 package stealthnet.scala.webservices
 
-import com.weiglewilczek.slf4s.Logging
 import stealthnet.scala.util.Peer
+import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 /**
  * WebCache client.
  */
-object WebCacheClient extends Logging {
+object WebCacheClient extends Logging with EmptyLoggingContext {
 
   /**
    * ''GetPeer'' ''SOAP'' action.

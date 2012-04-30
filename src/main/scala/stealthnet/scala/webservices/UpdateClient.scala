@@ -1,12 +1,12 @@
 package stealthnet.scala.webservices
 
-import com.weiglewilczek.slf4s.Logging
 import scala.xml.XML
+import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 /**
  * ''RShare'' update client.
  */
-object UpdateClient extends Logging {
+object UpdateClient extends Logging with EmptyLoggingContext {
 
   /**
    * ''GetWebCaches'' ''SOAP'' action.
