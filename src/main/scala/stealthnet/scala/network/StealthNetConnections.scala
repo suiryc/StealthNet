@@ -2,7 +2,7 @@ package stealthnet.scala.network
 
 import java.net.InetSocketAddress
 import java.security.interfaces.RSAPublicKey
-import java.util.TimerTask
+import java.util.{Date, TimerTask}
 import scala.actors.Actor
 import scala.collection.mutable
 import org.jboss.netty.channel.Channel
@@ -14,10 +14,7 @@ import stealthnet.scala.core.Core
 import stealthnet.scala.cryptography.{Ciphers, RijndaelParameters}
 import stealthnet.scala.util.Peer
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging, LoggingContext}
-import stealthnet.scala.ui.web.comet.{
-  ConnectionsUpdaterServer,
-  NewConnection
-}
+import stealthnet.scala.ui.web.comet.ConnectionsUpdaterServer
 
 /**
  * Bare ''StealthNet'' connection parameters.
@@ -89,6 +86,11 @@ class StealthNetConnectionParameters(
     rijndaelDecrypter = Ciphers.rijndaelDecrypter(remoteRijndaelParams)
   }
 
+  /** Received commands. */
+  var receivedCommands: Int = _
+  /** Sent commands. */
+  var sentCommands: Int = _
+
   /** Gets whether this connection is a client one. */
   def isClient() = if (client != null) true else false
 
@@ -102,6 +104,8 @@ class StealthNetConnection protected[network] (val channel: Channel)
 {
 
   assert(channel != null)
+
+  val createDate = new Date()
 
   /** Closes the connection channel. */
   def close() {
@@ -379,7 +383,7 @@ object StealthNetConnectionsManager
     }
 
     if (cnx.accepted)
-      ConnectionsUpdaterServer ! NewConnection(cnx)
+      ConnectionsUpdaterServer ! ConnectionsUpdaterServer.NewConnection(cnx)
 
     /* Note: if connection is not accepted, caller is expected to close the
      * channel, which will trigger a ClosedChannel message: this is when we do
@@ -438,6 +442,8 @@ object StealthNetConnectionsManager
           StealthNetClientConnectionsManager.CloseClient(cnx)
       else
         remove(cnx.peer)
+
+      ConnectionsUpdaterServer ! ConnectionsUpdaterServer.ClosedConnection(cnx)
 
       Some(cnx)
     }

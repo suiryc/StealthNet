@@ -32,6 +32,7 @@ object Core extends Logging with EmptyLoggingContext {
    * @param cnx related connection
    */
   def receivedCommand(command: Command, cnx: StealthNetConnection) {
+    cnx.receivedCommands += 1
     command match {
       case c: RSAParametersServerCommand =>
         if ((c.key.getModulus == RSAKeys.publicKey.getModulus)

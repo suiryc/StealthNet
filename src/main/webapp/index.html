@@ -1,16 +1,23 @@
 <lift:surround with="default" at="content">
 
+  <script src="scripts/connections.js" type="text/javascript"/>
   <table id="connections_list">
     <tr>
       <th>Host</th>
       <th>Port</th>
+      <th>Creation date</th>
+      <th>Received commands</th>
+      <th>Sent commands</th>
       <th>Misc</th>
     </tr>
     <lift:comet type="ConnectionsUpdater">
-    <tr>
-      <td><connection:host /></td>
-      <td><connection:port /></td>
-      <td><connection:misc /></td>
+    <tr connection:id="">
+      <td class="host"><connection:host /></td>
+      <td class="port"><connection:port /></td>
+      <td class="created"><connection:created /></td>
+      <td class="receivedCommands"><connection:receivedCommands /></td>
+      <td class="sentCommands"><connection:sentCommands /></td>
+      <td class="misc"><connection:misc /></td>
     </tr>
     </lift:comet>
   </table>
