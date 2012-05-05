@@ -1,6 +1,8 @@
 package stealthnet.scala.core
 
+import java.security.Security
 import java.util.{Timer, TimerTask}
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import stealthnet.scala.Config
 import stealthnet.scala.cryptography.{RijndaelParameters, RSAKeys}
 import stealthnet.scala.network.{
@@ -17,6 +19,10 @@ import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
  * Core object, processing commands.
  */
 object Core extends Logging with EmptyLoggingContext {
+
+  /* Register BouncyCastle if necessary */
+  if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
+    Security.addProvider(new BouncyCastleProvider())
 
   /** Shared timer. */
   val timer = new Timer()

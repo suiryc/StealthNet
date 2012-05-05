@@ -13,7 +13,6 @@ object TestServer {
   def main(args: Array[String]): Unit = {
     println("Started")
 
-    Security.addProvider(new BouncyCastleProvider())
     try {
       Core.start()
 
