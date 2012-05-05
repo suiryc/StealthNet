@@ -3,19 +3,17 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>perso</groupId>
-  <artifactId>StealthNet</artifactId>
+  <groupId>stealthnet.scala</groupId>
+  <artifactId>stealthnet-core</artifactId>
   <packaging>jar</packaging>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>StealthNet</name>
+  <version>0.1.0</version>
+  <name>StealthNet core</name>
 
   <properties>
     <maven.compiler.source>1.6</maven.compiler.source>
     <maven.compiler.target>1.6</maven.compiler.target>
     <encoding>UTF-8</encoding>
     <scala.version>2.9.1</scala.version>
-    <jetty.version>8.1.3.v20120416</jetty.version>
-    <lift.version>2.4-M5</lift.version>
   </properties>
 
   <dependencies>
@@ -52,29 +50,12 @@
       <artifactId>bcprov-jdk15on</artifactId>
       <version>1.47</version>
     </dependency>
-    <dependency>
 
     <!-- Network -->
-    <groupId>io.netty</groupId>
+    <dependency>
+      <groupId>io.netty</groupId>
       <artifactId>netty</artifactId>
       <version>3.3.1.Final</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-server</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-webapp</artifactId>
-      <version>${jetty.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>net.liftweb</groupId>
-      <artifactId>lift-webkit_${scala.version}</artifactId>
-      <version>${lift.version}</version>
-      <scope>compile</scope>
     </dependency>
 
     <!-- Testing -->
@@ -88,6 +69,7 @@
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${scala.version}</artifactId>
       <version>1.7.2</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -168,6 +150,25 @@
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Install StealthNet core in local repository -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-install-plugin</artifactId>
+        <version>2.3.1</version>
+        <executions>
+          <execution>
+            <id>install-stealthnet-core</id>
+            <phase>package</phase>
+            <goals>
+              <goal>install-file</goal>
+            </goals>
+            <configuration>
+              <file>${project.build.directory}/${project.artifactId}-${project.version}.jar</file>
+              <pomFile>${basedir}/pom.xml</pomFile>
             </configuration>
           </execution>
         </executions>

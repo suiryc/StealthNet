@@ -14,7 +14,6 @@ import stealthnet.scala.core.Core
 import stealthnet.scala.cryptography.{Ciphers, RijndaelParameters}
 import stealthnet.scala.util.Peer
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging, LoggingContext}
-import stealthnet.scala.ui.web.comet.ConnectionsUpdaterServer
 
 /**
  * Bare ''StealthNet'' connection parameters.
@@ -116,6 +115,34 @@ class StealthNetConnection protected[network] (val channel: Channel)
 }
 
 /**
+ * Connection listener companion object.
+ *
+ * Defines messages that can be notified to listeners.
+ */
+object ConnectionListener {
+  
+  /* XXX - manager connection updates (state, etc) and closing */
+  /** Message: new connection initiated. */
+  case class NewConnection(cnx: StealthNetConnection)
+  /** Message: connection closed. */
+  case class ClosedConnection(cnx: StealthNetConnection)
+
+}
+
+/**
+ * Connection listener.
+ *
+ * Basically, a listener is an actor. But there actually are many kind (that is
+ * implementations) of actors. The common trait being the `!` method used to
+ * send a message.
+ */
+trait ConnectionListener {
+
+  def !(msg: Any): Unit
+
+}
+
+/**
  * ''StealthNet'' connections manager.
  *
  * Peers or connections can be registered, up to the configured connection
@@ -163,6 +190,9 @@ object StealthNetConnectionsManager
   private val local: ChannelLocal[StealthNetConnection] =
     new ChannelLocal(false)
 
+  /** Listeners. */
+  private var listeners = List.empty[ConnectionListener]
+
   /** Whether a peer request is ongoing (inside this manager). */
   private var peerRequestOngoing  = false
   /** Whether a peer request was sent (to the client connections manager). */
@@ -171,6 +201,15 @@ object StealthNetConnectionsManager
   /** Whether we are stopping. */
   private var stopping = false
 
+  /**
+   * Actor message: register a connection listener.
+   *
+   * Listeners are expected to register at application start.
+   *
+   * @note There is no need to unregister a listener, which is stopped with the
+   *   application.
+   */
+  case class AddConnectionsListener(listener: ConnectionListener)
   /**
    * Actor message: requests new peer connection.
    *
@@ -262,6 +301,9 @@ object StealthNetConnectionsManager
 
     loop {
       react {
+        case AddConnectionsListener(listener) =>
+          listeners ::= listener
+
         case RequestPeer() =>
           peerRequestOngoing = false
           if (!upperLimitReached() || peerRequestSent) {
@@ -302,7 +344,7 @@ object StealthNetConnectionsManager
         case Stop() =>
           if (stopping || (hosts.size == 0)) {
             /* time to leave */
-            logger debug("Stopping")
+            logger debug("Stopped")
             /* Note: we get back here when the last host is unregistered, which
              * is when the last connection is closed. So we know we won't be
              * needed anymore
@@ -383,7 +425,7 @@ object StealthNetConnectionsManager
     }
 
     if (cnx.accepted)
-      ConnectionsUpdaterServer ! ConnectionsUpdaterServer.NewConnection(cnx)
+      listeners foreach { _ ! ConnectionListener.NewConnection(cnx) }
 
     /* Note: if connection is not accepted, caller is expected to close the
      * channel, which will trigger a ClosedChannel message: this is when we do
@@ -443,7 +485,7 @@ object StealthNetConnectionsManager
       else
         remove(cnx.peer)
 
-      ConnectionsUpdaterServer ! ConnectionsUpdaterServer.ClosedConnection(cnx)
+      listeners foreach { _ ! ConnectionListener.ClosedConnection(cnx) }
 
       Some(cnx)
     }
@@ -612,7 +654,7 @@ protected object StealthNetClientConnectionsManager
 
         case Stop() =>
           /* time to leave */
-          logger debug("Stopping")
+          logger debug("Stopped")
           exit()
       }
     }
