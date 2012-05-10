@@ -11,10 +11,10 @@
     <param-value>Development</param-value>
   </context-param> -->
 
-  <context-param>
+  <!-- <context-param>
     <param-name>primefaces.THEME</param-name>
     <param-value>bluesky</param-value>
-  </context-param>
+  </context-param> -->
 
   <!-- Activate the JSF 2.0 servlet -->
   <servlet>
