@@ -92,8 +92,6 @@
         <configuration>
           <args>
             <arg>-deprecation</arg>
-            <arg>-dependencyfile</arg>
-            <arg>${project.build.directory}/.scala_dependencies</arg>
           </args>
         </configuration>
       </plugin>
@@ -101,10 +99,10 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>2.4</version>
-        <configuration>
+        <!-- <configuration>
           <source>1.6</source>
           <target>1.6</target>
-        </configuration>
+        </configuration> -->
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -150,25 +148,6 @@
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <!-- Install StealthNet core in local repository -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-install-plugin</artifactId>
-        <version>2.3.1</version>
-        <executions>
-          <execution>
-            <id>install-stealthnet-core</id>
-            <phase>package</phase>
-            <goals>
-              <goal>install-file</goal>
-            </goals>
-            <configuration>
-              <file>${project.build.directory}/${project.artifactId}-${project.version}.jar</file>
-              <pomFile>${basedir}/pom.xml</pomFile>
             </configuration>
           </execution>
         </executions>
