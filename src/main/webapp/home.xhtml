@@ -3,12 +3,12 @@
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:p="http://primefaces.org/ui">
 <h:head>
-        <!-- <link type="text/css" rel="stylesheet" href="themes/bluesky/skin.css" /> -->
 </h:head>
 <h:body>
 <center>
-    <h:form id="form-close">
-      <p:commandButton value="Shutdown application" actionListener="#{serverBean.shutdown}" id="app-shutdown" icon="ui-icon-circle-close" />
+    <h:form id="form-close" rendered="#{userSession.logged}">
+      <p:commandButton value="Logout" action="#{loginManager.logout}" id="session-logout" icon="ui-icon-circle-close" />
+      <p:commandButton value="Shutdown" actionListener="#{serverBean.shutdown}" id="app-shutdown" icon="ui-icon-power" />
     </h:form>
     <h:form id="form">
         <p:panel header="Users Search Form" style="width: 700;">

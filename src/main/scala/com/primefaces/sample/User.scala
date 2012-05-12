@@ -1,7 +1,7 @@
 package com.primefaces.sample
 
 import java.util.Date
-import reflect.BeanProperty
+import scala.reflect.BeanProperty
 
 object User {
 

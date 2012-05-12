@@ -13,12 +13,6 @@ class UserManagedBean extends Serializable {
     val userService = new UserService()
 
     @BeanProperty
-    protected var username: String = _
-
-    @BeanProperty
-    protected var password: String = _
-
-    @BeanProperty
     protected var searchedUser: String = _
 
     @BeanProperty
@@ -27,16 +21,6 @@ class UserManagedBean extends Serializable {
     @BeanProperty
     protected var selectedUser: User = _
     
-    def login(): String = {
-      if("test".equalsIgnoreCase(username) && "test".equals(password))
-        "home"
-      else {
-        val context = FacesContext.getCurrentInstance()
-        context.addMessage("username", new FacesMessage("Invalid UserName and Password"))
-        "login"
-      }
-    }
-
     def searchUser(): String = {
       searchUsersResults = userService.searchUsers(
         if (searchedUser == null) "" else searchedUser.trim()
