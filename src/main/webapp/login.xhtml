@@ -6,20 +6,20 @@
 <h:body>
   <center>
     <p:messages id="messages" showDetail="true" autoUpdate="true"/>
-    <p:panel header="Login" style="width: 350;">
-      <h:form>
+    <h:form>
+      <p:panel header="Login" style="width: 350;">
         <h:panelGrid columns="2" cellpadding="2">
           <h:outputText value="UserName" />
-          <h:inputText value="#{loginManager.username}" label="UserName" />
+          <p:inputText value="#{loginManager.username}" />
 
           <h:outputText value="Password" />
-          <h:inputSecret value="#{loginManager.password}" />
+          <p:password value="#{loginManager.password}" />
 
           <h:panelGroup />
-          <h:commandButton value="Login" action="#{loginManager.login}" />
+          <p:commandButton value="Login" action="#{loginManager.login}" />
         </h:panelGrid>
-      </h:form>
-    </p:panel>
+      </p:panel>
+    </h:form>
   </center>
 </h:body>
 </html>
