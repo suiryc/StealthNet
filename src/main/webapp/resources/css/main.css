@@ -1,0 +1,8 @@
+/* Globally resize components. 
+ * See PrimeFaces User's Guide - Theming Tips
+ */
+.ui-widget,
+.ui-widget .ui-widget
+{
+  font-size: 12px !important;
+}

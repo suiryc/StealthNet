@@ -26,12 +26,12 @@ class UserManagedBean extends Serializable {
         if (searchedUser == null) "" else searchedUser.trim()
       )
 
-      "home"
+      "tutorial"
     }
     
     def updateUser(): String = {
       userService.update(selectedUser)
-      "home"
+      "tutorial"
     }
 
     def onUserSelect(event: SelectEvent) =
