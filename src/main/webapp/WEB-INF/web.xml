@@ -11,23 +11,35 @@
     <param-value>Development</param-value>
   </context-param> -->
 
-  <!-- <context-param>
-    <param-name>primefaces.THEME</param-name>
-    <param-value>bluesky</param-value>
-  </context-param> -->
-
-  <!-- Activate the JSF 2.0 servlet -->
+  <!-- JSF 2.0 servlet -->
   <servlet>
-    <servlet-name>Faces Servlet</servlet-name>
+    <servlet-name>jsf</servlet-name>
     <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
     <load-on-startup>1</load-on-startup>
   </servlet>
-
-  <!-- Tell the context which URLs to process with JSF -->
   <servlet-mapping>
-    <servlet-name>Faces Servlet</servlet-name>
+    <servlet-name>jsf</servlet-name>
     <url-pattern>*.jsf</url-pattern>
   </servlet-mapping>
+
+  <!-- CometD servlet -->
+  <servlet>
+    <servlet-name>cometd</servlet-name>
+    <servlet-class>org.cometd.server.CometdServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+    <!-- support-async (or something like that) ? -->
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>cometd</servlet-name>
+    <url-pattern>/cometd/*</url-pattern>
+  </servlet-mapping>
+
+  <!-- Bayeux initializer -->
+  <servlet>
+    <servlet-name>cometd-bayeux</servlet-name>
+    <servlet-class>com.primefaces.sample.cometd.BayeuxInitializer</servlet-class>
+    <load-on-startup>2</load-on-startup>
+  </servlet>
 
   <welcome-file-list>
     <welcome-file>index.jsp</welcome-file>

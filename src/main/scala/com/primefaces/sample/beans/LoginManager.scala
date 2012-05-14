@@ -1,4 +1,4 @@
-package com.primefaces.sample
+package com.primefaces.sample.beans
 
 import javax.faces.application.FacesMessage
 import javax.faces.bean.{ManagedBean, ManagedProperty, RequestScoped}

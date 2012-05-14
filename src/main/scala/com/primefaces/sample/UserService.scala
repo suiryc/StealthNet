@@ -3,6 +3,7 @@ package com.primefaces.sample
 import java.util.Date
 import scala.collection.mutable
 import scala.collection.JavaConversions._
+import com.primefaces.sample.beans.User
 
 object UserService {
 

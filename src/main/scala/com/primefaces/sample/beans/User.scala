@@ -1,4 +1,4 @@
-package com.primefaces.sample
+package com.primefaces.sample.beans
 
 import java.util.Date
 import scala.reflect.BeanProperty

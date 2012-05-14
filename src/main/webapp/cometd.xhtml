@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui">
+<h:body>
+  <ui:composition template="/templates/default-layout.xhtml">
+    <ui:define name="html-head">
+      <h:outputScript name="json2.js" library="js" />
+      <h:outputScript name="cometd.js" library="js" />
+      <h:outputScript name="jquery.cometd.js" library="js" />
+      <h:outputScript name="application.js" library="js" />
+      <script type="text/javascript">
+var config = {
+  contextPath: '#{request.contextPath}'
+};
+      </script>
+    </ui:define>
+    <ui:define name="page-content">
+      <h2>TODO</h2>
+      <div id="body"></div>
+    </ui:define>
+  </ui:composition>
+</h:body>
+</html>

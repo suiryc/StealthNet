@@ -1,7 +1,9 @@
-package com.primefaces.sample
+package com.primefaces.sample.beans
 
 import javax.faces.bean.{ApplicationScoped, ManagedBean}
+import javax.faces.event.ActionEvent
 import scala.actors.Actor
+import com.primefaces.sample.Server
 
 object ServerBean extends Actor {
 
@@ -25,7 +27,7 @@ object ServerBean extends Actor {
 @ApplicationScoped
 class ServerBean extends Serializable {
 
-  def shutdown() =
+  def shutdown(actionEvent: ActionEvent) =
     /* We need to delegate server closing since we are processing a request */
     ServerBean ! ServerBean.Stop()
 

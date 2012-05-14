@@ -7,14 +7,7 @@ object TestServer {
   def main(args: Array[String]): Unit = {
     println("Started")
 
-    //try {
-      Server.start()
-
-      /*Thread.sleep(60000)
-    }
-    finally {
-      Server.stop()
-    }*/
+    Server.start()
   }
 
 }
