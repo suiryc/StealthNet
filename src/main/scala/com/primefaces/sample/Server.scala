@@ -3,6 +3,7 @@ package com.primefaces.sample
 import java.io.File
 import org.eclipse.jetty.server.{Server => jettyServer }
 import org.eclipse.jetty.webapp.WebAppContext
+import com.primefaces.sample.cometd.SessionManager
 
 /**
  * @todo Documentation
@@ -26,6 +27,8 @@ object Server {
     server.setHandler(context)
  
     server.start()
+
+    SessionManager.start()
   }
 
   /**
@@ -36,6 +39,7 @@ object Server {
       server.stop()
       server.join()
     }
+    SessionManager.stop()
   }
 
 }

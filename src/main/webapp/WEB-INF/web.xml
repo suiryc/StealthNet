@@ -46,6 +46,9 @@
   </welcome-file-list>
 
   <listener>
+    <listener-class>com.primefaces.sample.cometd.SessionListener</listener-class>
+  </listener>
+  <listener>
     <!-- See: http://stackoverflow.com/questions/7886035/could-not-find-factory-javax-faces-context-facescontextfactory -->
     <listener-class>com.sun.faces.config.ConfigureListener</listener-class>
   </listener>

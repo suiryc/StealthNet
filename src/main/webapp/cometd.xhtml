@@ -14,7 +14,8 @@
       <h:outputScript name="application.js" library="js" />
       <script type="text/javascript">
 var config = {
-  contextPath: '#{request.contextPath}'
+  contextPath: '#{request.contextPath}',
+  sessionId: '#{facesContext.externalContext.request.session.id}'
 };
       </script>
     </ui:define>

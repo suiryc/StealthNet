@@ -193,6 +193,7 @@
                   <directory>${basedir}/src/main</directory>
                   <includes>
                     <include>webapp/**</include>
+                    <include>config/**</include>
                   </includes>
                 </resource>
                 <resource>

@@ -10,8 +10,12 @@ import org.cometd.bayeux.server.BayeuxServer
 
 class BayeuxInitializer extends GenericServlet {
 
-  override def init()  {
-    val bayeux = getServletContext.getAttribute(BayeuxServer.ATTRIBUTE).asInstanceOf[BayeuxServer]
+  override def init() {
+    val bayeux = getServletContext.getAttribute(BayeuxServer.ATTRIBUTE)
+      .asInstanceOf[BayeuxServer]
+
+    bayeux.setSecurityPolicy(new BayeuxAuthenticator())
+
     new HelloService(bayeux)
   }
 
