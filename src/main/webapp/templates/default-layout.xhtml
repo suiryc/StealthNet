@@ -7,23 +7,50 @@
     xmlns:p="http://primefaces.org/ui">
 <h:head>
   <h:outputStylesheet name="main.css" library="css" />
-  <ui:insert name="html-head" />
+  <h:panelGroup rendered="#{not userSession.logged}">
+    <meta http-equiv="refresh" content="10;url=#{request.contextPath}/login.jsf" />
+  </h:panelGroup>
+
+  <h:panelGroup rendered="#{userSession.logged}">
+    <ui:insert name="html-head" />
+  </h:panelGroup>
 </h:head>
+
 <h:body>
-  <div id="page">
-    <div id="page-header">
-      <ui:insert name="page-header" >
-        <ui:include src="/templates/default-header.xhtml" />
-      </ui:insert>
+  <h:panelGroup rendered="#{not userSession.logged}">
+    <p:dialog id="dialog" widgetVar="dlg" modal="true" draggable="false" resizable="false" width="200" header="Unauthorized access">
+Please login!<br/><br/>Close this dialog or wait a few seconds to be redirected to the login page.
+    </p:dialog>
+    <script type="text/javascript">
+function redirectLogin() {
+  window.location.replace("#{request.contextPath}/login.jsf");
+}
+
+/* Note: we need to wait for the page to be loaded before being able to access
+ * the dialog widget. */
+$(function() {
+  dlg.cfg.behaviors = { close: redirectLogin };
+  dlg.show();
+});
+    </script>
+  </h:panelGroup>
+
+  <h:panelGroup rendered="#{userSession.logged}">
+    <div id="page">
+      <div id="page-header">
+        <ui:insert name="page-header" >
+          <ui:include src="/templates/default-header.xhtml" />
+        </ui:insert>
+      </div>
+      <div id="page-content">
+        <ui:insert name="page-content" />
+      </div>
+      <div id="page-footer">
+        <ui:insert name="page-footer" >
+          <ui:include src="/templates/default-footer.xhtml" />
+        </ui:insert>
+      </div>
     </div>
-    <div id="page-content">
-      <ui:insert name="page-content" />
-    </div>
-    <div id="page-footer">
-      <ui:insert name="page-footer" >
-        <ui:include src="/templates/default-footer.xhtml" />
-      </ui:insert>
-    </div>
-  </div>
+  </h:panelGroup>
 </h:body>
 </html>
