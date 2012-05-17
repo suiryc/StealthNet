@@ -64,12 +64,12 @@
       <artifactId>jetty-jsp</artifactId>
       <version>${jetty.version}</version>
     </dependency>
-    <!-- XXX - make cometd use WebSockets if possible ? -->
-    <dependency>
+    <!-- CometD provides its own WebSocket classes. -->
+    <!-- <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-websocket</artifactId>
       <version>${jetty.version}</version>
-    </dependency>
+    </dependency> -->
 
     <!-- JSF -->
     <dependency>
@@ -99,12 +99,11 @@
       <artifactId>cometd-java-server</artifactId>
       <version>${cometd.version}</version>
     </dependency>
-    <!-- <dependency>
-      <groupId>org.cometd.javascript</groupId>
-      <artifactId>cometd-javascript-jquery</artifactId>
+    <dependency>
+      <groupId>org.cometd.java</groupId>
+      <artifactId>cometd-websocket-jetty</artifactId>
       <version>${cometd.version}</version>
-      <type>war</type>
-    </dependency> -->
+    </dependency>
   </dependencies>
 
   <build>

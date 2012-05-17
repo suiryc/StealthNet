@@ -6,7 +6,11 @@
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:p="http://primefaces.org/ui">
 <h:head>
-  <h:outputStylesheet name="main.css" library="css" />
+  <h:outputStylesheet library="css" name="main.css" />
+  <h:outputScript library="js" name="ext/core.js" />
+  <h:outputScript library="js" name="ext/primefaces.js" />
+  <h:outputScript library="js" name="ext/widgets-growl.js" />
+
   <h:panelGroup rendered="#{not userSession.logged}">
     <meta http-equiv="refresh" content="10;url=#{request.contextPath}/login.jsf" />
   </h:panelGroup>
@@ -18,21 +22,11 @@
 
 <h:body>
   <h:panelGroup rendered="#{not userSession.logged}">
-    <p:dialog id="dialog" widgetVar="dlg" modal="true" draggable="false" resizable="false" width="200" header="Unauthorized access">
-Please login!<br/><br/>Close this dialog or wait a few seconds to be redirected to the login page.
-    </p:dialog>
-    <script type="text/javascript">
-function redirectLogin() {
-  window.location.replace("#{request.contextPath}/login.jsf");
-}
-
-/* Note: we need to wait for the page to be loaded before being able to access
- * the dialog widget. */
-$(function() {
-  dlg.cfg.behaviors = { close: redirectLogin };
-  dlg.show();
-});
-    </script>
+    <div id="page">
+      <ui:insert name="page" >
+        <ui:include src="/templates/not-logged.xhtml" />
+      </ui:insert>
+    </div>
   </h:panelGroup>
 
   <h:panelGroup rendered="#{userSession.logged}">

@@ -9,8 +9,8 @@
   <ui:composition>
     <center>
       <h:form id="form-menu">
-        <p:commandButton value="Logout" action="#{loginManager.logout}" ajax="false" icon="ui-icon-circle-close" />
-        <p:commandButton value="Shutdown" actionListener="#{serverBean.shutdown}" update="form-menu" icon="ui-icon-power" />
+        <p:commandButton value="Logout" onclick="Ext.event.trigger('preLogout');" action="#{loginManager.logout}" ajax="false" icon="ui-icon-circle-close" />
+        <p:commandButton value="Shutdown" onclick="Ext.event.trigger('preShutdown');" oncomplete="Ext.event.trigger('postShutdown');" actionListener="#{serverBean.shutdown}" update="form-menu" icon="ui-icon-power" />
       </h:form>
     </center>
   </ui:composition>

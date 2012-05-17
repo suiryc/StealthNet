@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="2.5"
+<web-app version="3.0"
     xmlns="http://java.sun.com/xml/ns/javaee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" >
@@ -26,8 +26,14 @@
   <servlet>
     <servlet-name>cometd</servlet-name>
     <servlet-class>org.cometd.server.CometdServlet</servlet-class>
+    <!-- http://docs.cometd.org/reference/#java_server_configuration -->
+    <async-supported>true</async-supported>
+    <!-- http://docs.cometd.org/reference/#java_server_transports -->
+    <init-param>
+      <param-name>transports</param-name>
+      <param-value>org.cometd.websocket.server.WebSocketTransport</param-value>
+    </init-param>
     <load-on-startup>1</load-on-startup>
-    <!-- support-async (or something like that) ? -->
   </servlet>
   <servlet-mapping>
     <servlet-name>cometd</servlet-name>

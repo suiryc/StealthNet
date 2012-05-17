@@ -24,7 +24,7 @@ class LoginManager {
     if ((username == "test") && (password == "test")) {
       /* XXX - invalidate session and reset userSession ? */
       userSession.setLogged(true)
-      "home"
+      "home?faces-redirect=true"
     }
     else {
       FacesContext.getCurrentInstance.addMessage("loginManager",
@@ -38,7 +38,7 @@ class LoginManager {
 
   def logout(): String = {
     invalidateSession()
-    "login"
+    "login?faces-redirect=true"
   }
 
   private def invalidateSession() = FacesContext.getCurrentInstance.

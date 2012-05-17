@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui">
+<body>
+  <ui:composition>
+    <p:dialog id="dialog" widgetVar="dlg" modal="true" draggable="false" resizable="false" width="200" header="Unauthorized access">
+Please login!<br/><br/>Close this dialog or wait a few seconds to be redirected to the login page.
+    </p:dialog>
+
+    <script type="text/javascript">
+function redirectLogin() {
+    window.location.replace("#{request.contextPath}/login.jsf");
+}
+
+/* Note: we need to wait for the page to be loaded before being able to access
+ * the dialog widget. */
+$(function() {
+    dlg.cfg.behaviors = { close: redirectLogin };
+    dlg.show();
+});
+    </script>
+  </ui:composition>
+</body>
+</html>
