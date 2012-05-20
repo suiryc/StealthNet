@@ -5,10 +5,17 @@
     xmlns:h="http://java.sun.com/jsf/html"
     xmlns:ui="http://java.sun.com/jsf/facelets"
     xmlns:p="http://primefaces.org/ui">
-<body>
-  <ui:composition>
-    <p:dialog id="dialog" widgetVar="dlg" modal="true" draggable="false" resizable="false" width="300" header="Unauthorized access">
-Please login!<br/><br/>Close this dialog or wait a few seconds to be redirected to the login page.
+<h:head>
+  <h:outputStylesheet library="css" name="main.css" />
+  <h:panelGroup>
+    <meta http-equiv="refresh" content="10; url=#{request.contextPath}/login.jsf" />
+  </h:panelGroup>
+</h:head>
+
+<h:body>
+  <div id="page">
+    <p:dialog id="dialog" widgetVar="dlg" modal="true" draggable="false" resizable="false" width="300" header="Session expired">
+The current session expired, please login again.<br/><br/>Close this dialog or wait a few seconds to be redirected to the login page.
     </p:dialog>
 
     <script type="text/javascript">
@@ -23,6 +30,6 @@ $(function() {
     dlg.show();
 });
     </script>
-  </ui:composition>
-</body>
+  </div>
+</h:body>
 </html>

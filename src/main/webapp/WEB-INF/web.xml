@@ -20,6 +20,7 @@
   <servlet-mapping>
     <servlet-name>jsf</servlet-name>
     <url-pattern>*.jsf</url-pattern>
+    <url-pattern>*.xhtml</url-pattern>
   </servlet-mapping>
 
   <!-- CometD servlet -->
@@ -58,5 +59,14 @@
     <!-- See: http://stackoverflow.com/questions/7886035/could-not-find-factory-javax-faces-context-facescontextfactory -->
     <listener-class>com.sun.faces.config.ConfigureListener</listener-class>
   </listener>
+
+  <session-config>
+    <session-timeout>15</session-timeout> 
+  </session-config>
+
+  <error-page>
+    <exception-type>javax.faces.application.ViewExpiredException</exception-type>
+    <location>/viewExpired.jsf</location>
+  </error-page>
 
 </web-app>
