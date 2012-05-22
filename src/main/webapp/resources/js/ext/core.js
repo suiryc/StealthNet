@@ -38,7 +38,9 @@ $(function() {
     });
 
     Ext.event.bind('postShutdown', function() {
-        $('#form-menu').hide();
+        $('.ext-admin').each(function() {
+            $(this).off().attr('onclick', 'return false;').addClass('ui-state-disabled');
+        });
     });
 
     $(window).unload(function() {

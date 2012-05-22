@@ -14,8 +14,8 @@
           <p:menuitem value="CometD" url="/cometd.jsf" icon="ui-icon-transferthick-e-w" />
         </p:submenu>
         <p:submenu label="Admin">
-          <p:menuitem value="Logout" onclick="Ext.event.trigger('preLogout');" action="#{loginManager.logout}" ajax="false" icon="ui-icon-circle-close" />
-          <p:menuitem value="Shutdown" onclick="Ext.event.trigger('preShutdown');" oncomplete="Ext.event.trigger('postShutdown');" actionListener="#{serverBean.shutdown}" icon="ui-icon-power" />
+          <p:menuitem value="Logout" onclick="Ext.event.trigger('preLogout');" action="#{loginManager.logout}" ajax="false" styleClass="ext-admin" icon="ui-icon-circle-close" />
+          <p:menuitem value="Shutdown" onclick="Ext.event.trigger('preShutdown');" oncomplete="Ext.event.trigger('postShutdown');" actionListener="#{serverBean.shutdown}" styleClass="ext-admin" icon="ui-icon-power" />
         </p:submenu>
       </p:menu>
     </h:form>
