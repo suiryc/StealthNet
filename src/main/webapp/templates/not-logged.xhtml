@@ -8,7 +8,13 @@
 <body>
   <ui:composition>
     <p:dialog id="dialog" widgetVar="dlg" modal="true" draggable="false" resizable="false" width="300" header="Unauthorized access">
-Please login!<br/><br/>Close this dialog or wait a few seconds to be redirected to the login page.
+Your session expired or you are not logged in yet.<br/>
+<br/>
+Close this dialog or wait a few seconds to be redirected to the login page.<br/>
+<br/>
+      <center>
+        <p:commandButton id="ok" value="Ok" onclick="dlg.hide();" type="button" />
+      </center>
     </p:dialog>
 
     <script type="text/javascript">

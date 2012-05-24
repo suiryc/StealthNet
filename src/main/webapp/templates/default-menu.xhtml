@@ -15,7 +15,8 @@
           <p:menuitem value="Tutorial demo" url="/tutorial.jsf" icon="ui-icon-star" />
         </p:submenu>
         <p:submenu label="Admin">
-          <p:menuitem value="Logout" onclick="Ext.event.trigger('preLogout');" action="#{loginManager.logout}" ajax="false" styleClass="ext-admin" icon="ui-icon-circle-close" />
+          <!-- Use standard URL link to workaround 'ViewExpired' error -->
+          <p:menuitem value="Logout" onclick="Ext.event.trigger('preLogout');" url="/login.jsf?reason=logout" styleClass="ext-admin" icon="ui-icon-circle-close" />
           <p:menuitem value="Shutdown" onclick="Ext.event.trigger('preShutdown');" oncomplete="Ext.event.trigger('postShutdown');" actionListener="#{serverBean.shutdown}" styleClass="ext-admin" icon="ui-icon-power" />
         </p:submenu>
       </p:menu>

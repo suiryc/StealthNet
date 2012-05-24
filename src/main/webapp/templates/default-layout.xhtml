@@ -16,8 +16,6 @@
   </h:panelGroup>
 
   <h:panelGroup rendered="#{userSession.logged}">
-    <!-- Redirect to login page upon session timeout -->
-    <meta http-equiv="refresh" content="#{session.maxInactiveInterval}; url=#{request.contextPath}/login.jsf?reason=expired" />
     <ui:insert name="html-head" />
   </h:panelGroup>
 </h:head>

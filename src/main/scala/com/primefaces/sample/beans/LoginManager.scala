@@ -11,6 +11,9 @@ import scala.reflect.BeanProperty
 class LoginManager {
 
   @BeanProperty
+  protected var reason: String = _
+
+  @BeanProperty
   protected var username: String = _
 
   @BeanProperty
@@ -22,7 +25,6 @@ class LoginManager {
 
   def login(): String = {
     if ((username == "test") && (password == "test")) {
-      /* XXX - invalidate session and reset userSession ? */
       userSession.setLogged(true)
       "home?faces-redirect=true"
     }
@@ -36,12 +38,23 @@ class LoginManager {
     }
   }
 
-  def logout(): String = {
-    invalidateSession()
-    "login?faces-redirect=true"
+  def handleReason() {
+    if (reason == null)
+      return
+
+    reason.toLowerCase match {
+      case "logout" =>
+        logout()
+
+      case _ =>
+    }
   }
 
-  private def invalidateSession() = FacesContext.getCurrentInstance.
-    getExternalContext.getSession(false).asInstanceOf[HttpSession].invalidate()
+  private def logout() {
+    val context = FacesContext.getCurrentInstance.getExternalContext
+
+    context.getSession(false).asInstanceOf[HttpSession].invalidate()
+    context.redirect(context.getRequestContextPath)
+  }
 
 }

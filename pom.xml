@@ -15,8 +15,8 @@
     <encoding>UTF-8</encoding>
     <scala.version>2.9.2</scala.version>
     <jetty.version>8.1.3.v20120416</jetty.version>
-    <jsf.version>2.1.7</jsf.version>
-    <cometd.version>2.4.1</cometd.version>
+    <jsf.version>2.1.8</jsf.version>
+    <cometd.version>2.4.2</cometd.version>
   </properties>
 
   <repositories>

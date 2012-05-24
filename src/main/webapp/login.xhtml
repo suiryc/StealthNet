@@ -13,25 +13,10 @@
   <h:outputStylesheet name="main.css" library="css" />
 </h:head>
 <h:body>
-  <h:panelGroup rendered="#{param.reason == 'expired'}">
-    <p:dialog id="dialog" widgetVar="dlg" modal="true" draggable="false" resizable="false" width="300" header="Session expired">
-Your session has expired, please login again.<br/><br/>
-      <center>
-        <p:commandButton id="ok" value="Ok" onclick="dlg.hide();" type="button" />
-      </center>
-    </p:dialog>
-
-    <script type="text/javascript">
-function redirectLogin() {
-    window.location.replace("#{request.contextPath}/login.jsf");
-}
-
-$(function() {
-    dlg.cfg.behaviors = { close: redirectLogin };
-    dlg.show();
-});
-    </script>
-  </h:panelGroup>
+  <f:metadata>
+    <f:viewParam name="reason" value="#{loginManager.reason}" />
+    <f:event type="preRenderView" listener="#{loginManager.handleReason}" />
+  </f:metadata>
 
   <center>
     <p:messages id="messages" showDetail="true" autoUpdate="true" />
