@@ -12,7 +12,7 @@
       <h:outputScript library="js" name="cometd/cometd.js" />
       <h:outputScript library="js" name="cometd/jquery.cometd.js" />
       <h:outputScript library="js" name="ext/cometd.js" />
-      <h:outputScript library="js" name="ext/cometd-hello.js" />
+      <h:outputScript library="js" name="ext/cometd-cnxUpdates.js" />
       <script type="text/javascript">
 var config = {
     contextPath: '#{request.contextPath}',
@@ -22,7 +22,33 @@ var config = {
     </ui:define>
     <ui:define name="page-content">
       <h2>TODO</h2>
-      <div id="body"></div>
+      <div id="body">
+        <div class="ui-datatable ui-widget">
+          <table id="connections" role="grid">
+            <thead>
+	            <tr role="row">
+	              <th class="ui-state-default" role="columnheader">
+	               <div class="ui-dt-c"><span>Peer</span></div>
+	              </th>
+	              <th class="ui-state-default" role="columnheader">
+	               <div class="ui-dt-c"><span>Created</span></div>
+	              </th>
+	              <th class="ui-state-default" role="columnheader">
+	               <div class="ui-dt-c"><span>Commands received</span></div>
+	              </th>
+	              <th class="ui-state-default" role="columnheader">
+	               <div class="ui-dt-c"><span>Commands sent</span></div>
+	              </th>
+	              <th class="ui-state-default" role="columnheader">
+	               <div class="ui-dt-c"><span>Misc</span></div>
+	              </th>
+	            </tr>
+	          </thead>
+	          <tbody class="ui-datatable-data ui-widget-content">
+	          </tbody>
+          </table>
+        </div>
+      </div>
     </ui:define>
   </ui:composition>
 </h:body>

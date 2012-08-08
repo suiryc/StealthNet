@@ -3,12 +3,17 @@ package com.primefaces.sample
 import java.io.File
 import org.eclipse.jetty.server.{Server => jettyServer }
 import org.eclipse.jetty.webapp.WebAppContext
-import com.primefaces.sample.cometd.SessionManager
+import stealthnet.scala.Config
+import stealthnet.scala.core.Core
+import stealthnet.scala.network.StealthNetConnectionsManager
+import stealthnet.scala.ui.web.comet.ConnectionsUpdaterServer
+import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
+import stealthnet.scala.ui.web.comet.SessionManager
 
 /**
  * @todo Documentation
  */
-object Server {
+object Server extends Logging with EmptyLoggingContext {
 
   private var server: jettyServer = null
 
@@ -16,7 +21,9 @@ object Server {
    * Starts server.
    */
   def start() {
-    server = new jettyServer(8080)
+    logger debug "Starting"
+
+    server = new jettyServer(Config.webServerPort)
  
     val context = new WebAppContext()
     context.setDescriptor("webapp/WEB-INF/web.xml")
@@ -29,17 +36,30 @@ object Server {
     server.start()
 
     SessionManager.start()
+    ConnectionsUpdaterServer.start()
+
+    StealthNetConnectionsManager !
+      StealthNetConnectionsManager.AddConnectionsListener(ConnectionsUpdaterServer)
+
+    Core.start()
   }
 
   /**
    * Stops server.
    */
   def stop() {
+    logger debug "Stopping"
+
     if (server != null) {
       server.stop()
       server.join()
     }
     SessionManager.stop()
+    ConnectionsUpdaterServer.stop()
+
+    Core.stop()
+
+    logger debug "Stopped"
   }
 
 }

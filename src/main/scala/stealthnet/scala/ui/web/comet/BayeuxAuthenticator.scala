@@ -1,4 +1,4 @@
-package com.primefaces.sample.cometd
+package stealthnet.scala.ui.web.comet
 
 import javax.faces.context.FacesContext
 import org.cometd.server.DefaultSecurityPolicy
@@ -60,6 +60,7 @@ class BayeuxAuthenticator
   }
 
   override def removed(session: ServerSession, expired: Boolean) {
+    ConnectionsUpdaterServer ! ConnectionsUpdaterServer.ActorLeft(session)
   }
 
 }

@@ -1,4 +1,4 @@
-package com.primefaces.sample.cometd
+package stealthnet.scala.ui.web.comet
 
 import javax.servlet.{
   GenericServlet,
@@ -16,7 +16,7 @@ class BayeuxInitializer extends GenericServlet {
 
     bayeux.setSecurityPolicy(new BayeuxAuthenticator())
 
-    new HelloService(bayeux)
+    new ConnectionsUpdaterService(bayeux)
   }
 
   def service(request: ServletRequest, response: ServletResponse) =

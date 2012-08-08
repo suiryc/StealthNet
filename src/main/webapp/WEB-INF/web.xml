@@ -44,7 +44,7 @@
   <!-- Bayeux initializer -->
   <servlet>
     <servlet-name>cometd-bayeux</servlet-name>
-    <servlet-class>com.primefaces.sample.cometd.BayeuxInitializer</servlet-class>
+    <servlet-class>stealthnet.scala.ui.web.comet.BayeuxInitializer</servlet-class>
     <load-on-startup>2</load-on-startup>
   </servlet>
 
@@ -53,7 +53,7 @@
   </welcome-file-list>
 
   <listener>
-    <listener-class>com.primefaces.sample.cometd.SessionListener</listener-class>
+    <listener-class>stealthnet.scala.ui.web.comet.SessionListener</listener-class>
   </listener>
   <listener>
     <!-- See: http://stackoverflow.com/questions/7886035/could-not-find-factory-javax-faces-context-facescontextfactory -->

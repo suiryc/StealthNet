@@ -1,4 +1,4 @@
-package com.primefaces.sample.cometd
+package stealthnet.scala.ui.web.comet
 
 import javax.servlet.ServletConfig
 import javax.servlet.http.{HttpSession, HttpSessionEvent, HttpSessionListener}

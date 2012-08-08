@@ -14,9 +14,9 @@
     <maven.compiler.target>1.6</maven.compiler.target>
     <encoding>UTF-8</encoding>
     <scala.version>2.9.2</scala.version>
-    <jetty.version>8.1.3.v20120416</jetty.version>
-    <jsf.version>2.1.8</jsf.version>
-    <cometd.version>2.4.2</cometd.version>
+    <jetty.version>8.1.5.v20120716</jetty.version>
+    <jsf.version>2.1.9</jsf.version>
+    <cometd.version>2.4.3</cometd.version>
   </properties>
 
   <repositories>
@@ -95,7 +95,7 @@
     <dependency>
       <groupId>org.primefaces</groupId>
       <artifactId>primefaces</artifactId>
-      <version>3.2</version>
+      <version>3.3.1</version>
     </dependency>
 
     <!-- CometD -->
@@ -113,6 +113,13 @@
       <groupId>org.cometd.java</groupId>
       <artifactId>cometd-websocket-jetty</artifactId>
       <version>${cometd.version}</version>
+    </dependency>
+
+    <!-- StealthNet -->
+    <dependency>
+      <groupId>stealthnet.scala</groupId>
+      <artifactId>stealthnet-core</artifactId>
+      <version>0.1.0</version>
     </dependency>
   </dependencies>
 
