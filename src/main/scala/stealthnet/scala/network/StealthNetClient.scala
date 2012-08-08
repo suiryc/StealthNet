@@ -10,6 +10,27 @@ import stealthnet.scala.util.Peer
 import stealthnet.scala.util.log.Logging
 
 /**
+ * ''StealthNet'' client companion object.
+ *
+ * Manages client-side shared resources.
+ */
+object StealthNetClient {
+
+  /** Channel factory. */
+  private val factory: ChannelFactory = new NioClientSocketChannelFactory(
+    Executors.newCachedThreadPool(),
+    Executors.newCachedThreadPool()
+  )
+
+  /**
+   * Cleans shared resources.
+   */
+  def stop() =
+    factory.releaseExternalResources()
+
+}
+
+/**
  * ''StealthNet'' client.
  *
  * Manages client-side actions.
@@ -20,10 +41,10 @@ class StealthNetClient(
 ) extends Logging
 {
 
+  import StealthNetClient._
+
   protected def loggerContext = List("peer" -> peer)
 
-  /** Channel factory. */
-  private var factory: ChannelFactory = null
   /** Client connection channel. */
   private var channel: Channel = null
 
@@ -43,11 +64,6 @@ class StealthNetClient(
   def start(): Boolean = {
     if (!StealthNetConnectionsManager.addPeer(peer))
       return false
-
-    factory = new NioClientSocketChannelFactory(
-      Executors.newCachedThreadPool(),
-      Executors.newCachedThreadPool()
-    )
 
     val bootstrap: ClientBootstrap = new ClientBootstrap(factory)
 
@@ -90,9 +106,6 @@ class StealthNetClient(
       }
       channel.getCloseFuture.awaitUninterruptibly()
     }
-
-    if (factory != null)
-      factory.releaseExternalResources()
     /* Note: pipeline factory resources are released by server */
   }
 

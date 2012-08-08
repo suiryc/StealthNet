@@ -13,7 +13,10 @@ object Peer {
 }
 
 /**
- * Peer. 
+ * Peer.
+ *
+ * @note Being a case class, the `hashCode` and `equals` methods are
+ *   automatically generated using the class parameters.
  */
 case class Peer(host: String, port: Int) {
 

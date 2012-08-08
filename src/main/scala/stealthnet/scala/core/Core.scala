@@ -6,6 +6,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import stealthnet.scala.Config
 import stealthnet.scala.cryptography.{RijndaelParameters, RSAKeys}
 import stealthnet.scala.network.{
+  StealthNetClient,
   StealthNetConnection,
   StealthNetConnectionsManager,
   StealthNetServer,
@@ -152,12 +153,13 @@ object Core extends Logging with EmptyLoggingContext {
    *   - removes ourself from WebCaches if necessary
    *     - this is also done by the connections manager upon stopping, but it is
    *       better to do it as soon as possible
-   *   - stops the ''StealthNet'' server
+   *   - stops the ''StealthNet'' server and cleans client shared resources
    *   - stops the connections manager
    *   - terminates the shared timer
    *
    * @see [[stealthnet.scala.network.WebCaches]]
    * @see [[stealthnet.scala.network.StealthNetServer]]
+   * @see [[stealthnet.scala.network.StealthNetClient]]
    * @see [[stealthnet.scala.network.StealthNetConnectionsManager]]
    * @see [[stealthnet.scala.ui.web.JettyServer]]
    */
@@ -165,6 +167,7 @@ object Core extends Logging with EmptyLoggingContext {
     stopping = true
     WebCaches.removePeer()
     StealthNetServer.stop()
+    StealthNetClient.stop()
     StealthNetConnectionsManager.stop()
     timer.cancel()
   }

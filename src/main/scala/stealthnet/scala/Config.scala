@@ -18,7 +18,8 @@ object Config {
   val writeTimeout = 30000
 
   /** ''StealthNet'' server port. */
-  val serverPort = 6097
+  /* XXX - should be 6097 by default */
+  val serverPort = 14329
 
   /** Whether to enable server connections. For testing purposes. */
   val enableServerConnections = true

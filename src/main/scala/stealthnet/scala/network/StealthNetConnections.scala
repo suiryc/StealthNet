@@ -183,8 +183,8 @@ object StealthNetConnectionsManager
   with EmptyLoggingContext
 {
 
-  /** Connected hosts. */
-  private val hosts = mutable.Set[String]()
+  /** Connected peers. */
+  private val peers = mutable.Set[Peer]()
 
   /** Channel/connection association. */
   private val local: ChannelLocal[StealthNetConnection] =
@@ -342,10 +342,10 @@ object StealthNetConnectionsManager
           reply(closed(channel))
 
         case Stop() =>
-          if (stopping || (hosts.size == 0)) {
+          if (stopping || (peers.size == 0)) {
             /* time to leave */
             logger debug("Stopped")
-            /* Note: we get back here when the last host is unregistered, which
+            /* Note: we get back here when the last peer is unregistered, which
              * is when the last connection is closed. So we know we won't be
              * needed anymore
              */
@@ -382,13 +382,13 @@ object StealthNetConnectionsManager
       logger debug("Refused connection with peer[" + peer + "]: limit reached")
       false
     }
-    else if (hosts.contains(peer.host)) {
-      logger debug("Refused connection with peer[" + peer + "]: host already connected")
+    else if (peers.contains(peer)) {
+      logger debug("Refused connection with peer[" + peer + "]: already connected")
       false
     }
     else {
       logger debug("Accepted connection with peer[" + peer + "]")
-      hosts.add(peer.host)
+      peers.add(peer)
       checkConnectionsLimit()
       true
     }
@@ -407,7 +407,7 @@ object StealthNetConnectionsManager
 
     cnx.accepted = remoteAddress match {
       case socketAddress: InetSocketAddress =>
-        /* Client-side connection host was checked and added beforehand */
+        /* Client-side connection peer was checked and added beforehand */
         if (cnx.isClient) {
           /* If we are stopping, don't accept this connection. */
           if (stopping) false else true
@@ -507,8 +507,8 @@ object StealthNetConnectionsManager
     if (peer == null)
       return
 
-    hosts.remove(peer.host)
-    if (stopping && (hosts.size == 0))
+    peers.remove(peer)
+    if (stopping && (peers.size == 0))
       /* time to really stop now */
       this ! Stop()
     else
@@ -527,7 +527,7 @@ object StealthNetConnectionsManager
    * @see [[stealthnet.scala.network.WebCaches]]
    */
   protected def checkConnectionsLimit() {
-    if (hosts.size < Config.avgCnxCount) {
+    if (peers.size < Config.avgCnxCount) {
       WebCaches.addPeer()
       /* one request at a time */
       if (Config.enableClientConnections && !peerRequestOngoing) {
@@ -541,7 +541,7 @@ object StealthNetConnectionsManager
 
   /** Gets whether the upper connection limit (`1.25 * average`) is reached. */
   protected def upperLimitReached() =
-    if (hosts.size >= 1.25 * Config.avgCnxCount) true else false
+    if (peers.size >= 1.25 * Config.avgCnxCount) true else false
 
   /**
    * Gets the connection associated to the given channel.

@@ -53,7 +53,6 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
   def stop() {
     logger debug "Stopping"
 
-    Core.stopping = true
     val future: ChannelGroupFuture = group.close()
     future.awaitUninterruptibly()
     factory.releaseExternalResources()

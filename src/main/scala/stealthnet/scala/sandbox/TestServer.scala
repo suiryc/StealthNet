@@ -21,6 +21,8 @@ object TestServer {
     finally {
       Core.stop()
     }
+
+    println("Finished")
   }
 
 }
