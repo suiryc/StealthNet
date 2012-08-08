@@ -44,7 +44,7 @@ class ConnectionsUpdater(val session: ServerSession)
             "created" -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cnx.createDate),
             "receivedCommands" -> (cnx.receivedCommands:java.lang.Integer),
             "sentCommands" -> (cnx.sentCommands:java.lang.Integer),
-            "misc" -> (if (cnx.established) "established" else "initiated")
+            "status" -> (if (cnx.established) "established" else "initiated")
           )
           session.deliver(session, "/cnxUpdates", output:java.util.Map[String, Object], null);
 
@@ -55,7 +55,7 @@ class ConnectionsUpdater(val session: ServerSession)
             "id" -> ("connection_" + cnxInfo.id),
             "receivedCommands" -> (cnx.receivedCommands:java.lang.Integer),
             "sentCommands" -> (cnx.sentCommands:java.lang.Integer),
-            "misc" -> (if (cnx.established) "established" else "initiated")
+            "status" -> (if (cnx.established) "established" else "initiated")
           )
           session.deliver(session, "/cnxUpdates", output:java.util.Map[String, Object], null);
 

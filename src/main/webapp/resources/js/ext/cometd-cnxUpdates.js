@@ -1,47 +1,52 @@
 /* self-invoking function with local scope variables */
 (function() {
 
-var cometd = new Ext.cometd.CometD({label: 'Connection updates service'});
+var serviceName = 'Connection updates';
+var cometd = new Ext.cometd.CometD({label: serviceName + ' service'});
 
 
 function addCnxRow(data) {
     var table = $('#connections');
     var idx = table.find('tr').length;
+    var peer = data.host + ':' + data.port;
 
-    $('<tr/>').addClass('ui-widget-content').addClass(idx % 2 ? 'ui-datatable-odd' : 'ui-datatable-even').attr({id: data.id, role: 'row'}).append(
-        $('<td/>').attr({role: 'gridcell'}).append(
-            $('<div/>').addClass('ui-dt-c').html(data.host + ':' + data.port)
-        )
-    ).append(
-        $('<td/>').attr({role: 'gridcell'}).append(
-            $('<div/>').addClass('ui-dt-c').html(data.created)
-        )
-    ).append(
-        $('<td/>').attr({role: 'gridcell'}).append(
-            $('<div/>').addClass('ui-dt-c').attr({data: 'receivedCommands'}).html(data.receivedCommands)
-        )
-    ).append(
-        $('<td/>').attr({role: 'gridcell'}).append(
-            $('<div/>').addClass('ui-dt-c').attr({data: 'sentCommands'}).html(data.sentCommands)
-        )
-    ).append(
-        $('<td/>').attr({role: 'gridcell'}).append(
-            $('<div/>').addClass('ui-dt-c').attr({data: 'misc'}).html(data.misc)
-        )
-    ).appendTo(table);
+    growlMessage('info', serviceName, 'Connection opened with peer ' + peer, false, 3000);
+
+    data.peer = peer;
+    var row = $('<tr/>').addClass('ui-widget-content').addClass(idx % 2 ? 'ui-datatable-odd' : 'ui-datatable-even').attr({id: data.id, role: 'row'})
+    $(['peer', 'created', 'receivedCommands', 'sentCommands', 'status']).each(function(i, field) {
+        row.append(
+            $('<td/>').attr({role: 'gridcell'}).append(
+                $('<div/>').addClass('ui-dt-c').attr({data: field}).html(data[field])
+            )
+        );
+    });
+    row.appendTo(table);
 }
 
 function refreshCnxRow(data) {
     var table = $('#connections');
     var row = table.find('#' + data.id);
 
-    $(['receivedCommands', 'sentCommands', 'misc']).each(function(i, field) {
+    $(['receivedCommands', 'sentCommands', 'status']).each(function(i, field) {
         row.find('div[data="' + field + '"]').html(data[field]);
     });
 }
 
 function closeCnxRow(data) {
-    $('#connections').find('#' + data.id).find('div[data="misc"]').html('closed');
+    var table = $('#connections');
+    var row = table.find('#' + data.id);
+
+    growlMessage('warn', serviceName, 'Connection closed with peer ' + row.find('div[data="peer"]').html(), false, 10000);
+
+    row.find('div[data="status"]').html('closed');
+    row.fadeOut(5000, function() {
+        row.remove();
+        table.find('tr').each(function(i, tr) {
+            if (!i) return;
+            $(tr).removeClass('ui-datatable-even ui-datatable-odd').addClass(i % 2 ? 'ui-datatable-odd' : 'ui-datatable-even');
+        });
+    });
 }
 
 $(function() {
