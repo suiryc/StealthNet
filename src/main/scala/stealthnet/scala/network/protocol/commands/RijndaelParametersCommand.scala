@@ -79,7 +79,9 @@ protected abstract class RijndaelParametersCommand extends Command {
   /** The actual ''Rijndael'' parameters. */
   val parameters: RijndaelParameters
 
+  // scalastyle:off null
   assert(parameters != null)
+  // scalastyle:on null
 
   def argumentDefinitions = RijndaelParametersCommand.argumentDefinitions
 

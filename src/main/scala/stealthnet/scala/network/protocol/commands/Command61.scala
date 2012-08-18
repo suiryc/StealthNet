@@ -1,6 +1,7 @@
 package stealthnet.scala.network.protocol.commands
 
 import java.io.InputStream
+import stealthnet.scala.Constants
 import stealthnet.scala.cryptography.Hash
 import stealthnet.scala.network.protocol.{BitSize, Encryption, ProtocolStream}
 
@@ -10,12 +11,12 @@ object Command61 extends CommandBuilder {
   val code: Byte = 0x61
 
   def argumentDefinitions = List(
-    HashArgumentDefinition("commandId", 48),
+    HashArgumentDefinition("commandId", Constants.hashLength_48B),
     IntegerArgumentDefinition("reserved", BitSize.Short),
     IntegerArgumentDefinition("hopCount", BitSize.Short),
-    HashArgumentDefinition("senderPeerID", 48),
-    HashArgumentDefinition("sourceSearchID", 48),
-    HashArgumentDefinition("hashedFileHash", 64)
+    HashArgumentDefinition("senderPeerID", Constants.hashLength_48B),
+    HashArgumentDefinition("sourceSearchID", Constants.hashLength_48B),
+    HashArgumentDefinition("hashedFileHash", Constants.hashLength_64B)
   )
 
   def read(input: InputStream): Command = {
@@ -53,10 +54,12 @@ class Command61(
 
   val encryption = Encryption.Rijndael
 
+  // scalastyle:off null
   assert(commandId != null)
   assert(senderPeerID != null)
   assert(sourceSearchID != null)
   assert(hashedFileHash != null)
+  // scalastyle:on null
 
   def argumentDefinitions = Command61.argumentDefinitions
 

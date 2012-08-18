@@ -21,7 +21,7 @@ import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 object Core extends Logging with EmptyLoggingContext {
 
   /* Register BouncyCastle if necessary */
-  if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null)
+  if (Option(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)) == None)
     Security.addProvider(new BouncyCastleProvider())
 
   /** Shared timer. */
@@ -37,6 +37,7 @@ object Core extends Logging with EmptyLoggingContext {
    * @param command command to process
    * @param cnx related connection
    */
+  // scalastyle:off method.length
   def receivedCommand(command: Command, cnx: StealthNetConnection) {
     cnx.receivedCommands += 1
     command match {
@@ -48,7 +49,7 @@ object Core extends Logging with EmptyLoggingContext {
           cnx.close()
           return
         }
-        cnx.remoteRSAKey = c.key
+        cnx.remoteRSAKey = Some(c.key)
         cnx.channel.write(new RSAParametersClientCommand())
 
       case c: RSAParametersClientCommand =>
@@ -59,14 +60,16 @@ object Core extends Logging with EmptyLoggingContext {
           cnx.close()
           return
         }
-        cnx.remoteRSAKey = c.key
-        cnx.localRijndaelParameters = RijndaelParameters()
-        cnx.channel.write(new RijndaelParametersServerCommand(cnx.localRijndaelParameters))
+        cnx.remoteRSAKey = Some(c.key)
+        val rijndaelParameters = RijndaelParameters()
+        cnx.localRijndaelParameters = rijndaelParameters
+        cnx.channel.write(new RijndaelParametersServerCommand(rijndaelParameters))
 
       case c: RijndaelParametersServerCommand =>
         cnx.remoteRijndaelParameters = c.parameters
-        cnx.localRijndaelParameters = RijndaelParameters()
-        cnx.channel.write(new RijndaelParametersClientCommand(cnx.localRijndaelParameters))
+        val rijndaelParameters = RijndaelParameters()
+        cnx.localRijndaelParameters = rijndaelParameters
+        cnx.channel.write(new RijndaelParametersClientCommand(rijndaelParameters))
         cnx.established = true
 
       case c: RijndaelParametersClientCommand =>
@@ -123,6 +126,7 @@ object Core extends Logging with EmptyLoggingContext {
         logger error(cnx.loggerContext, "Unhandled command " + command)
     }
   }
+  // scalastyle:on method.length
 
   /**
    * Starts core.

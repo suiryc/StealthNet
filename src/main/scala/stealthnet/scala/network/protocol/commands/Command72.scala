@@ -1,6 +1,7 @@
 package stealthnet.scala.network.protocol.commands
 
 import java.io.InputStream
+import stealthnet.scala.Constants
 import stealthnet.scala.cryptography.Hash
 import stealthnet.scala.network.protocol.{Encryption, ProtocolStream}
 
@@ -9,10 +10,10 @@ object Command72 extends CommandBuilder {
   val code: Byte = 0x72
 
   def argumentDefinitions = List(
-    HashArgumentDefinition("commandId", 48),
-    HashArgumentDefinition("senderPeerID", 48),
-    HashArgumentDefinition("receiverPeerID", 48),
-    HashArgumentDefinition("feedbackID", 48)
+    HashArgumentDefinition("commandId", Constants.hashLength_48B),
+    HashArgumentDefinition("senderPeerID", Constants.hashLength_48B),
+    HashArgumentDefinition("receiverPeerID", Constants.hashLength_48B),
+    HashArgumentDefinition("feedbackID", Constants.hashLength_48B)
   )
 
   def read(input: InputStream): Command = {
@@ -43,10 +44,12 @@ class Command72(
 
   val encryption = Encryption.Rijndael
 
+  // scalastyle:off null
   assert(commandId != null)
   assert(senderPeerID != null)
   assert(receiverPeerID != null)
   assert(feedbackID != null)
+  // scalastyle:on null
 
   def argumentDefinitions = Command72.argumentDefinitions
 

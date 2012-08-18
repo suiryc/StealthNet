@@ -90,7 +90,7 @@ class StealthNetPipelineFactory(val parameters: StealthNetConnectionParameters)
     pipeline.addLast("command decoder", new CommandDecoder())
 
     /* upstream/downstream command handler */
-    pipeline.addLast("command handler", new CommandHandler(parameters.group))
+    pipeline.addLast("command handler", new CommandHandler())
 
     pipeline
   }

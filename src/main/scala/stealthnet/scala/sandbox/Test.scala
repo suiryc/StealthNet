@@ -24,6 +24,7 @@ import stealthnet.scala.cryptography.CipherMode
 import stealthnet.scala.cryptography.PaddingMode
 import stealthnet.scala.network.protocol.commands.Command
 
+// scalastyle:off line.size.limit regex
 object Test {
 
   def main(args: Array[String]) {
@@ -188,3 +189,4 @@ object Test {
   }
 
 }
+// scalastyle:on line.size.limit regex

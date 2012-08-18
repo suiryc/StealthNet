@@ -13,7 +13,9 @@ object UUID {
 
   /** Factory method from bytes array. */
   def apply(bytes: Array[Byte]): UUID = {
+    // scalastyle:off null
     require(bytes != null)
+    // scalastyle:on null
 
     new UUID(bytes)
   }

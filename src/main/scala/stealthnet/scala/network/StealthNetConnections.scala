@@ -9,7 +9,7 @@ import org.jboss.netty.channel.Channel
 import org.jboss.netty.channel.ChannelLocal
 import org.jboss.netty.channel.group.ChannelGroup
 import org.bouncycastle.crypto.BufferedBlockCipher
-import stealthnet.scala.Config
+import stealthnet.scala.{Config, Constants}
 import stealthnet.scala.core.Core
 import stealthnet.scala.cryptography.{Ciphers, RijndaelParameters}
 import stealthnet.scala.util.Peer
@@ -25,20 +25,16 @@ import stealthnet.scala.util.log.{EmptyLoggingContext, Logging, LoggingContext}
  */
 class StealthNetConnectionParameters(
   /** Channel group to which register an opened channel. */
-  var group: ChannelGroup = null,
-  /** Client object, `null` on server side. */
-  var client: StealthNetClient = null,
+  var group: Option[ChannelGroup] = None,
+  /** Client object, `None` on server side. */
+  var client: Option[StealthNetClient] = None,
   /** Remote peer. */
-  var peer: Peer = null
+  var peer: Option[Peer] = None
 ) extends LoggingContext
 {
 
-  def loggerContext = {
-    if (peer != null)
-      List("peer" -> peer)
-    else
-      List.empty
-  }
+  def loggerContext: List[(String, Any)] =
+    peer map(v => List("peer" -> v)) getOrElse(Nil)
 
   /** Whether connection was accepted (no limit reached). */
   var accepted: Boolean = true
@@ -47,15 +43,15 @@ class StealthNetConnectionParameters(
   /** Whether connection is being closed. */
   var closing: Boolean = false
   /** Remote ''RSA'' public key to encrypt data. */
-  var remoteRSAKey: RSAPublicKey = null
+  var remoteRSAKey: Option[RSAPublicKey] = None
 
   /** Local ''Rijndael'' parameters to encrypt data. */
-  private[this] var localRijndaelParams: RijndaelParameters = null
+  private[this] var localRijndaelParams: Option[RijndaelParameters] = None
   /** ''Rijndael'' encrypter. */
-  var rijndaelEncrypter: BufferedBlockCipher = null
+  var rijndaelEncrypter: Option[BufferedBlockCipher] = None
 
   /** Gets local ''Rijndael'' parameters to encrypt data. */
-  def localRijndaelParameters: RijndaelParameters = localRijndaelParams
+  def localRijndaelParameters: Option[RijndaelParameters] = localRijndaelParams
 
   /**
    * Sets local ''Rijndael'' parameters to encrypt data.
@@ -63,17 +59,17 @@ class StealthNetConnectionParameters(
    * As a side effect, also creates the related encrypter.
    */
   def localRijndaelParameters_=(params: RijndaelParameters) {
-    localRijndaelParams = params
-    rijndaelEncrypter = Ciphers.rijndaelEncrypter(localRijndaelParams)
+    localRijndaelParams = Some(params)
+    rijndaelEncrypter = Some(Ciphers.rijndaelEncrypter(params))
   }
 
   /** Remote ''Rijndael'' parameters to decrypt data. */
-  private[this] var remoteRijndaelParams: RijndaelParameters = null
+  private[this] var remoteRijndaelParams: Option[RijndaelParameters] = None
   /** ''Rijndael'' decrypter. */
-  var rijndaelDecrypter: BufferedBlockCipher = null
+  var rijndaelDecrypter: Option[BufferedBlockCipher] = None
 
   /** Gets remote ''Rijndael'' parameters to decrypt data. */
-  def remoteRijndaelParameters: RijndaelParameters = remoteRijndaelParams
+  def remoteRijndaelParameters: Option[RijndaelParameters] = remoteRijndaelParams
 
   /**
    * Sets remote ''Rijndael'' parameters to decrypt data.
@@ -81,8 +77,8 @@ class StealthNetConnectionParameters(
    * As a side effect, also creates the related decrypter.
    */
   def remoteRijndaelParameters_=(params: RijndaelParameters) {
-    remoteRijndaelParams = params
-    rijndaelDecrypter = Ciphers.rijndaelDecrypter(remoteRijndaelParams)
+    remoteRijndaelParams = Some(params)
+    rijndaelDecrypter = Some(Ciphers.rijndaelDecrypter(params))
   }
 
   /** Received commands. */
@@ -91,7 +87,21 @@ class StealthNetConnectionParameters(
   var sentCommands: Int = _
 
   /** Gets whether this connection is a client one. */
-  def isClient() = if (client != null) true else false
+  def isClient() = client.isDefined
+
+}
+
+/**  ''StealthNet'' connection companion object. */
+object StealthNetConnection {
+
+  def loggerContext(cnx: Option[StealthNetConnection], channel: Channel) = {
+    val ctx = cnx map(_.loggerContext) getOrElse(Nil)
+
+    if (ctx.find(_._1 == "peer").isDefined)
+      ctx
+    else
+      ctx ::: List("remote" -> channel.getRemoteAddress)
+  }
 
 }
 
@@ -102,7 +112,9 @@ class StealthNetConnection protected[network] (val channel: Channel)
   extends StealthNetConnectionParameters()
 {
 
+  // scalastyle:off null
   assert(channel != null)
+  // scalastyle:on null
 
   val createDate = new Date()
 
@@ -120,7 +132,7 @@ class StealthNetConnection protected[network] (val channel: Channel)
  * Defines messages that can be notified to listeners.
  */
 object ConnectionListener {
-  
+
   /* XXX - manager connection updates (state, etc) and closing */
   /** Message: new connection initiated. */
   case class NewConnection(cnx: StealthNetConnection)
@@ -138,7 +150,9 @@ object ConnectionListener {
  */
 trait ConnectionListener {
 
+  // scalastyle:off method.name
   def !(msg: Any): Unit
+  // scalastyle:on method.name
 
 }
 
@@ -294,6 +308,7 @@ object StealthNetConnectionsManager
    * @see [[stealthnet.scala.network.StealthNetClientConnectionsManager]]
    * @see [[stealthnet.scala.network.StealthNetConnectionsManager]].`checkConnectionsLimit`
    */
+  // scalastyle:off method.length
   def act() {
     StealthNetClientConnectionsManager.start()
     /* Prime the pump. */
@@ -312,12 +327,12 @@ object StealthNetConnectionsManager
               StealthNetClientConnectionsManager !
                 StealthNetClientConnectionsManager.RequestPeer()
               peerRequestSent = true
-              /* check again in 5s */
-              Core.schedule(this ! RequestPeer(), 5000)
+              /* check again later */
+              Core.schedule(this ! RequestPeer(), Constants.peerRequestPeriod)
             }
             else {
-              /* check again in 2s */
-              Core.schedule(this ! RequestPeer(), 2000)
+              /* check again later */
+              Core.schedule(this ! RequestPeer(), Constants.peerRequestCheckPeriod)
             }
             peerRequestOngoing = true
           }
@@ -363,6 +378,7 @@ object StealthNetConnectionsManager
       }
     }
   }
+  // scalastyle:on method.length
 
   /**
    * Adds given peer.
@@ -414,8 +430,9 @@ object StealthNetConnectionsManager
         }
         else {
           val address = socketAddress.getAddress.getHostAddress
-          cnx.peer = Peer(address, socketAddress.getPort)
-          add(cnx.peer)
+          val peer = Peer(address, socketAddress.getPort)
+          cnx.peer = Some(peer)
+          add(peer)
         }
 
       case _ =>
@@ -444,20 +461,17 @@ object StealthNetConnectionsManager
    * @return an option value containing the associated
    *   [[stealthnet.scala.network.StealthNetConnection]], or `None` if none
    */
-  protected def get(channel: Channel, create: Boolean): Option[StealthNetConnection] = {
-    var cnx = local.get(channel)
-
-    if ((cnx == null) && create) {
-      /* initialize the connection object */
-      cnx = new StealthNetConnection(channel)
-      local.set(channel, cnx)
+  protected def get(channel: Channel, create: Boolean): Option[StealthNetConnection] =
+    Option(local.get(channel)) orElse {
+      if (create) {
+        /* initialize the connection object */
+        val cnx = new StealthNetConnection(channel)
+        local.set(channel, cnx)
+        Some(cnx)
+      }
+      else
+        None
     }
-
-    if (cnx != null)
-      Some(cnx)
-    else
-      None
-  }
 
   /**
    * Indicates the given channel was closed.
@@ -474,23 +488,21 @@ object StealthNetConnectionsManager
    * @see [[stealthnet.scala.network.StealthNetClientConnectionsManager]]
    */
   protected def closed(channel: Channel): Option[StealthNetConnection] = {
-    val cnx = local.remove(channel)
+    val cnx = Option(local.remove(channel))
 
-    logger debug(cnx.loggerContext, "Channel closed")
+    logger debug(StealthNetConnection.loggerContext(cnx, channel), "Channel closed")
 
-    if (cnx != null) {
+    cnx foreach { cnx =>
       if (cnx.isClient())
         StealthNetClientConnectionsManager !
           StealthNetClientConnectionsManager.CloseClient(cnx)
       else
-        remove(cnx.peer)
+        cnx.peer foreach { remove(_) }
 
       listeners foreach { _ ! ConnectionListener.ClosedConnection(cnx) }
-
-      Some(cnx)
     }
-    else
-      None
+
+    cnx
   }
 
   /**
@@ -504,8 +516,9 @@ object StealthNetConnectionsManager
    * @see [[stealthnet.scala.network.StealthNetConnectionsManager]].`checkConnectionsLimit`
    */
   protected def remove(peer: Peer) {
-    if (peer == null)
-      return
+    // scalastyle:off null
+    assert(peer != null)
+    // scalastyle:on null
 
     peers.remove(peer)
     if (stopping && (peers.size == 0))
@@ -648,9 +661,8 @@ protected object StealthNetClientConnectionsManager
           }
 
         case CloseClient(cnx) =>
-          cnx.client.stop()
-          StealthNetConnectionsManager !
-            StealthNetConnectionsManager.RemovePeer(cnx.peer)
+          cnx.client.get.stop()
+          cnx.peer foreach { StealthNetConnectionsManager ! StealthNetConnectionsManager.RemovePeer(_) }
 
         case Stop() =>
           /* time to leave */

@@ -69,15 +69,13 @@ class ConnectionLimitHandler
    * Simply logs disconnection.
    */
   override def channelDisconnected(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
-    val cnx = StealthNetConnectionsManager.getConnection(e.getChannel) match {
-      case Some(cnx) => cnx
-      case None => null
-    }
+    val cnx = StealthNetConnectionsManager.getConnection(e.getChannel)
+    val loggerContext = StealthNetConnection.loggerContext(cnx, e.getChannel)
 
-    if ((cnx != null) && !cnx.closing && !Core.stopping && (cnx.isClient || cnx.accepted))
-      logger debug(cnx.loggerContext, "Remote host disconnected")
+    if (cnx map(cnx => !cnx.closing && !Core.stopping && (cnx.isClient || cnx.accepted)) getOrElse(false))
+      logger debug(loggerContext, "Remote host disconnected")
     else
-      logger debug(if (cnx != null) cnx.loggerContext else List("remote" -> e.getChannel.getRemoteAddress), "Disconnected")
+      logger debug(loggerContext, "Disconnected")
 
     super.channelDisconnected(ctx, e)
   }

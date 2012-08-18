@@ -5,7 +5,7 @@ import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 object DigestSuite {
-  
+
   protected[cryptography] val digests: Map[String, Map[Algorithm.Value, String]] = Map(
       "The quick brown fox jumps over the lazy dog" -> Map(
           Algorithm.SHA1 -> "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12",

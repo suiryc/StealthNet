@@ -12,6 +12,10 @@ object Encryption extends Enumeration {
   /** Available mode: ''Rijndael''. */
   val Rijndael = Value
 
+  private val None_id: Byte = 0x00
+  private val RSA_id: Byte = 0x01
+  private val Rijndael_id: Byte = 0x02
+
   /**
    * Gets the id (protocol value) corresponding to a mode.
    *
@@ -19,9 +23,9 @@ object Encryption extends Enumeration {
    * @return the corresponding protocol value
    */
   def id(v: Encryption.Value): Byte = v match {
-    case None => 0x00
-    case RSA => 0x01
-    case Rijndael => 0x02
+    case None => None_id
+    case RSA => RSA_id
+    case Rijndael => Rijndael_id
   }
 
   /**
@@ -32,9 +36,9 @@ object Encryption extends Enumeration {
    *   or `None` if none exists
    */
   def value(v: Byte): Option[Encryption.Value] = v match {
-    case 0x00 => Some(None)
-    case 0x01 => Some(RSA)
-    case 0x02 => Some(Rijndael)
+    case None_id => Some(None)
+    case RSA_id => Some(RSA)
+    case Rijndael_id => Some(Rijndael)
     case _ => scala.None
   }
 

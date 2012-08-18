@@ -42,6 +42,12 @@ object CipherMode extends Enumeration {
   /** Available mode: '''C'''ipher '''T'''ext '''S'''tealing. */
   val CTS = Value
 
+  private val CBC_id: Byte = 0x01
+  private val ECB_id: Byte = 0x02
+  private val OFB_id: Byte = 0x03
+  private val CFB_id: Byte = 0x04
+  private val CTS_id: Byte = 0x05
+
   /**
    * Gets the id (protocol value) corresponding to a mode.
    *
@@ -49,11 +55,11 @@ object CipherMode extends Enumeration {
    * @return the corresponding protocol value
    */
   def id(v: CipherMode.Value): Byte = v match {
-    case CBC => 0x01
-    case ECB => 0x02
-    case OFB => 0x03
-    case CFB => 0x04
-    case CTS => 0x05
+    case CBC => CBC_id
+    case ECB => ECB_id
+    case OFB => OFB_id
+    case CFB => CFB_id
+    case CTS => CTS_id
   }
 
   /**
@@ -64,11 +70,11 @@ object CipherMode extends Enumeration {
    *   or `None` if none exists
    */
   def value(v: Byte): Option[CipherMode.Value] = v match {
-    case 0x01 => Some(CBC)
-    case 0x02 => Some(ECB)
-    case 0x03 => Some(OFB)
-    case 0x04 => Some(CFB)
-    case 0x05 => Some(CTS)
+    case CBC_id => Some(CBC)
+    case ECB_id => Some(ECB)
+    case OFB_id => Some(OFB)
+    case CFB_id => Some(CFB)
+    case CTS_id => Some(CTS)
     case _ => None
   }
 
@@ -93,6 +99,12 @@ object PaddingMode extends Enumeration {
   /** Available mode: ''ISO 10126''. */
   val ISO10126 = Value
 
+  private val None_id: Byte = 0x01
+  private val PKCS7_id: Byte = 0x02
+  private val Zeros_id: Byte = 0x03
+  private val ANSIX923_id: Byte = 0x04
+  private val ISO10126_id: Byte = 0x05
+
   /**
    * Gets the id (protocol value) corresponding to a mode.
    *
@@ -100,11 +112,11 @@ object PaddingMode extends Enumeration {
    * @return the corresponding protocol value
    */
   def id(v: PaddingMode.Value): Byte = v match {
-    case None => 0x01
-    case PKCS7 => 0x02
-    case Zeros => 0x03
-    case ANSIX923 => 0x04
-    case ISO10126 => 0x05
+    case None => None_id
+    case PKCS7 => PKCS7_id
+    case Zeros => Zeros_id
+    case ANSIX923 => ANSIX923_id
+    case ISO10126 => ISO10126_id
   }
 
   /**
@@ -115,11 +127,11 @@ object PaddingMode extends Enumeration {
    *   or `None` if none exists
    */
   def value(v: Byte): Option[PaddingMode.Value] = v match {
-    case 0x01 => Some(None)
-    case 0x02 => Some(PKCS7)
-    case 0x03 => Some(Zeros)
-    case 0x04 => Some(ANSIX923)
-    case 0x05 => Some(ISO10126)
+    case None_id => Some(None)
+    case PKCS7_id => Some(PKCS7)
+    case Zeros_id => Some(Zeros)
+    case ANSIX923_id => Some(ANSIX923)
+    case ISO10126_id => Some(ISO10126)
     case _ => scala.None
   }
 
@@ -188,18 +200,15 @@ object Ciphers {
       case CipherMode.CFB => new CFBBlockCipher(engine, rijndael.feedbackSize)
       case CipherMode.CTS => return new CTSBlockCipher(engine)
     }
-    val padding: BlockCipherPadding = rijndael.paddingMode match {
-      case PaddingMode.None => null
-      case PaddingMode.PKCS7 => new PKCS7Padding()
-      case PaddingMode.Zeros => new ZeroBytePadding()
-      case PaddingMode.ANSIX923 => new X923Padding()
-      case PaddingMode.ISO10126 => new ISO10126d2Padding()
+    val padding: Option[BlockCipherPadding] = rijndael.paddingMode match {
+      case PaddingMode.None => None
+      case PaddingMode.PKCS7 => Some(new PKCS7Padding())
+      case PaddingMode.Zeros => Some(new ZeroBytePadding())
+      case PaddingMode.ANSIX923 => Some(new X923Padding())
+      case PaddingMode.ISO10126 => Some(new ISO10126d2Padding())
     }
 
-    val cipher = if (padding != null)
-        new PaddedBufferedBlockCipher(blockCipher, padding)
-      else
-        new BufferedBlockCipher(blockCipher)
+    val cipher = padding map(new PaddedBufferedBlockCipher(blockCipher, _)) getOrElse(new BufferedBlockCipher(blockCipher))
     cipher.init(encryption, new ParametersWithIV(new KeyParameter(rijndael.key), rijndael.iv))
 
     cipher

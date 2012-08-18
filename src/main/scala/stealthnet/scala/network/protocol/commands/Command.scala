@@ -135,12 +135,16 @@ object Command extends Logging with EmptyLoggingContext {
           new CipherInputStream(input, rsaDecrypter(RSAKeys.privateKey))
 
         case Encryption.Rijndael =>
-          cnx.rijndaelDecrypter.reset()
-          new BCCipherInputStream(input, cnx.rijndaelDecrypter)
+          cnx.rijndaelDecrypter map { rijndaelDecrypter =>
+            rijndaelDecrypter.reset()
+            new BCCipherInputStream(input, rijndaelDecrypter)
+          } getOrElse {
+            throw new Exception("Cannot decrypt: Rijndael decrypter not yet created")
+          }
       }
 
       val output = new ByteArrayOutputStream()
-      val buffer = new Array[Byte](1024)
+      val buffer = new Array[Byte](Constants.cipherBufferLength)
       var read = 1
       while (read > 0) {
         read = cipherInput.read(buffer)
@@ -175,11 +179,12 @@ object Command extends Logging with EmptyLoggingContext {
      *
      * @param cnx concerned connection
      * @param input stream to read from
-     * @return rebuilt command
+     * @return an option value containing the rebuilt command, or `None` if
+     *   decrypted data does not correspond to a known command
      * @todo When receiving unknown commands, instead of skipping, increment
      *   counter and drop connection if too many ?
      */
-    def readCommand(cnx: StealthNetConnection, input: InputStream): Command = {
+    def readCommand(cnx: StealthNetConnection, input: InputStream): Option[Command] = {
       assert(state == State.Content)
 
       /* cipher-text section */
@@ -191,8 +196,12 @@ object Command extends Logging with EmptyLoggingContext {
           new CipherInputStream(input, rsaDecrypter(RSAKeys.privateKey))
 
         case Encryption.Rijndael =>
-          cnx.rijndaelDecrypter.reset()
-          new BCCipherInputStream(input, cnx.rijndaelDecrypter)
+          cnx.rijndaelDecrypter map { rijndaelDecrypter =>
+            rijndaelDecrypter.reset()
+            new BCCipherInputStream(input, rijndaelDecrypter)
+          } getOrElse {
+            throw new Exception("Cannot decrypt: Rijndael decrypter not yet created")
+          }
       }
       val newInput = if (Config.debugIO && (cipherInput ne input))
           new DebugInputStream(cipherInput, cnx.loggerContext ++ List("step" -> "decrypted"))
@@ -202,11 +211,11 @@ object Command extends Logging with EmptyLoggingContext {
       val code = ProtocolStream.readByte(newInput)
       val command = commandBuilder(code) match {
         case Some(builder) =>
-          builder.read(newInput)
+          Some(builder.read(newInput))
 
         case None =>
           logger error(cnx.loggerContext, "Unknown command code[0x%02X] with encryption[%s]".format(code, encryption))
-          null
+          None
       }
 
       state = State.Header
@@ -290,11 +299,19 @@ abstract class Command extends CommandArguments {
         output
 
       case Encryption.RSA =>
-        new CipherOutputStream(output, rsaEncrypter(cnx.remoteRSAKey))
+        cnx.remoteRSAKey map { key =>
+          new CipherOutputStream(output, rsaEncrypter(key))
+        } getOrElse {
+          throw new Exception("Cannot encrypt: remote RSA key not yet known")
+        }
 
       case Encryption.Rijndael =>
-        cnx.rijndaelEncrypter.reset()
-        new BCCipherOutputStream(output, cnx.rijndaelEncrypter)
+        cnx.rijndaelEncrypter map { rijndaelEncrypter =>
+          rijndaelEncrypter.reset()
+          new BCCipherOutputStream(output, rijndaelEncrypter)
+        } getOrElse {
+          throw new Exception("Cannot encrypt: Rijndael encrypter not yet created")
+        }
     }
 
     var unencryptedLength: Int = 0
@@ -305,5 +322,8 @@ abstract class Command extends CommandArguments {
 
     unencryptedLength
   }
+
+  override def toString = getClass.getSimpleName +
+    "(code=" + code.formatted("0x%02X") + ", arguments=" + argumentsToString + ")"
 
 }

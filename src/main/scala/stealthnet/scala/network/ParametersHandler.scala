@@ -37,8 +37,7 @@ class ParametersHandler(val parameters: StealthNetConnectionParameters)
     cnx.client = parameters.client
     cnx.peer = parameters.peer
 
-    if (cnx.group != null)
-      cnx.group.add(cnx.channel)
+    cnx.group foreach { _.add(cnx.channel) }
 
     super.channelOpen(ctx, e)
   }

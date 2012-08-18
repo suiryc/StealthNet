@@ -2,6 +2,7 @@ package stealthnet.scala.cryptography.io
 
 import java.io.{FilterInputStream, InputStream}
 import org.bouncycastle.crypto.BufferedBlockCipher
+import stealthnet.scala.Constants
 
 /**
  * Input stream filter decrypting data using ''BouncyCastle''.
@@ -14,9 +15,9 @@ class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
 {
 
   /** Filtered input stream buffer. */
-  protected var inputBuffer: Array[Byte] = new Array[Byte](1024)
+  protected var inputBuffer: Array[Byte] = new Array[Byte](Constants.cipherBufferLength)
   /** Decrypted data buffer. */
-  protected var buffer: Array[Byte] = new Array[Byte](1024)
+  protected var buffer: Array[Byte] = new Array[Byte](Constants.cipherBufferLength)
   /** Decrypted data buffer end offset. */
   protected var bufferEnd = 0
   /** Decrypted data buffer start offset. */
@@ -112,7 +113,7 @@ class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
 
     var remaining = n
     var stop = false
-    val tmp = new Array[Byte](1024)
+    val tmp = new Array[Byte](Constants.cipherBufferLength)
     while ((remaining > 0) && !stop) {
       val length = read(tmp, 0, if (remaining < tmp.length) remaining.intValue else tmp.length)
       if (length == -1)

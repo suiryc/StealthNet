@@ -34,4 +34,23 @@ object Constants {
   /** ''Rijndael'' padding mode: ''PKCS #7''. */
   val RijndaelPaddingMode = PaddingMode.PKCS7
 
+  /** Buffer length used when encrypting/decrypting. */
+  val cipherBufferLength = 1024
+
+  /* XXX - find better name ? */
+  /** Hash length: 48 bytes. */
+  val hashLength_48B = 48
+
+  /** Hash length: 64 bytes. */
+  val hashLength_64B = 64
+
+  /** Minimal time (ms) between two peer requests. */
+  val peerRequestPeriod = 5000
+
+  /** Time (ms) between checks when a peer request is ongoing. */
+  val peerRequestCheckPeriod = 2000
+
+  /** Buffer length when sending a command. */
+  val commandOutputBufferLength = 512
+
 }

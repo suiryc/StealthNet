@@ -46,7 +46,7 @@ class StealthNetClient(
   protected def loggerContext = List("peer" -> peer)
 
   /** Client connection channel. */
-  private var channel: Channel = null
+  private var channel: Option[Channel] = None
 
   /**
    * Starts client.
@@ -67,8 +67,14 @@ class StealthNetClient(
 
     val bootstrap: ClientBootstrap = new ClientBootstrap(factory)
 
+    /* Add the channel to the (server) group: will be closed with server. */
     bootstrap.setPipelineFactory(StealthNetPipelineFactory(
-      new StealthNetConnectionParameters(client = this, peer = peer)))
+      new StealthNetConnectionParameters(
+        group = Some(StealthNetServer.group),
+        client = Some(this),
+        peer = Some(peer)
+      )
+    ))
 
     bootstrap.setOption("connectTimeoutMillis", Config.connectTimeout)
 
@@ -80,9 +86,7 @@ class StealthNetClient(
       false
     }
     else {
-      channel = future.getChannel
-      /* Add the channel to the (server) group: will be closed with server. */
-      StealthNetServer.group.add(channel)
+      channel = Some(future.getChannel)
       true
     }
   }
@@ -94,22 +98,22 @@ class StealthNetClient(
    * Should be called when connection was successfully started.
    */
   def stop() {
-    if ((channel != null) && channel.isOpen) {
+    if (channel map(_.isOpen) getOrElse(false)) {
       logger debug("Closing connection")
 
-      StealthNetConnectionsManager.getConnection(channel) match {
-        case Some(cnx) =>
-          cnx.close()
-
-        case None =>
-          channel.close()
+      val ch = channel.get
+      StealthNetConnectionsManager getConnection(ch) map {
+        _.close()
+      } getOrElse {
+        ch.close()
       }
-      channel.getCloseFuture.awaitUninterruptibly()
+      ch.getCloseFuture.awaitUninterruptibly()
     }
     /* Note: pipeline factory resources are released by server */
   }
 
   /** Writes to the channel. */
-  def write(obj: Any) = channel.write(obj)
+  def write(obj: Any) = channel.map(_.write(obj))
+    .getOrElse(throw new Exception("Cannot write: channel not yet created"))
 
 }

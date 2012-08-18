@@ -8,6 +8,7 @@ import stealthnet.scala.network.StealthNetConnectionsManager
 import stealthnet.scala.webservices.{UpdateClient, WebCacheClient}
 import stealthnet.scala.network.WebCaches
 
+// scalastyle:off magic.number regex
 object TestServer {
 
   def main(args: Array[String]): Unit = {
@@ -26,3 +27,4 @@ object TestServer {
   }
 
 }
+// scalastyle:on magic.number regex

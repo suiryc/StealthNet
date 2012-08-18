@@ -6,6 +6,7 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
+// scalastyle:off magic.number
 @RunWith(classOf[JUnitRunner])
 class HashSuite extends FunSuite {
 
@@ -54,13 +55,17 @@ class HashSuite extends FunSuite {
 
   test("null bytes array is an illegal argument") {
     intercept[IllegalArgumentException] {
+      // scalastyle:off null
       Hash(null.asInstanceOf[Array[Byte]])
+      // scalastyle:on null
     }
   }
 
   test("null hexadecimal representation is an illegal argument") {
     intercept[IllegalArgumentException] {
+      // scalastyle:off null
       Hash(null.asInstanceOf[String])
+      // scalastyle:on null
     }
   }
 
@@ -71,3 +76,4 @@ class HashSuite extends FunSuite {
   }
 
 }
+// scalastyle:on magic.number

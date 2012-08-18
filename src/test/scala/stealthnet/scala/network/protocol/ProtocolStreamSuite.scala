@@ -10,6 +10,7 @@ import org.scalatest.junit.JUnitRunner
 
 import stealthnet.scala.Constants
 
+// scalastyle:off magic.number
 @RunWith(classOf[JUnitRunner])
 class ProtocolStreamSuite extends FunSuite {
 
@@ -307,3 +308,4 @@ class ProtocolStreamSuite extends FunSuite {
   }
 
 }
+// scalastyle:on magic.number

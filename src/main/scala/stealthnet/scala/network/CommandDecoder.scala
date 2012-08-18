@@ -28,6 +28,7 @@ class CommandDecoder
    * Reads incoming data and rebuilds a
    * [[stealthnet.scala.network.protocol.commands.Command]].
    */
+  // scalastyle:off null
   override protected def decode(ctx: ChannelHandlerContext, channel: Channel,
     buf: ChannelBuffer, state_unused: VoidEnum): Object =
   {
@@ -39,7 +40,7 @@ class CommandDecoder
       return null
     }
 
-    var encryptedDuplicate: ChannelBuffer = null
+    var encryptedDuplicate: Option[ChannelBuffer] = None
     try {
       val length = if (Config.debugIO)
           builder.readHeader(cnx, new DebugInputStream(new ChannelBufferInputStream(buf), cnx.loggerContext ++ List("step" -> "header")))
@@ -52,17 +53,20 @@ class CommandDecoder
         return null
 
       val encrypted = buf.readBytes(length)
-      encryptedDuplicate = encrypted.duplicate()
+      encryptedDuplicate = Some(encrypted.duplicate())
       val command = if (Config.debugIO)
           builder.readCommand(cnx, new DebugInputStream(new ChannelBufferInputStream(encrypted), cnx.loggerContext ++ List("step" -> "encrypted")))
         else
           builder.readCommand(cnx, new ChannelBufferInputStream(encrypted))
       checkpoint()
 
-      if (command == null)
-        logData(cnx, encryptedDuplicate)
+      if (logger.isTraceEnabled && command.isDefined)
+        encryptedDuplicate foreach { logData(cnx, _) }
 
-      command
+      command getOrElse {
+        encryptedDuplicate foreach { logData(cnx, _) }
+        null
+      }
     }
     catch {
       /* Note: do not catch Errors because ReplayError (which is protected) is
@@ -73,34 +77,32 @@ class CommandDecoder
           logger error(cnx.loggerContext, "Protocol issue", e)
           /* Note: closing channel is not done right away ... */
           cnx.close()
-          logData(cnx, encryptedDuplicate)
+          encryptedDuplicate foreach { logData(cnx, _) }
         }
         /* else: nothing to say here */
         null
     }
   }
+  // scalastyle:on null
 
   /**
    * Logs command data.
    *
-   * Used upon issue to help investigate cause. Tries to decrypt data, otherwise
-   * just logs encrypted data.
+   * Used upon debugging or to help investigate issues' cause. Tries to decrypt
+   * data, otherwise just logs encrypted data.
    *
    * @param cnx connection
    * @param buf channel buffer
    */
   private def logData(cnx: StealthNetConnection, buf: ChannelBuffer) {
-    if (buf == null)
-      return
-
     try {
       val decrypted = builder.decryptData(cnx, buf.array, buf.readerIndex, buf.readableBytes)
-      logger debug(cnx.loggerContext, "Data was:\n" + HexDumper.dump(decrypted))
+      logger trace(cnx.loggerContext, "Decrypted data:\n" + HexDumper.dump(decrypted))
     }
     catch {
       case e =>
-        logger debug(cnx.loggerContext, "Could not decrypt data:\n" + HexDumper.dump(buf.array, buf.readerIndex, buf.readableBytes), e)
-        logger debug(cnx.loggerContext, "Decrypting data are: " + builder.decryptingData(cnx))
+        logger trace(cnx.loggerContext, "Could not decrypt data:\n" + HexDumper.dump(buf.array, buf.readerIndex, buf.readableBytes), e)
+        logger trace(cnx.loggerContext, "Decrypting data are: " + builder.decryptingData(cnx))
     }
   }
 

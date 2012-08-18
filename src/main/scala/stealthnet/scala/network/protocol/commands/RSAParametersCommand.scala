@@ -52,7 +52,9 @@ protected abstract class RSAParametersCommand extends Command {
   /** The actual ''RSA'' public key. */
   val key: RSAPublicKey
 
+  // scalastyle:off null
   assert(key != null)
+  // scalastyle:on null
 
   def argumentDefinitions = RSAParametersCommand.argumentDefinitions
 

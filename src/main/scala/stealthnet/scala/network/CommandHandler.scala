@@ -14,7 +14,6 @@ import org.jboss.netty.channel.{
   MessageEvent,
   SimpleChannelHandler
 }
-import org.jboss.netty.channel.group.ChannelGroup
 import org.jboss.netty.handler.timeout.{
   ReadTimeoutException,
   WriteTimeoutException
@@ -30,7 +29,7 @@ import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
  *
  * Handles received/to send commands.
  */
-class CommandHandler(val group: ChannelGroup)
+class CommandHandler
   extends SimpleChannelHandler
   with Logging
   with EmptyLoggingContext
@@ -67,7 +66,7 @@ class CommandHandler(val group: ChannelGroup)
       return
 
     val command: Command = e.getMessage.asInstanceOf[Command]
-    val buf: ChannelBuffer = ChannelBuffers.dynamicBuffer(512)
+    val buf: ChannelBuffer = ChannelBuffers.dynamicBuffer(Constants.commandOutputBufferLength)
     val output = new ChannelBufferOutputStream(buf)
 
     logger debug(cnx.loggerContext, "Sending command: " + command)
@@ -92,11 +91,8 @@ class CommandHandler(val group: ChannelGroup)
    * Closes related channel.
    */
   override def exceptionCaught(ctx: ChannelHandlerContext, e: ExceptionEvent) {
-    val cnx = StealthNetConnectionsManager.getConnection(e.getChannel) match {
-      case Some(cnx) => cnx
-      case None => null
-    }
-    val loggerContext = if (cnx != null) cnx.loggerContext else Nil
+    val cnx = StealthNetConnectionsManager.getConnection(e.getChannel)
+    val loggerContext = StealthNetConnection.loggerContext(cnx,  e.getChannel)
 
     logger trace(loggerContext, "Caught exception: " + e.getCause.getMessage())
     e.getCause match {
@@ -113,21 +109,12 @@ class CommandHandler(val group: ChannelGroup)
         /* connection failure was notified */
 
       case _ =>
-        if (((cnx == null) || !cnx.closing) && !Core.stopping) {
-          val context: List[(String, Any)] = if (loggerContext != Nil)
-              loggerContext
-            else
-              List("remote" -> e.getChannel.getRemoteAddress)
-
-          logger debug(context, "Unexpected exception!",  e.getCause)
-        }
+        if (cnx.map(!_.closing).getOrElse(true) && !Core.stopping)
+          logger debug(loggerContext, "Unexpected exception!",  e.getCause)
         /*else: nothing to say here */
     }
 
-    if (cnx != null)
-      cnx.close()
-    else
-      e.getChannel.close()
+    cnx map(_.close()) getOrElse(e.getChannel.close())
   }
 
 }

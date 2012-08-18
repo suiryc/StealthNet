@@ -1,6 +1,7 @@
 package stealthnet.scala.network.protocol.commands
 
 import java.io.InputStream
+import stealthnet.scala.Constants
 import stealthnet.scala.cryptography.Hash
 import stealthnet.scala.network.protocol.{Encryption, ProtocolStream}
 
@@ -12,10 +13,10 @@ object SearchCommand extends CommandBuilder {
   val code: Byte = 0x20
 
   def argumentDefinitions = List(
-    HashArgumentDefinition("commandId", 48),
-    HashArgumentDefinition("floodingHash", 48),
-    HashArgumentDefinition("senderPeerID", 48),
-    HashArgumentDefinition("searchID", 48),
+    HashArgumentDefinition("commandId", Constants.hashLength_48B),
+    HashArgumentDefinition("floodingHash", Constants.hashLength_48B),
+    HashArgumentDefinition("senderPeerID", Constants.hashLength_48B),
+    HashArgumentDefinition("searchID", Constants.hashLength_48B),
     StringArgumentDefinition("searchPattern")
   )
 
@@ -49,13 +50,15 @@ object SearchCommand extends CommandBuilder {
   /**
    * Generates a new flooding hash.
    *
-   * The flooding hash needs special care, see 
+   * The flooding hash needs special care, see
    * http://www.scribd.com/doc/28681327/69/Stealthnet-decloaked.
    */
   def generateFloodingHash(): Hash = {
     var hash: Hash = Command.generateId()
 
+    // scalastyle:off magic.number
     while (hash.bytes(47) <= 51) {
+    // scalastyle:on magic.number
       hash = Command.generateId()
     }
 
@@ -86,11 +89,13 @@ class SearchCommand(
 
   val encryption = Encryption.Rijndael
 
+  // scalastyle:off null
   assert(commandId != null)
   assert(floodingHash != null)
   assert(senderPeerID != null)
   assert(searchID != null)
   assert(searchPattern != null)
+  // scalastyle:on null
 
   def argumentDefinitions = SearchCommand.argumentDefinitions
 

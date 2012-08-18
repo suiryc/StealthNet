@@ -39,7 +39,8 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
 
     val bootstrap: ServerBootstrap = new ServerBootstrap(factory)
 
-    bootstrap.setPipelineFactory(StealthNetPipelineFactory(new StealthNetConnectionParameters(group = group)))
+    bootstrap.setPipelineFactory(StealthNetPipelineFactory(
+      new StealthNetConnectionParameters(group = Some(group))))
 
     var channel: Channel = bootstrap.bind(new InetSocketAddress(Config.serverPort))
     group.add(channel)

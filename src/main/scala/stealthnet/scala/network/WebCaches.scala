@@ -14,7 +14,7 @@ object WebCaches extends Logging with EmptyLoggingContext {
   /** Known WebCaches. */
   protected var webCaches: List[String] = List()
   /** Cyclic iterator on WebCaches. */
-  private var cyclicIt: Iterator[String] = null
+  private var cyclicIt: Iterator[String] = Nil.iterator
   /** Whether we are currently added on WebCaches. */
   protected var addedPeer = false
 
@@ -42,6 +42,7 @@ object WebCaches extends Logging with EmptyLoggingContext {
         logger debug("Got no webCache: using default")
         List("http://rshare.de/rshare.asmx", "http://webcache.stealthnet.at/rwpmws.php")
     }
+    cyclicIt = webCaches.iterator
 
     if (readd)
       addPeer()
@@ -64,7 +65,7 @@ object WebCaches extends Logging with EmptyLoggingContext {
    *
    * Done if we were not already added.
    */
-  def addPeer() = 
+  def addPeer() =
     if (!addedPeer && !Core.stopping) {
       removePeer()
 
@@ -90,9 +91,6 @@ object WebCaches extends Logging with EmptyLoggingContext {
 
     if (!addedPeer)
       addPeer()
-
-    if (cyclicIt == null)
-      cyclicIt = webCaches.iterator
 
     for (i <- 1 to webCaches.size) {
       val webCache = cyclicIt.next

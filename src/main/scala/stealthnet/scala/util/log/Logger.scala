@@ -32,7 +32,9 @@ object Logger {
    * @param clazz class used for the Logger's name. Must not be `null`!
    */
   def apply(clazz: Class[_], context: LoggingContext#LogContext): Logger = {
+    // scalastyle:off null
     require(clazz != null, "clazz must not be null!")
+    // scalastyle:on null
     logger(LoggerFactory getLogger clazz, context)
   }
 
@@ -42,7 +44,9 @@ object Logger {
    * @param name the Logger's name. Must not be `null`!
    */
   def apply(name: String, context: LoggingContext#LogContext): Logger = {
+    // scalastyle:off null
     require(name != null, "loggerName must not be null!")
+    // scalastyle:on null
     logger(LoggerFactory getLogger name, context)
   }
 
@@ -282,6 +286,17 @@ trait Logger extends LoggingContext {
   def trace(msgContext: => LoggingContext#LogContext, msg: => String, t: Throwable) {
     if (slf4jLogger.isTraceEnabled) slf4jLogger.trace(msgPrefix(msgContext) + msg, t)
   }
+
+  /**  Is the logger instance enabled for the ERROR level? */
+  def isErrorEnabled = slf4jLogger.isErrorEnabled
+  /**  Is the logger instance enabled for the WARN level? */
+  def isWarnEnabled = slf4jLogger.isWarnEnabled
+  /**  Is the logger instance enabled for the INFO level? */
+  def isInfoEnabled = slf4jLogger.isInfoEnabled
+  /**  Is the logger instance enabled for the DEBUG level? */
+  def isDebugEnabled = slf4jLogger.isDebugEnabled
+  /**  Is the logger instance enabled for the TRACE level? */
+  def isTraceEnabled = slf4jLogger.isTraceEnabled
 
 }
 

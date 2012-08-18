@@ -26,3 +26,12 @@ Manage data download/upload requests
 
 Have separate 'connection' timeouts
 One for handshaking, one for data reception
+
+Remove scalastyle comments that deactivate warning on null in asserts
+// scalastyle:off null
+Should not be necessary anymore once all code is clean (nothing using null)
+
+Actually replace assert by require when necessary ?
+require shall check input parameters are valid as per contract.
+assert shall check there is no logical error in the code.
+ensuring shall guarantee returned results are valid as per contract.

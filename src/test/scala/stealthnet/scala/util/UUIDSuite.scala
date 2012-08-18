@@ -8,6 +8,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite
 import stealthnet.scala.cryptography.Hash
 
+// scalastyle:off magic.number
 @RunWith(classOf[JUnitRunner])
 class UUIDSuite extends FunSuite {
 
@@ -24,3 +25,4 @@ class UUIDSuite extends FunSuite {
   }
 
 }
+// scalastyle:on magic.number

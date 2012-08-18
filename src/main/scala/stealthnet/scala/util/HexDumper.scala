@@ -18,6 +18,17 @@ import stealthnet.scala.cryptography.Hash
  */
 object HexDumper {
 
+  /* The data is split in 16-bytes views. */
+  private val viewBytes = 16
+  /* Note: the hexadecimal view is split in two halves
+   *   - there are (viewBytes / 2) bytes in each half
+   *   - each byte is represented as 2 hexadecimal characters
+   *   - there is one space between each represented byte: so the total
+   *     number of spaces is one less than the number of represented bytes
+   * Hence the length of each half hexadecimal view is (viewBytes / 2) * 3 - 1
+   */
+  private val hexadecimalHalfViewSize = (viewBytes / 2) * 3 - 1
+
   /**
    * Dumps data.
    *
@@ -26,6 +37,7 @@ object HexDumper {
    * @param offset data offset
    * @param length data length
    */
+  // scalastyle:off method.length
   def dump(result: StringBuilder, data: Array[Byte], offset: Int, length: Int) {
 
     /* Let's have some fun with Stream: the idea is to have a view of 16
@@ -35,7 +47,7 @@ object HexDumper {
     /** Builds the Stream, each element giving a 16-bytes view. */
     def stream: Stream[IndexedSeqView[Byte, Array[Byte]]] = {
       def loop(rest: IndexedSeqView[Byte, Array[Byte]]): Stream[IndexedSeqView[Byte, Array[Byte]]] =
-        rest.splitAt(16) match {
+        rest.splitAt(viewBytes) match {
           case (head, tail) if (!head.isEmpty) =>
             head #:: loop(tail)
 
@@ -63,18 +75,18 @@ object HexDumper {
 
     /** Process one 'line' (that is 16-bytes view) */
     def processLine(result: StringBuilder, line: IndexedSeqView[Byte, Array[Byte]], index: Int) {
-      val (first, second) = line.force.splitAt(8)
+      val (first, second) = line.force.splitAt(viewBytes / 2)
 
       if (result.length > 0)
         result.append('\n')
 
-        result.append("%04X: ".format(index))
-            .append(ensureLength(processHexSection(first), 23))
-            .append(" - ")
-            .append(ensureLength(processHexSection(second), 23))
-            .append(" | [")
-            .append(ensureLength(processAsciiSection(first) + processAsciiSection(second), 16))
-            .append(']')
+      result.append("%04X: ".format(index))
+        .append(ensureLength(processHexSection(first), hexadecimalHalfViewSize))
+        .append(" - ")
+        .append(ensureLength(processHexSection(second), hexadecimalHalfViewSize))
+        .append(" | [")
+        .append(ensureLength(processAsciiSection(first) + processAsciiSection(second), viewBytes))
+        .append(']')
     }
 
     /**
@@ -95,6 +107,7 @@ object HexDumper {
 
     processLines(result, stream, 0)
   }
+  // scalastyle:on method.length
 
   /**
    * Dumps data.

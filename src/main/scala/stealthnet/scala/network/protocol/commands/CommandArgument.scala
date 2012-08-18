@@ -91,10 +91,11 @@ trait CommandArgumentsReader[T] {
    * @param input stream to read from
    * @return map which associates each argument name to its read value
    */
+  // scalastyle:off method.length
   def readArguments(input: InputStream): Map[String, Any] = {
     var result: mutable.Map[String, Any] = mutable.Map()
 
-    var argumentName: String = null
+    var argumentName: String = ""
     try {
       for (definition <- argumentDefinitions) {
         argumentName = definition.name
@@ -147,6 +148,7 @@ trait CommandArgumentsReader[T] {
     /* no need to be immutable anymore */
     result.toMap
   }
+  // scalastyle:on method.length
 
 }
 
@@ -219,7 +221,7 @@ trait CommandArguments extends CommandArgumentDefinitions {
     unencryptedLength
   }
 
-  override def toString = getClass.getSimpleName + argumentDefinitions.map(definition => {
+  def argumentsToString = argumentDefinitions.map(definition => {
     val name = definition.name
     val value = arguments(name)
     name + '=' + (definition match {
@@ -248,5 +250,7 @@ trait CommandArguments extends CommandArgumentDefinitions {
         value.toString()
     })
   }).mkString("(", ", ", ")")
+
+  override def toString = getClass.getSimpleName + argumentsToString
 
 }

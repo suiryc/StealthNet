@@ -2,6 +2,7 @@ package stealthnet.scala.cryptography.io
 
 import java.io.{FilterOutputStream, OutputStream}
 import org.bouncycastle.crypto.BufferedBlockCipher
+import stealthnet.scala.Constants
 
 /**
  * Output stream filter encrypting data using ''BouncyCastle''.
@@ -15,7 +16,7 @@ class BCCipherOutputStream(output: OutputStream, cipher: BufferedBlockCipher)
 {
 
   /** Encrypted data buffer. */
-  protected var buffer = new Array[Byte](1024)
+  protected var buffer = new Array[Byte](Constants.cipherBufferLength)
 
   override def write(b: Int) {
     var length = cipher.getUpdateOutputSize(1)
