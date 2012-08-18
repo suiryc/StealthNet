@@ -14,7 +14,7 @@ Have logging strategy ?
 Other than plain className loggers
 
 Manage logging
-Configuration file, programatically, or both ?
+Configuration file, programmatically, or both ?
 
 Gather DL/UL speeds
 In central object (e.g. Core) ?
@@ -27,9 +27,9 @@ Manage data download/upload requests
 Have separate 'connection' timeouts
 One for handshaking, one for data reception
 
-Remove scalastyle comments that deactivate warning on null in asserts
-// scalastyle:off null
-Should not be necessary anymore once all code is clean (nothing using null)
+Remove unnecessary comments that deactivate scalstyle warnings
+Search for 'scalastyle:off' which deactivates 'null' for example. Should not be necessary anymore once all code is clean (nothing using null).
+May also try to fix those with 'method.length' by splitting the function when possible.
 
 Actually replace assert by require when necessary ?
 require shall check input parameters are valid as per contract.

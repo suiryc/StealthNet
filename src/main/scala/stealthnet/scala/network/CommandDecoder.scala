@@ -28,7 +28,7 @@ class CommandDecoder
    * Reads incoming data and rebuilds a
    * [[stealthnet.scala.network.protocol.commands.Command]].
    */
-  // scalastyle:off null
+  // scalastyle:off method.length null
   override protected def decode(ctx: ChannelHandlerContext, channel: Channel,
     buf: ChannelBuffer, state_unused: VoidEnum): Object =
   {
@@ -83,7 +83,7 @@ class CommandDecoder
         null
     }
   }
-  // scalastyle:on null
+  // scalastyle:on method.length null
 
   /**
    * Logs command data.

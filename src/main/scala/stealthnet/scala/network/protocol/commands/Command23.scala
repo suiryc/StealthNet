@@ -116,11 +116,13 @@ class SearchResult(
 ) extends CommandArguments
 {
 
+  // scalastyle:off null
   assert(fileHash != null)
   assert(fileName != null)
   assert(metaData != null)
   assert(comment != null)
   assert((rating >= 0) && (rating <= 3))
+  // scalastyle:on null
 
   def argumentDefinitions = SearchResult.argumentDefinitions
 
