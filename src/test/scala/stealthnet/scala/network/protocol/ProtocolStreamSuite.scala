@@ -27,9 +27,10 @@ class ProtocolStreamSuite extends FunSuite {
         case v: Array[Byte] =>
           output.write(v)
 
-        case v: List[Number] =>
-          /* due to type erasure, we may have a List of something else (e.g. Integers) */
-          output.write(v.map(_.byteValue).toArray)
+        case v: List[_] =>
+          /* due to type erasure, we don't know the exact type of the list,
+           * except it's a Number (may be a Byte, Int, ...) */
+          output.write(v.map(_.asInstanceOf[Number].byteValue).toArray)
       }
     output.close()
     output.toByteArray()
