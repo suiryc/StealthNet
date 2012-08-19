@@ -9,6 +9,7 @@ import scala.collection.JavaConversions._
 import scala.xml.{NodeSeq, Text}
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.{ConnectionListener, StealthNetConnection}
+import stealthnet.scala.ui.web.Constants
 
 object ConnectionsUpdater {
 
@@ -28,6 +29,14 @@ class ConnectionsUpdater(val session: ServerSession)
 
   import ConnectionsUpdater._
 
+  start
+  this ! Start
+
+  // scalastyle:off null
+  private def deliver(output: Map[String, Object]) =
+    session.deliver(session, "/cnxUpdates", output:java.util.Map[String, Object], null)
+  // scalastyle:on null
+
   def act() {
     loop {
       react {
@@ -39,14 +48,14 @@ class ConnectionsUpdater(val session: ServerSession)
           val output = Map[String, Object](
             "event" -> "new",
             "id" -> ("connection_" + cnxInfo.id),
-            "host" -> cnx.peer.host,
-            "port" -> (cnx.peer.port:java.lang.Integer),
+            "host" -> cnx.peer.map(_.host).getOrElse("<unknown host>"),
+            "port" -> (cnx.peer.map(_.port).getOrElse[Int](-1):java.lang.Integer),
             "created" -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cnx.createDate),
             "receivedCommands" -> (cnx.receivedCommands:java.lang.Integer),
             "sentCommands" -> (cnx.sentCommands:java.lang.Integer),
             "status" -> (if (cnx.established) "established" else "initiated")
           )
-          session.deliver(session, "/cnxUpdates", output:java.util.Map[String, Object], null);
+          deliver(output)
 
         case RefreshConnection(cnxInfo) =>
           val cnx = cnxInfo.cnx
@@ -57,7 +66,7 @@ class ConnectionsUpdater(val session: ServerSession)
             "sentCommands" -> (cnx.sentCommands:java.lang.Integer),
             "status" -> (if (cnx.established) "established" else "initiated")
           )
-          session.deliver(session, "/cnxUpdates", output:java.util.Map[String, Object], null);
+          deliver(output)
 
         case ClosedConnection(cnxInfo) =>
           val cnx = cnxInfo.cnx
@@ -65,16 +74,13 @@ class ConnectionsUpdater(val session: ServerSession)
             "event" -> "closed",
             "id" -> ("connection_" + cnxInfo.id)
           )
-          session.deliver(session, "/cnxUpdates", output:java.util.Map[String, Object], null);
+          deliver(output)
 
         case Stop() =>
           exit()
       }
     }
   }
-
-  this.start
-  this ! Start
 
 }
 
@@ -95,6 +101,7 @@ object ConnectionsUpdaterServer extends Actor with ConnectionListener {
   private var id: Int = _
   private var refreshRunning = false
 
+  // scalastyle:off method.length
   def act() {
     loop {
       react {
@@ -130,7 +137,7 @@ object ConnectionsUpdaterServer extends Actor with ConnectionListener {
             connections foreach { cnxInfo =>
               actors foreach { _._2 ! ConnectionsUpdater.RefreshConnection(cnxInfo) }
             }
-            Core.schedule(this ! RefreshConnections(), 10000)
+            Core.schedule(this ! RefreshConnections(), Constants.cnxInfoRefreshPeriod)
           }
           /* else: refresh stopped */
 
@@ -148,6 +155,7 @@ object ConnectionsUpdaterServer extends Actor with ConnectionListener {
       }
     }
   }
+  // scalastyle:on method.length
 
   def stop() = this ! Stop()
 
@@ -160,13 +168,10 @@ class ConnectionsUpdaterService(bayeux: BayeuxServer)
   addService("/service/cnxUpdater", "processClient")
 
   def processClient(remote: ServerSession, message: Message) {
-    val input = message.getDataAsMap()
-    val active = input.get("active").asInstanceOf[String] match {
-      case null =>
-        false
-
-      case v =>
-        v.toBoolean
+    val active = Option(message.getDataAsMap().get("active").asInstanceOf[String]) map {
+      _.toBoolean
+    } getOrElse {
+      false
     }
 
     if (active)

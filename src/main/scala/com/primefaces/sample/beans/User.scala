@@ -11,6 +11,7 @@ object User {
 
 }
 
+// scalastyle:off null
 class User(
   @BeanProperty
   var userId: Int = -1,
@@ -27,3 +28,4 @@ class User(
   @BeanProperty
   var address: String = null
 ) extends Serializable
+// scalastyle:on null

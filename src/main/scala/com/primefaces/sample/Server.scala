@@ -15,7 +15,7 @@ import stealthnet.scala.ui.web.comet.SessionManager
  */
 object Server extends Logging with EmptyLoggingContext {
 
-  private var server: jettyServer = null
+  private var server: Option[jettyServer] = None
 
   /**
    * Starts server.
@@ -23,8 +23,9 @@ object Server extends Logging with EmptyLoggingContext {
   def start() {
     logger debug "Starting"
 
-    server = new jettyServer(Config.webServerPort)
- 
+    val server = new jettyServer(Config.webServerPort)
+    this.server = Some(server)
+
     val context = new WebAppContext()
     context.setDescriptor("webapp/WEB-INF/web.xml")
     context.setResourceBase("webapp")
@@ -32,7 +33,7 @@ object Server extends Logging with EmptyLoggingContext {
     context.setParentLoaderPriority(true)
 
     server.setHandler(context)
- 
+
     server.start()
 
     SessionManager.start()
@@ -50,7 +51,7 @@ object Server extends Logging with EmptyLoggingContext {
   def stop() {
     logger debug "Stopping"
 
-    if (server != null) {
+    server foreach { server =>
       server.stop()
       server.join()
     }

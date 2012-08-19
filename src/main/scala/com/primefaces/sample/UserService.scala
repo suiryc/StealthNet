@@ -11,7 +11,9 @@ object UserService {
   private var maxUserId = 1
 
   def create(user: User): Int = {
+    // scalastyle:off null
     assert(user != null)
+    // scalastyle:on null
 
     val userId = maxUserId
     user.userId = userId
@@ -22,7 +24,9 @@ object UserService {
   }
 
   def delete(user: User) {
+    // scalastyle:off null
     assert(user != null)
+    // scalastyle:on null
 
     USERS_TABLE -= user.userId
     if (maxUserId == user.userId)
@@ -61,27 +65,24 @@ class UserService {
 
   def getAllUsers = USERS_TABLE.values.toList:java.util.List[User]
 
-  def getUser(userId: Int): User = USERS_TABLE.get(userId) match {
-    case Some(user) => user
-    case None => null
-  }
+  def getUser(userId: Int): User = USERS_TABLE get(userId) orNull
 
-  def searchUsers(username: String) = {
-    var searchResults = mutable.ArrayBuffer[User]()
-    for (user <- USERS_TABLE.values) {
-      if((user.username != null) &&
-          user.username.toLowerCase().trim().startsWith(
-            if (username == null) "" else username.toLowerCase().trim()
-          )
-        )
-        searchResults += user
-    }
+  def searchUsers(username: String) =
     /* We need to return a Java Collection */
-    searchResults:java.util.List[User]
-  }
+    (USERS_TABLE.values.toList filter { user =>
+      Option(user.username) map { v =>
+        v.toLowerCase().trim().startsWith(
+          Option(username) map { _.toLowerCase().trim() } getOrElse { "" }
+        )
+      } getOrElse {
+        false
+      }
+    }):java.util.List[User]
 
   def update(user: User) {
+    // scalastyle:off null
     assert((user != null) && (USERS_TABLE contains user.userId))
+    // scalastyle:on null
     USERS_TABLE(user.userId) = user
   }
 

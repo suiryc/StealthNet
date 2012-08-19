@@ -21,15 +21,15 @@ class UserManagedBean extends Serializable {
 
     @BeanProperty
     protected var selectedUser: User = _
-    
+
     def searchUser(): String = {
       searchUsersResults = userService.searchUsers(
-        if (searchedUser == null) "" else searchedUser.trim()
+        Option(searchedUser) map { _.trim() } getOrElse { "" }
       )
 
       "tutorial"
     }
-    
+
     def updateUser(): String = {
       userService.update(selectedUser)
       "tutorial"
@@ -38,7 +38,9 @@ class UserManagedBean extends Serializable {
     def onUserSelect(event: SelectEvent) =
       selectedUser = event.getObject.asInstanceOf[User]
 
+    // scalastyle:off null
     def onUserUnselect(event: UnselectEvent) =
       selectedUser = null
+    // scalastyle:on null
 
 }

@@ -1,5 +1,6 @@
 package com.primefaces.sample
 
+// scalastyle:off regex
 object TestServer {
 
   /* XXX - http://wiki.eclipse.org/Jetty/Howto/Configure_JSP
@@ -11,3 +12,4 @@ object TestServer {
   }
 
 }
+// scalastyle:on regex

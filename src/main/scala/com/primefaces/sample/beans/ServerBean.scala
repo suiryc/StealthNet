@@ -18,7 +18,7 @@ object ServerBean extends Actor {
           Server.stop()
           exit()
       }
-    }    
+    }
   }
 
 }
@@ -32,4 +32,3 @@ class ServerBean extends Serializable {
     ServerBean ! ServerBean.Stop()
 
 }
- 

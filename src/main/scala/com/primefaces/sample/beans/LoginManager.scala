@@ -38,17 +38,15 @@ class LoginManager {
     }
   }
 
-  def handleReason() {
-    if (reason == null)
-      return
+  def handleReason() =
+    Option(reason) foreach {
+      _.toLowerCase match {
+        case "logout" =>
+          logout()
 
-    reason.toLowerCase match {
-      case "logout" =>
-        logout()
-
-      case _ =>
+        case _ =>
+      }
     }
-  }
 
   private def logout() {
     val context = FacesContext.getCurrentInstance.getExternalContext
