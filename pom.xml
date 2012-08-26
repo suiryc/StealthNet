@@ -13,10 +13,26 @@
     <maven.compiler.source>1.6</maven.compiler.source>
     <maven.compiler.target>1.6</maven.compiler.target>
     <encoding>UTF-8</encoding>
+
+    <!-- Dependencies versions -->
     <scala.version>2.9.2</scala.version>
+    <slf4j.version>1.6.6</slf4j.version>
+    <logback.version>1.0.6</logback.version>
+    <config.version>0.5.0</config.version>
     <jetty.version>8.1.5.v20120716</jetty.version>
     <jsf.version>2.1.9</jsf.version>
+    <primefaces.version>3.3.1</primefaces.version>
     <cometd.version>2.4.3</cometd.version>
+    <stealthnet-core.version>0.1.0</stealthnet-core.version>
+
+    <!-- Plugins versions -->
+    <scala-maven-plugin.version>3.1.0</scala-maven-plugin.version>
+    <maven-compiler-plugin.version>2.5.1</maven-compiler-plugin.version>
+    <maven-surefire-plugin.version>2.12.2</maven-surefire-plugin.version>
+    <maven-dependency-plugin.version>2.5</maven-dependency-plugin.version>
+    <maven-resources-plugin.version>2.6</maven-resources-plugin.version>
+    <maven-antrun-plugin.version>1.7</maven-antrun-plugin.version>
+    <maven-jar-plugin.version>2.4</maven-jar-plugin.version>
   </properties>
 
   <repositories>
@@ -29,16 +45,17 @@
   </repositories>
 
   <dependencies>
+    <!-- Log -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.6.6</version>
+      <version>${slf4j.version}</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <scope>runtime</scope>
-      <version>1.0.6</version>
+      <version>${logback.version}</version>
     </dependency>
 
     <!-- Scala language -->
@@ -46,6 +63,13 @@
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-library</artifactId>
       <version>${scala.version}</version>
+    </dependency>
+
+    <!-- Configuration management -->
+    <dependency>
+      <groupId>com.typesafe</groupId>
+      <artifactId>config</artifactId>
+      <version>${config.version}</version>
     </dependency>
 
     <!-- Network -->
@@ -95,7 +119,7 @@
     <dependency>
       <groupId>org.primefaces</groupId>
       <artifactId>primefaces</artifactId>
-      <version>3.3.1</version>
+      <version>${primefaces.version}</version>
     </dependency>
 
     <!-- CometD -->
@@ -119,16 +143,26 @@
     <dependency>
       <groupId>stealthnet.scala</groupId>
       <artifactId>stealthnet-core</artifactId>
-      <version>0.1.0</version>
+      <version>${stealthnet-core.version}</version>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
       <plugin>
-        <groupId>org.scala-tools</groupId>
-        <artifactId>maven-scala-plugin</artifactId>
-        <version>2.15.2</version>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>${scala-maven-plugin.version}</version>
+        <configuration>
+          <args>
+            <arg>-deprecation</arg>
+            <arg>-explaintypes</arg>
+            <arg>-optimize</arg>
+            <arg>-unchecked</arg>
+          </args>
+          <recompileMode>incremental</recompileMode>
+          <useZincServer>true</useZincServer>
+        </configuration>
         <executions>
           <execution>
             <goals>
@@ -137,21 +171,16 @@
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <args>
-            <arg>-deprecation</arg>
-          </args>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.5.1</version>
+        <version>${maven-compiler-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.12.2</version>
+        <version>${maven-surefire-plugin.version}</version>
         <configuration>
           <includes>
             <include>**/*Suite.class</include>
@@ -161,7 +190,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.5</version>
+        <version>${maven-dependency-plugin.version}</version>
         <executions>
           <execution>
             <id>package:copy-dependencies</id>
@@ -194,7 +223,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>2.6</version>
+        <version>${maven-resources-plugin.version}</version>
         <executions>
           <execution>
             <id>integration-test:copy-resources</id>
@@ -224,7 +253,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.7</version>
+        <version>${maven-antrun-plugin.version}</version>
         <executions>
           <execution>
             <id>integration-test:run</id>
@@ -243,7 +272,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>2.4</version>
+        <version>${maven-jar-plugin.version}</version>
         <executions>
           <execution>
             <id>integration-test:jar</id>

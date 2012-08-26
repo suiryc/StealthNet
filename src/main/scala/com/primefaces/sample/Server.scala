@@ -3,12 +3,14 @@ package com.primefaces.sample
 import java.io.File
 import org.eclipse.jetty.server.{Server => jettyServer }
 import org.eclipse.jetty.webapp.WebAppContext
-import stealthnet.scala.Config
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.StealthNetConnectionsManager
-import stealthnet.scala.ui.web.comet.ConnectionsUpdaterServer
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
-import stealthnet.scala.ui.web.comet.SessionManager
+import stealthnet.scala.ui.web.Settings
+import stealthnet.scala.ui.web.comet.{
+  ConnectionsUpdaterServer,
+  SessionManager
+}
 
 /**
  * @todo Documentation
@@ -23,7 +25,7 @@ object Server extends Logging with EmptyLoggingContext {
   def start() {
     logger debug "Starting"
 
-    val server = new jettyServer(Config.webServerPort)
+    val server = new jettyServer(Settings.ui.webServerPort)
     this.server = Some(server)
 
     val context = new WebAppContext()
