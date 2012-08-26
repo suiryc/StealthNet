@@ -13,7 +13,23 @@
     <maven.compiler.source>1.6</maven.compiler.source>
     <maven.compiler.target>1.6</maven.compiler.target>
     <encoding>UTF-8</encoding>
+
+    <!-- Dependencies versions -->
     <scala.version>2.9.2</scala.version>
+    <slf4j.version>1.6.6</slf4j.version>
+    <logback.version>1.0.6</logback.version>
+    <config.version>0.5.0</config.version>
+    <bouncycastle.version>1.47</bouncycastle.version>
+    <!-- Good: 3.3.1.Final, Bad: 3.4.0.Final ... 3.5.0.Final -->
+    <netty.version>3.3.1.Final</netty.version>
+    <junit.version>4.10</junit.version>
+    <scalatest.version>1.8</scalatest.version>
+
+    <!-- Plugins versions -->
+    <scala-maven-plugin.version>3.1.0</scala-maven-plugin.version>
+    <maven-compiler-plugin.version>2.5.1</maven-compiler-plugin.version>
+    <maven-surefire-plugin.version>2.12.2</maven-surefire-plugin.version>
+    <maven-dependency-plugin.version>2.5</maven-dependency-plugin.version>
   </properties>
 
   <dependencies>
@@ -21,20 +37,14 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.6.6</version>
+      <version>${slf4j.version}</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <scope>runtime</scope>
-      <version>1.0.6</version>
+      <version>${logback.version}</version>
     </dependency>
-    <!-- We actually use our own extended version of SLF4S code -->
-    <!-- <dependency>
-      <groupId>com.weiglewilczek.slf4s</groupId>
-      <artifactId>slf4s_${scala.version}</artifactId>
-      <version>1.0.7</version>
-    </dependency> -->
 
     <!-- Scala language -->
     <dependency>
@@ -43,32 +53,38 @@
       <version>${scala.version}</version>
     </dependency>
 
+    <!-- Configuration management -->
+    <dependency>
+      <groupId>com.typesafe</groupId>
+      <artifactId>config</artifactId>
+      <version>${config.version}</version>
+    </dependency>
+
     <!-- Security (cryptography) -->
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15on</artifactId>
-      <version>1.47</version>
+      <version>${bouncycastle.version}</version>
     </dependency>
 
     <!-- Network -->
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty</artifactId>
-      <!-- Good: 3.3.1.Final, Bad: 3.4.0.Final ... 3.5.0.Final -->
-      <version>3.3.1.Final</version>
+      <version>${netty.version}</version>
     </dependency>
 
     <!-- Testing -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.10</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${scala.version}</artifactId>
-      <version>1.8</version>
+      <version>${scalatest.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -76,9 +92,19 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.scala-tools</groupId>
-        <artifactId>maven-scala-plugin</artifactId>
-        <version>2.15.2</version>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>${scala-maven-plugin.version}</version>
+        <configuration>
+          <args>
+            <arg>-deprecation</arg>
+            <arg>-explaintypes</arg>
+            <arg>-optimize</arg>
+            <arg>-unchecked</arg>
+          </args>
+          <recompileMode>incremental</recompileMode>
+          <useZincServer>true</useZincServer>
+        </configuration>
         <executions>
           <execution>
             <goals>
@@ -87,53 +113,26 @@
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <args>
-            <arg>-deprecation</arg>
-          </args>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.5.1</version>
-        <!-- <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
-        </configuration> -->
+        <version>${maven-compiler-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.12.2</version>
+        <version>${maven-surefire-plugin.version}</version>
         <configuration>
           <includes>
             <include>**/*Suite.class</include>
           </includes>
         </configuration>
       </plugin>
-      <!-- <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.3</version>
-        <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin> -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.5</version>
+        <version>${maven-dependency-plugin.version}</version>
         <executions>
           <execution>
             <id>copy-dependencies</id>

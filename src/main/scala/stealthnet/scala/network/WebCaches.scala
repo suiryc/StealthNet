@@ -1,6 +1,6 @@
 package stealthnet.scala.network
 
-import stealthnet.scala.Config
+import stealthnet.scala.Settings
 import stealthnet.scala.core.Core
 import stealthnet.scala.util.Peer
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
@@ -70,7 +70,7 @@ object WebCaches extends Logging with EmptyLoggingContext {
       removePeer()
 
       for (webCache <- webCaches)
-        WebCacheClient.addPeer(webCache, Config.serverPort)
+        WebCacheClient.addPeer(webCache, Settings.core.serverPort)
 
       addedPeer = true
     }

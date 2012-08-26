@@ -3,7 +3,7 @@ package stealthnet.scala.core
 import java.security.Security
 import java.util.{Timer, TimerTask}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import stealthnet.scala.Config
+import stealthnet.scala.Settings
 import stealthnet.scala.cryptography.{RijndaelParameters, RSAKeys}
 import stealthnet.scala.network.{
   StealthNetClient,
@@ -145,7 +145,7 @@ object Core extends Logging with EmptyLoggingContext {
   def start() {
     stopping = false
     WebCaches.refresh()
-    if (Config.enableServerConnections)
+    if (Settings.core.enableServerConnections)
       StealthNetServer.start()
     StealthNetConnectionsManager.start()
   }

@@ -5,7 +5,7 @@ import java.util.concurrent.Executors
 import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel.{Channel, ChannelFactory}
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
-import stealthnet.scala.Config
+import stealthnet.scala.Settings
 import stealthnet.scala.util.Peer
 import stealthnet.scala.util.log.Logging
 
@@ -76,7 +76,7 @@ class StealthNetClient(
       )
     ))
 
-    bootstrap.setOption("connectTimeoutMillis", Config.connectTimeout)
+    bootstrap.setOption("connectTimeoutMillis", Settings.core.connectTimeout)
 
     val future = bootstrap.connect(new InetSocketAddress(peer.host, peer.port))
     future.awaitUninterruptibly()

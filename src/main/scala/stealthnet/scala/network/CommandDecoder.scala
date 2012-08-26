@@ -4,7 +4,7 @@ import java.io.EOFException
 import org.jboss.netty.buffer.{ChannelBuffer, ChannelBufferInputStream}
 import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.replay.{ReplayingDecoder, VoidEnum}
-import stealthnet.scala.Config
+import stealthnet.scala.Settings
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.protocol.commands.Command
 import stealthnet.scala.network.protocol.exceptions.ProtocolException
@@ -42,7 +42,7 @@ class CommandDecoder
 
     var encryptedDuplicate: Option[ChannelBuffer] = None
     try {
-      val length = if (Config.debugIO)
+      val length = if (Settings.core.debugIO)
           builder.readHeader(cnx, new DebugInputStream(new ChannelBufferInputStream(buf), cnx.loggerContext ++ List("step" -> "header")))
         else
           builder.readHeader(cnx, new ChannelBufferInputStream(buf))
@@ -54,7 +54,7 @@ class CommandDecoder
 
       val encrypted = buf.readBytes(length)
       encryptedDuplicate = Some(encrypted.duplicate())
-      val command = if (Config.debugIO)
+      val command = if (Settings.core.debugIO)
           builder.readCommand(cnx, new DebugInputStream(new ChannelBufferInputStream(encrypted), cnx.loggerContext ++ List("step" -> "encrypted")))
         else
           builder.readCommand(cnx, new ChannelBufferInputStream(encrypted))

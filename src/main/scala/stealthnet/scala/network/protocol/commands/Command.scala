@@ -8,7 +8,7 @@ import java.io.{
 }
 import javax.crypto.{CipherInputStream, CipherOutputStream}
 import scala.collection.mutable.WrappedArray
-import stealthnet.scala.{Config, Constants}
+import stealthnet.scala.{Constants, Settings}
 import stealthnet.scala.cryptography.{
   Algorithm,
   Hash,
@@ -203,7 +203,7 @@ object Command extends Logging with EmptyLoggingContext {
             throw new Exception("Cannot decrypt: Rijndael decrypter not yet created")
           }
       }
-      val newInput = if (Config.debugIO && (cipherInput ne input))
+      val newInput = if (Settings.core.debugIO && (cipherInput ne input))
           new DebugInputStream(cipherInput, cnx.loggerContext ++ List("step" -> "decrypted"))
         else
           cipherInput

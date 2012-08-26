@@ -10,7 +10,7 @@ import org.jboss.netty.channel.group.{
   DefaultChannelGroup
 }
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
-import stealthnet.scala.Config
+import stealthnet.scala.Settings
 import stealthnet.scala.core.Core
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
@@ -42,7 +42,7 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
     bootstrap.setPipelineFactory(StealthNetPipelineFactory(
       new StealthNetConnectionParameters(group = Some(group))))
 
-    var channel: Channel = bootstrap.bind(new InetSocketAddress(Config.serverPort))
+    var channel: Channel = bootstrap.bind(new InetSocketAddress(Settings.core.serverPort))
     group.add(channel)
   }
 

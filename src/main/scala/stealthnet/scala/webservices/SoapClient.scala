@@ -49,22 +49,31 @@ object SoapClient {
       Right(XML.load(conn.getInputStream))
     }
     catch {
-      case e: Exception =>
-        val response = Source.fromInputStream(conn.getErrorStream).mkString
-        val details = try {
-          val doc = XML.loadString(response)
-          "Fault code[" + (doc \\ "faultcode").text +
-              "] actor[" + (doc \\ "faultactor").text +
-              "]: " + (doc \\ "faultstring").text
+      case e =>
+        try {
+          val response = Source.fromInputStream(conn.getErrorStream).mkString
+          val details = try {
+            val doc = XML.loadString(response)
+            "Fault code[" + (doc \\ "faultcode").text +
+                "] actor[" + (doc \\ "faultactor").text +
+                "]: " + (doc \\ "faultstring").text
+          }
+          catch {
+            case e => response
+          }
+
+          Left("Response code[" + conn.getResponseCode +
+              "] message[" + conn.getResponseMessage +
+              "] details[" + details + "]")
         }
         catch {
-          case e: Exception => response
+          case _ =>
+          /* Usually means we could not even connect to the server, let alone
+           * get a response (code / message).
+           */
+          Left(e.toString())
         }
-
-        Left("Response code[" + conn.getResponseCode +
-            "] message[" + conn.getResponseMessage +
-            "] details[" + details + "]")
-      }
+    }
   }
 
 }

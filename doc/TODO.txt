@@ -1,3 +1,7 @@
+Manage connection issues
+When disconnected, timeout does not seem to kick in ...
+Also, addPeer does not take into account issues to retry later ...
+
 Route commands
 See StealthNet source code.
 Strategy to hold/drop packets depending on time received queue length ?

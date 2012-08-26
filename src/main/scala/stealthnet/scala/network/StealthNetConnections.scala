@@ -9,7 +9,7 @@ import org.jboss.netty.channel.Channel
 import org.jboss.netty.channel.ChannelLocal
 import org.jboss.netty.channel.group.ChannelGroup
 import org.bouncycastle.crypto.BufferedBlockCipher
-import stealthnet.scala.{Config, Constants}
+import stealthnet.scala.{Constants, Settings}
 import stealthnet.scala.core.Core
 import stealthnet.scala.cryptography.{Ciphers, RijndaelParameters}
 import stealthnet.scala.util.Peer
@@ -540,10 +540,10 @@ object StealthNetConnectionsManager
    * @see [[stealthnet.scala.network.WebCaches]]
    */
   protected def checkConnectionsLimit() {
-    if (peers.size < Config.avgCnxCount) {
+    if (peers.size < Settings.core.avgCnxCount) {
       WebCaches.addPeer()
       /* one request at a time */
-      if (Config.enableClientConnections && !peerRequestOngoing) {
+      if (Settings.core.enableClientConnections && !peerRequestOngoing) {
         this ! RequestPeer()
         peerRequestOngoing = true
       }
@@ -554,7 +554,7 @@ object StealthNetConnectionsManager
 
   /** Gets whether the upper connection limit (`1.25 * average`) is reached. */
   protected def upperLimitReached() =
-    if (peers.size >= 1.25 * Config.avgCnxCount) true else false
+    if (peers.size >= 1.25 * Settings.core.avgCnxCount) true else false
 
   /**
    * Gets the connection associated to the given channel.

@@ -15,7 +15,7 @@ import org.jboss.netty.util.{
   HashedWheelTimer,
   Timer
 }
-import stealthnet.scala.Config
+import stealthnet.scala.Settings
 
 /**
  * ''StealthNet'' pipeline factory companion object.
@@ -79,12 +79,12 @@ class StealthNetPipelineFactory(val parameters: StealthNetConnectionParameters)
     /* upstream read timeout handler */
     pipeline.addLast("read timeout handler",
       new ReadTimeoutHandler(StealthNetPipelineFactory.timer,
-        Config.readTimeout, TimeUnit.MILLISECONDS))
+        Settings.core.readTimeout, TimeUnit.MILLISECONDS))
 
     /* downstream write timeout handler */
     pipeline.addLast("write timeout handler",
       new WriteTimeoutHandler(StealthNetPipelineFactory.timer,
-        Config.writeTimeout, TimeUnit.MILLISECONDS))
+        Settings.core.writeTimeout, TimeUnit.MILLISECONDS))
 
     /* upstream command decoder */
     pipeline.addLast("command decoder", new CommandDecoder())
