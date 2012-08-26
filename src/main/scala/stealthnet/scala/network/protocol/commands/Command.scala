@@ -203,7 +203,7 @@ object Command extends Logging with EmptyLoggingContext {
             throw new Exception("Cannot decrypt: Rijndael decrypter not yet created")
           }
       }
-      val newInput = if (Settings.core.debugIO && (cipherInput ne input))
+      val newInput = if (Settings.core.debugIOData && (cipherInput ne input))
           new DebugInputStream(cipherInput, cnx.loggerContext ++ List("step" -> "decrypted"))
         else
           cipherInput

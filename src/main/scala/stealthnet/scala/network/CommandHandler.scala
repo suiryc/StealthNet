@@ -18,7 +18,7 @@ import org.jboss.netty.handler.timeout.{
   ReadTimeoutException,
   WriteTimeoutException
 }
-import stealthnet.scala.Constants
+import stealthnet.scala.{Constants, Settings}
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.protocol.{BitSize, ProtocolStream}
 import stealthnet.scala.network.protocol.commands.Command
@@ -44,7 +44,8 @@ class CommandHandler
     val command: Command = e.getMessage.asInstanceOf[Command]
     val cnx = StealthNetConnectionsManager.connection(e.getChannel)
 
-    logger debug(cnx.loggerContext, "Received command: " + command)
+    if (Settings.core.debugIOCommands)
+      logger debug(cnx.loggerContext, "Received command: " + command)
 
     Core.receivedCommand(command, cnx)
   }
@@ -69,7 +70,8 @@ class CommandHandler
     val buf: ChannelBuffer = ChannelBuffers.dynamicBuffer(Constants.commandOutputBufferLength)
     val output = new ChannelBufferOutputStream(buf)
 
-    logger debug(cnx.loggerContext, "Sending command: " + command)
+    if (Settings.core.debugIOCommands)
+      logger debug(cnx.loggerContext, "Sending command: " + command)
 
     val cipherStart = buf.writerIndex + Constants.commandOffset
     val unencryptedLength = command.write(cnx, output)

@@ -23,24 +23,29 @@ object WebCaches extends Logging with EmptyLoggingContext {
    *
    * Removes ourself, get updated list of WebCaches, and re-adds ourself if needed.
    *
-   * If no WebCache could be retrieved, use default:
-   *   - `http://rshare.de/rshare.asmx`
-   *   - `http://webcache.stealthnet.at/rwpmws.php`
-   *
-   * @todo configuration: allow manual list of WebCaches without refresh
+   * If no WebCache could be retrieved, use default (configured) ones.
    */
   def refresh() = {
     val readd = addedPeer
     removePeer()
 
-    webCaches = UpdateClient.getWebCaches("http://rshare.de/rshareupdates.asmx") match {
+    Settings.core.wsWebCacheUpdateEnabled
+    webCaches = (if (Settings.core.wsWebCacheUpdateEnabled)
+        UpdateClient.getWebCaches(Settings.core.wsWebCacheUpdateURL)
+      else
+        None
+    ) match {
       case Some(urls) =>
         logger debug("Got webCaches: " + urls)
         urls
 
       case None =>
-        logger debug("Got no webCache: using default")
-        List("http://rshare.de/rshare.asmx", "http://webcache.stealthnet.at/rwpmws.php")
+        val default = Settings.core.wsWebCacheDefault
+        if (Settings.core.wsWebCacheUpdateEnabled)
+          logger debug("Got no webCache: using default[" + default + "]")
+        else
+          logger debug("WebCache update disabled: using default[" + default + "]")
+        default
     }
     cyclicIt = webCaches.iterator
 

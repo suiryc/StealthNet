@@ -2,6 +2,10 @@ Manage connection issues
 When disconnected, timeout does not seem to kick in ...
 Also, addPeer does not take into account issues to retry later ...
 
+Configuration
+List of excluded WebCache ?
+How to save configuration changes ?
+
 Route commands
 See StealthNet source code.
 Strategy to hold/drop packets depending on time received queue length ?
@@ -10,15 +14,8 @@ Strategy to hold/drop packets depending on time received queue length ?
 Manage DL/UL limits
 How ? Netty or done by central object (e.g. Core) which blocks or drops routed data ?
 
-Manage global configuration
-Server port, ...
-Use Scala XML or parsing support to read/write file ?
-
 Have logging strategy ?
 Other than plain className loggers
-
-Manage logging
-Configuration file, programmatically, or both ?
 
 Gather DL/UL speeds
 In central object (e.g. Core) ?
@@ -31,7 +28,7 @@ Manage data download/upload requests
 Have separate 'connection' timeouts
 One for handshaking, one for data reception
 
-Remove unnecessary comments that deactivate scalstyle warnings
+Remove unnecessary comments that deactivate scalastyle warnings
 Search for 'scalastyle:off' which deactivates 'null' for example. Should not be necessary anymore once all code is clean (nothing using null).
 May also try to fix those with 'method.length' by splitting the function when possible.
 

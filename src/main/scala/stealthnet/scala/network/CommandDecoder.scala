@@ -42,7 +42,7 @@ class CommandDecoder
 
     var encryptedDuplicate: Option[ChannelBuffer] = None
     try {
-      val length = if (Settings.core.debugIO)
+      val length = if (Settings.core.debugIOData)
           builder.readHeader(cnx, new DebugInputStream(new ChannelBufferInputStream(buf), cnx.loggerContext ++ List("step" -> "header")))
         else
           builder.readHeader(cnx, new ChannelBufferInputStream(buf))
@@ -54,17 +54,17 @@ class CommandDecoder
 
       val encrypted = buf.readBytes(length)
       encryptedDuplicate = Some(encrypted.duplicate())
-      val command = if (Settings.core.debugIO)
+      val command = if (Settings.core.debugIOData)
           builder.readCommand(cnx, new DebugInputStream(new ChannelBufferInputStream(encrypted), cnx.loggerContext ++ List("step" -> "encrypted")))
         else
           builder.readCommand(cnx, new ChannelBufferInputStream(encrypted))
       checkpoint()
 
-      if (logger.isTraceEnabled && command.isDefined)
-        encryptedDuplicate foreach { logData(cnx, _) }
+      if (Settings.core.debugIOCommands && command.isDefined && logger.isTraceEnabled)
+        encryptedDuplicate foreach { logData(cnx, false, _) }
 
       command getOrElse {
-        encryptedDuplicate foreach { logData(cnx, _) }
+        encryptedDuplicate foreach { logData(cnx, true, _) }
         null
       }
     }
@@ -73,11 +73,12 @@ class CommandDecoder
        * what is thrown by ReplayingDecoder buffer. */
       case e: Exception =>
         checkpoint()
+        /* XXX - special case for EOFException ? */
         if (!cnx.closing && !Core.stopping) {
           logger error(cnx.loggerContext, "Protocol issue", e)
           /* Note: closing channel is not done right away ... */
           cnx.close()
-          encryptedDuplicate foreach { logData(cnx, _) }
+          encryptedDuplicate foreach { logData(cnx, true, _) }
         }
         /* else: nothing to say here */
         null
@@ -91,18 +92,31 @@ class CommandDecoder
    * Used upon debugging or to help investigate issues' cause. Tries to decrypt
    * data, otherwise just logs encrypted data.
    *
-   * @param cnx connection
-   * @param buf channel buffer
+   * @param cnx   connection
+   * @param issue whether we faced an issue
+   * @param buf   channel buffer
+   * @todo Find way to manage both TRACE and ERROR log level ?
    */
-  private def logData(cnx: StealthNetConnection, buf: ChannelBuffer) {
+  private def logData(cnx: StealthNetConnection, issue: Boolean,
+    buf: ChannelBuffer)
+  {
     try {
       val decrypted = builder.decryptData(cnx, buf.array, buf.readerIndex, buf.readableBytes)
-      logger trace(cnx.loggerContext, "Decrypted data:\n" + HexDumper.dump(decrypted))
+      if (issue)
+        logger error(cnx.loggerContext, "Decrypted data:\n" + HexDumper.dump(decrypted))
+      else
+        logger trace(cnx.loggerContext, "Decrypted data:\n" + HexDumper.dump(decrypted))
     }
     catch {
       case e =>
-        logger trace(cnx.loggerContext, "Could not decrypt data:\n" + HexDumper.dump(buf.array, buf.readerIndex, buf.readableBytes), e)
-        logger trace(cnx.loggerContext, "Decrypting data are: " + builder.decryptingData(cnx))
+        if (issue) {
+          logger error(cnx.loggerContext, "Could not decrypt data:\n" + HexDumper.dump(buf.array, buf.readerIndex, buf.readableBytes), e)
+          logger error(cnx.loggerContext, "Decrypting data are: " + builder.decryptingData(cnx))
+        }
+        else {
+          logger trace(cnx.loggerContext, "Could not decrypt data:\n" + HexDumper.dump(buf.array, buf.readerIndex, buf.readableBytes), e)
+          logger trace(cnx.loggerContext, "Decrypting data are: " + builder.decryptingData(cnx))
+        }
     }
   }
 
