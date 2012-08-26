@@ -6,6 +6,10 @@
     </encoder>
   </appender>
 
+  <!-- <logger name="org.cometd" level="INFO" /> -->
+  <!-- <logger name="org.eclipse.jetty" level="INFO" /> -->
+  <logger name="stealthnet.scala" level="DEBUG" />
+
   <!-- The level of root is set to DEBUG by default -->
   <root level="INFO">
     <appender-ref ref="STDOUT" />

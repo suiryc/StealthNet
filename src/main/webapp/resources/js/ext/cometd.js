@@ -17,7 +17,7 @@ Ext.cometd.CometD = Class.extend({
 
     connectionBroken: function() {
         if (!this.disconnecting) {
-            growlMessage('warn', this.label, 'Connection broken', true);
+            growlMessage('warn', this.label, 'Connection broken', false);
         }
     },
 
@@ -28,7 +28,7 @@ Ext.cometd.CometD = Class.extend({
     },
 
     authenticationSucceeded: function() {
-        growlMessage('info', this.label, 'Authentication succeeded', true);
+        growlMessage('info', this.label, 'Authentication succeeded', false);
     },
 
     authenticationFailed: function() {
