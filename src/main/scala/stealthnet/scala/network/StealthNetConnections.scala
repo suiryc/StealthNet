@@ -520,7 +520,9 @@ object StealthNetConnectionsManager
     assert(peer != null)
     // scalastyle:on null
 
-    peers.remove(peer)
+    if (peers.remove(peer))
+      logger trace("Removed peer[" + peer + "]")
+
     if (stopping && (peers.size == 0))
       /* time to really stop now */
       this ! Stop()

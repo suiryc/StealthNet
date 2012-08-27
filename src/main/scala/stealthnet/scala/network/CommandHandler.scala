@@ -96,7 +96,7 @@ class CommandHandler
     val cnx = StealthNetConnectionsManager.getConnection(e.getChannel)
     val loggerContext = StealthNetConnection.loggerContext(cnx,  e.getChannel)
 
-    logger trace(loggerContext, "Caught exception: " + e.getCause.getMessage())
+    logger trace(loggerContext, "Caught exception: " + e.getCause.toString())
     e.getCause match {
       case e: ReadTimeoutException =>
         logger debug(loggerContext, "Read timeout")
