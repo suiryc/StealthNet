@@ -143,7 +143,10 @@ object ConnectionsUpdaterServer extends Actor with ConnectionListener {
 
         case ClosedConnection(cnx) =>
           /* remove the connection and notify each actor */
-          val (left, right) = connections span { _.cnx.channel eq cnx.channel }
+          /* Note: comparison on cnx or cnx.channel reference should work, but
+           * comparing the channel id shall be more future-proof.
+           */
+          val (left, right) = connections partition { _.cnx.channel.getId == cnx.channel.getId }
           connections = right
           left foreach { cnxInfo =>
             actors foreach { _._2 ! ConnectionsUpdater.ClosedConnection(cnxInfo) }
