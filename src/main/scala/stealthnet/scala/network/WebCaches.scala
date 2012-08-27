@@ -30,7 +30,7 @@ object WebCaches extends Logging with EmptyLoggingContext {
     removePeer()
 
     Settings.core.wsWebCacheUpdateEnabled
-    webCaches = (if (Settings.core.wsWebCacheUpdateEnabled)
+    val unfiltered: List[String] = (if (Settings.core.wsWebCacheUpdateEnabled)
         UpdateClient.getWebCaches(Settings.core.wsWebCacheUpdateURL)
       else
         None
@@ -47,6 +47,19 @@ object WebCaches extends Logging with EmptyLoggingContext {
           logger debug("WebCache update disabled: using default[" + default + "]")
         default
     }
+
+    val excluded = Settings.core.wsWebCacheExcluded
+    webCaches = unfiltered filterNot { webCache =>
+      excluded.find { regex =>
+        val filtered = regex.r findFirstIn(webCache) isDefined
+
+        if (filtered)
+          logger debug("WebCache[" + webCache + "] excluded[" + regex + "]")
+
+        filtered
+      } isDefined
+    }
+
     cyclicIt = webCaches.iterator
 
     if (readd)

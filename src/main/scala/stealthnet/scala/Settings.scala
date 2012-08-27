@@ -73,7 +73,7 @@ class Settings(config: Config) extends BaseSettings(config) {
    * ones. `true` by default.
    */
   val wsWebCacheUpdateEnabled =
-    config.getBoolean(optionPath("webservice.webcache.update.enabled"))
+    config.getBoolean(optionPath("webservice.webcache.update.enable"))
 
   /**
    * ''RShare'' update URL. `http://rshare.de/rshareupdates.asmx` by
@@ -88,5 +88,9 @@ class Settings(config: Config) extends BaseSettings(config) {
    */
   val wsWebCacheDefault: List[String] =
     config.getStringList(optionPath("webservice.webcache.default")).toList
+
+  /** Regular expressions of WebCaches to exclude. None by default. */
+  val wsWebCacheExcluded: List[String] =
+    config.getStringList(optionPath("webservice.webcache.exclude")).toList
 
 }

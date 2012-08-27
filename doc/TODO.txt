@@ -3,7 +3,6 @@ When disconnected, timeout does not seem to kick in ...
 Also, addPeer does not take into account issues to retry later ...
 
 Configuration
-List of excluded WebCache ?
 How to save configuration changes ?
 
 Route commands
