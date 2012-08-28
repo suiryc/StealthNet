@@ -6,6 +6,10 @@ import org.jboss.netty.bootstrap.ClientBootstrap
 import org.jboss.netty.channel.{Channel, ChannelFactory}
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import stealthnet.scala.Settings
+import stealthnet.scala.network.connection.{
+  StealthNetConnectionParameters,
+  StealthNetConnectionsManager
+}
 import stealthnet.scala.util.Peer
 import stealthnet.scala.util.log.Logging
 
@@ -52,14 +56,14 @@ class StealthNetClient(
    * Starts client.
    *
    * First registers the remote peer as a to-be
-   * [[stealthnet.scala.network.StealthNetConnection]]. If connection limit is
-   * reached, nothing is done and this method returns `false`, otherwise
-   * connection is attempted to remote peer.
+   * [[stealthnet.scala.network.connection.StealthNetConnection]]. If connection
+   * limit is reached, nothing is done and this method returns `false`,
+   * otherwise connection is attempted to remote peer.
    *
    * If connection was successful, `stop` should be called to stop the client.
    *
    * @return `true` if connection succeeded, `false` otherwise
-   * @see [[stealthnet.scala.network.StealthNetConnectionsManager]].`addPeer`
+   * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`addPeer`
    */
   def start(): Boolean = {
     if (!StealthNetConnectionsManager.addPeer(peer))

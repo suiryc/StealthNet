@@ -7,12 +7,16 @@ import org.jboss.netty.channel.{
 }
 import org.jboss.netty.channel.ChannelEvent
 import org.jboss.netty.channel.ChannelState
+import stealthnet.scala.network.connection.{
+  StealthNetConnectionParameters,
+  StealthNetConnectionsManager
+}
 
 /**
  * Upstream/downstream parameters handler.
  *
  * The sole purpose of this handler is to be used first in the handlers list so
- * that it can initialize a [[stealthnet.scala.network.StealthNetConnection]]
+ * that it can initialize a [[stealthnet.scala.network.connection.StealthNetConnection]]
  * for each new connection before other handlers access it.
  *
  * On server side, the channel is also added to a `ChannelGroup`.
@@ -25,10 +29,10 @@ class ParametersHandler(val parameters: StealthNetConnectionParameters)
    * Handles channel opening event.
    *
    * Creates and initializes a new
-   * [[stealthnet.scala.network.StealthNetConnection]] associated to the
-   * connected channel.
+   * [[stealthnet.scala.network.connection.StealthNetConnection]] associated to
+   * the connected channel.
    *
-   * @see [[stealthnet.scala.network.StealthNetConnectionsManager]].`getConnection`
+   * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`getConnection`
    */
   override def channelOpen(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
     val cnx = StealthNetConnectionsManager.connection(e.getChannel)

@@ -1,160 +1,14 @@
-package stealthnet.scala.network
+package stealthnet.scala.network.connection
 
 import java.net.InetSocketAddress
-import java.security.interfaces.RSAPublicKey
-import java.util.{Date, TimerTask}
 import scala.actors.Actor
 import scala.collection.mutable
-import org.jboss.netty.channel.Channel
-import org.jboss.netty.channel.ChannelLocal
-import org.jboss.netty.channel.group.ChannelGroup
-import org.bouncycastle.crypto.BufferedBlockCipher
+import org.jboss.netty.channel.{Channel, ChannelLocal}
 import stealthnet.scala.{Constants, Settings}
 import stealthnet.scala.core.Core
-import stealthnet.scala.cryptography.{Ciphers, RijndaelParameters}
+import stealthnet.scala.network.WebCaches
 import stealthnet.scala.util.Peer
-import stealthnet.scala.util.log.{EmptyLoggingContext, Logging, LoggingContext}
-
-/**
- * Bare ''StealthNet'' connection parameters.
- *
- * @note When setting the local or remote ''Rijndael'' parameters, the
- *   corresponding encrypter/decrypter is created as a side effect. It is to be
- *   reseted and used when necessary, instead of creating a new one each time.
- *   This is not done for ''RSA'' which is used only once during handshaking.
- */
-class StealthNetConnectionParameters(
-  /** Channel group to which register an opened channel. */
-  var group: Option[ChannelGroup] = None,
-  /** Client object, `None` on server side. */
-  var client: Option[StealthNetClient] = None,
-  /** Remote peer. */
-  var peer: Option[Peer] = None
-) extends LoggingContext
-{
-
-  def loggerContext: List[(String, Any)] =
-    peer map(v => List("peer" -> v)) getOrElse(Nil)
-
-  /** Whether connection was accepted (no limit reached). */
-  var accepted: Boolean = true
-  /** Whether connection was established (handshake successful). */
-  var established: Boolean = false
-  /** Whether connection is being closed. */
-  var closing: Boolean = false
-  /** Remote ''RSA'' public key to encrypt data. */
-  var remoteRSAKey: Option[RSAPublicKey] = None
-
-  /** Local ''Rijndael'' parameters to encrypt data. */
-  private[this] var localRijndaelParams: Option[RijndaelParameters] = None
-  /** ''Rijndael'' encrypter. */
-  var rijndaelEncrypter: Option[BufferedBlockCipher] = None
-
-  /** Gets local ''Rijndael'' parameters to encrypt data. */
-  def localRijndaelParameters: Option[RijndaelParameters] = localRijndaelParams
-
-  /**
-   * Sets local ''Rijndael'' parameters to encrypt data.
-   *
-   * As a side effect, also creates the related encrypter.
-   */
-  def localRijndaelParameters_=(params: RijndaelParameters) {
-    localRijndaelParams = Some(params)
-    rijndaelEncrypter = Some(Ciphers.rijndaelEncrypter(params))
-  }
-
-  /** Remote ''Rijndael'' parameters to decrypt data. */
-  private[this] var remoteRijndaelParams: Option[RijndaelParameters] = None
-  /** ''Rijndael'' decrypter. */
-  var rijndaelDecrypter: Option[BufferedBlockCipher] = None
-
-  /** Gets remote ''Rijndael'' parameters to decrypt data. */
-  def remoteRijndaelParameters: Option[RijndaelParameters] = remoteRijndaelParams
-
-  /**
-   * Sets remote ''Rijndael'' parameters to decrypt data.
-   *
-   * As a side effect, also creates the related decrypter.
-   */
-  def remoteRijndaelParameters_=(params: RijndaelParameters) {
-    remoteRijndaelParams = Some(params)
-    rijndaelDecrypter = Some(Ciphers.rijndaelDecrypter(params))
-  }
-
-  /** Received commands. */
-  var receivedCommands: Int = _
-  /** Sent commands. */
-  var sentCommands: Int = _
-
-  /** Gets whether this connection is a client one. */
-  def isClient() = client.isDefined
-
-}
-
-/**  ''StealthNet'' connection companion object. */
-object StealthNetConnection {
-
-  def loggerContext(cnx: Option[StealthNetConnection], channel: Channel) = {
-    val ctx = cnx map(_.loggerContext) getOrElse(Nil)
-
-    if (ctx.find(_._1 == "peer").isDefined)
-      ctx
-    else
-      ctx ::: List("remote" -> channel.getRemoteAddress)
-  }
-
-}
-
-/**
- * ''StealthNet'' connection associated to a channel.
- */
-class StealthNetConnection protected[network] (val channel: Channel)
-  extends StealthNetConnectionParameters()
-{
-
-  // scalastyle:off null
-  assert(channel != null)
-  // scalastyle:on null
-
-  val createDate = new Date()
-
-  /** Closes the connection channel. */
-  def close() {
-    closing = true
-    channel.close()
-  }
-
-}
-
-/**
- * Connection listener companion object.
- *
- * Defines messages that can be notified to listeners.
- */
-object ConnectionListener {
-
-  /* XXX - manager connection updates (state, etc) and closing */
-  /** Message: new connection initiated. */
-  case class NewConnection(cnx: StealthNetConnection)
-  /** Message: connection closed. */
-  case class ClosedConnection(cnx: StealthNetConnection)
-
-}
-
-/**
- * Connection listener.
- *
- * Basically, a listener is an actor. But there actually are many kind (that is
- * implementations) of actors. The common trait being the `!` method used to
- * send a message.
- */
-trait ConnectionListener {
-
-  // scalastyle:off method.name
-  def !(msg: Any): Unit
-  // scalastyle:on method.name
-
-}
+import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 /**
  * ''StealthNet'' connections manager.
@@ -181,7 +35,7 @@ trait ConnectionListener {
  *   - channel closed: `closedChannel`
  *
  * This manager delegates client connections actions to another manager
- * ([[stealthnet.scala.network.StealthNetClientConnectionsManager]]).
+ * ([[stealthnet.scala.network.connection.StealthNetClientConnectionsManager]]).
  * This is actually necessary due to the way the actor-based implementation is
  * used (synchronous message/reply), to prevent deadlocks (closing a client
  * connection will call back the connections manager).
@@ -235,10 +89,11 @@ object StealthNetConnectionsManager
    * Actor message: remove remote peer.
    *
    * This message is sent by
-   * [[stealthnet.scala.network.StealthNetClientConnectionsManager]] in response
-   * to a peer request. This is used to ensure we request one peer at a time.
+   * [[stealthnet.scala.network.connection.StealthNetClientConnectionsManager]]
+   * in response to a peer request. This is used to ensure we request one peer
+   * at a time.
    */
-  protected[network] case class RequestedPeer()
+  protected[connection] case class RequestedPeer()
   /**
    * Actor message: add remote peer.
    *
@@ -253,10 +108,10 @@ object StealthNetConnectionsManager
    * Actor message: remove remote peer.
    *
    * This message is sent by
-   * [[stealthnet.scala.network.StealthNetClientConnectionsManager]] in response
-   * to a connection closing.
+   * [[stealthnet.scala.network.connection.StealthNetClientConnectionsManager]]
+   * in response to a connection closing.
    */
-  protected[network] case class RemovePeer(peer: Peer)
+  protected[connection] case class RemovePeer(peer: Peer)
   /**
    * Actor message: add connection.
    *
@@ -273,17 +128,17 @@ object StealthNetConnectionsManager
    * Actor message: get connection.
    *
    * The manager will reply with the
-   * [[stealthnet.scala.network.StealthNetConnection]] associated to the given
-   * channel. If no connection was found, and creation was requested, a new one
-   * is created.
+   * [[stealthnet.scala.network.connection.StealthNetConnection]] associated to
+   * the given channel. If no connection was found, and creation was requested,
+   * a new one is created.
    */
   case class GetConnection(channel: Channel, create: Boolean = true)
   /**
    * Actor message: connection closed.
    *
    * The manager will reply with an option value containing the
-   * [[stealthnet.scala.network.StealthNetConnection]] associated to the given
-   * channel, or `None` if none was.
+   * [[stealthnet.scala.network.connection.StealthNetConnection]] associated to
+   * the given channel, or `None` if none was.
    *
    * This message is expected to be used as both client-side and server-side
    * operation when a connection is closed. This effectively unregisters the
@@ -305,8 +160,8 @@ object StealthNetConnectionsManager
    * This method first starts the client connections manager and check whether
    * to add ourself to the WebCaches and request peer connections.
    *
-   * @see [[stealthnet.scala.network.StealthNetClientConnectionsManager]]
-   * @see [[stealthnet.scala.network.StealthNetConnectionsManager]].`checkConnectionsLimit`
+   * @see [[stealthnet.scala.network.connection.StealthNetClientConnectionsManager]]
+   * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`checkConnectionsLimit`
    */
   // scalastyle:off method.length
   def act() {
@@ -387,7 +242,7 @@ object StealthNetConnectionsManager
    *
    * @param peer the peer to add
    * @return `true` if peer was accepted (no limit reached), `false` otherwise
-   * @see [[stealthnet.scala.network.StealthNetConnectionsManager]].`checkConnectionsLimit`
+   * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`checkConnectionsLimit`
    */
   protected def add(peer: Peer): Boolean = {
     if (stopping) {
@@ -416,7 +271,7 @@ object StealthNetConnectionsManager
    * @param cnx the connection to add
    * @return `true` if connection was accepted (no limit reached),
    *   `false` otherwise
-   * @see [[stealthnet.scala.network.StealthNetConnectionsManager]].`add(Peer)`
+   * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`add(Peer)`
    */
   protected def add(cnx: StealthNetConnection): Boolean = {
     val remoteAddress = cnx.channel.getRemoteAddress
@@ -456,10 +311,11 @@ object StealthNetConnectionsManager
    *
    * @param channel the channel for which to get the associated connection
    * @param create whether to create a new
-   *   [[stealthnet.scala.network.StealthNetConnection]] if none is currently
-   *   associated to the channel
+   *   [[stealthnet.scala.network.connection.StealthNetConnection]] if none is
+   *   currently associated to the channel
    * @return an option value containing the associated
-   *   [[stealthnet.scala.network.StealthNetConnection]], or `None` if none
+   *   [[stealthnet.scala.network.connection.StealthNetConnection]], or `None`
+   *   if none
    */
   protected def get(channel: Channel, create: Boolean): Option[StealthNetConnection] =
     Option(local.get(channel)) orElse {
@@ -478,14 +334,15 @@ object StealthNetConnectionsManager
    *
    * First unregisters the associated connection. Then:
    *   - on client side, request connection closing to
-   *     [[stealthnet.scala.network.StealthNetClientConnectionsManager]]
+   *     [[stealthnet.scala.network.connection.StealthNetClientConnectionsManager]]
    *   - on server side unregisters the remote peer
    *
    * @param channel the channel which was closed
    * @return an option value containing the associated
-   *   [[stealthnet.scala.network.StealthNetConnection]], or `None` if none
-   * @see [[stealthnet.scala.network.StealthNetConnectionsManager]].`remove`
-   * @see [[stealthnet.scala.network.StealthNetClientConnectionsManager]]
+   *   [[stealthnet.scala.network.connection.StealthNetConnection]], or `None`
+   *   if none
+   * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`remove`
+   * @see [[stealthnet.scala.network.connection.StealthNetClientConnectionsManager]]
    */
   protected def closed(channel: Channel): Option[StealthNetConnection] = {
     val cnx = Option(local.remove(channel))
@@ -513,7 +370,7 @@ object StealthNetConnectionsManager
    * stop the manager.
    *
    * @param peer the peer to remove
-   * @see [[stealthnet.scala.network.StealthNetConnectionsManager]].`checkConnectionsLimit`
+   * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`checkConnectionsLimit`
    */
   protected def remove(peer: Peer) {
     // scalastyle:off null
@@ -538,7 +395,7 @@ object StealthNetConnectionsManager
    *   - start requesting peer connections
    * Removes ourself from WebCaches if beyond the upper limit.
    *
-   * @see [[stealthnet.scala.Config]].`avgCnxCount`
+   * @see [[stealthnet.scala.Settings]].`avgCnxCount`
    * @see [[stealthnet.scala.network.WebCaches]]
    */
   protected def checkConnectionsLimit() {
@@ -574,7 +431,8 @@ object StealthNetConnectionsManager
    *
    * @param channel the channel for which to get the associated connection
    * @return an option value containing the associated
-   *   [[stealthnet.scala.network.StealthNetConnection]], or `None` if none
+   *   [[stealthnet.scala.network.connection.StealthNetConnection]], or `None`
+   *   if none
    */
   def getConnection(channel: Channel): Option[StealthNetConnection] =
     (this !? GetConnection(channel, false)).asInstanceOf[Option[StealthNetConnection]]
@@ -603,75 +461,13 @@ object StealthNetConnectionsManager
    *
    * @param channel the channel which was closed
    * @return an option value containing the associated
-   *   [[stealthnet.scala.network.StealthNetConnection]], or `None` if none
+   *   [[stealthnet.scala.network.connection.StealthNetConnection]], or `None`
+   *   if none
    */
   def closedChannel(channel: Channel) =
     (this !? ClosedChannel(channel)).asInstanceOf[Option[StealthNetConnection]]
 
   /** Stops the manager. */
   def stop() = if (!stopping) this ! Stop()
-
-}
-
-/**
- * ''StealthNet'' client connections manager.
- *
- * Handles client-side connection actions.
- *
- * This manager is meant to be used by the more general
- * [[stealthnet.scala.network.StealthNetConnectionsManager]].
- */
-protected object StealthNetClientConnectionsManager
-  extends Actor
-  with Logging
-  with EmptyLoggingContext
-{
-
-  /**
-   * Actor message: requests new peer connection.
-   *
-   * This message is sent by the connections manager when a new connection is
-   * needed.
-   */
-  case class RequestPeer()
-  /**
-   * Actor message: close client connection.
-   *
-   * This message is sent by the connections manager when a connection needs to
-   * be closed.
-   */
-  case class CloseClient(cnx: StealthNetConnection)
-  /**
-   * Actor message: stop manager.
-   *
-   * This message is expected to be sent before closing the application.
-   */
-  case class Stop()
-
-  def act() {
-    loop {
-      react {
-        case RequestPeer() =>
-          if (!Core.stopping) WebCaches.getPeer() match {
-            case Some(peer) =>
-              val client = new StealthNetClient(peer)
-              client.start()
-              StealthNetConnectionsManager !
-                StealthNetConnectionsManager.RequestedPeer()
-
-            case None =>
-          }
-
-        case CloseClient(cnx) =>
-          cnx.client.get.stop()
-          cnx.peer foreach { StealthNetConnectionsManager ! StealthNetConnectionsManager.RemovePeer(_) }
-
-        case Stop() =>
-          /* time to leave */
-          logger debug("Stopped")
-          exit()
-      }
-    }
-  }
 
 }

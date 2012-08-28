@@ -12,6 +12,7 @@ import org.jboss.netty.channel.group.{
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
 import stealthnet.scala.Settings
 import stealthnet.scala.core.Core
+import stealthnet.scala.network.connection.StealthNetConnectionParameters
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 /**

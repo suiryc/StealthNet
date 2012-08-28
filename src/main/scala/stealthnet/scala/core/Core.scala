@@ -7,10 +7,12 @@ import stealthnet.scala.Settings
 import stealthnet.scala.cryptography.{RijndaelParameters, RSAKeys}
 import stealthnet.scala.network.{
   StealthNetClient,
-  StealthNetConnection,
-  StealthNetConnectionsManager,
   StealthNetServer,
   WebCaches
+}
+import stealthnet.scala.network.connection.{
+  StealthNetConnection,
+  StealthNetConnectionsManager
 }
 import stealthnet.scala.network.protocol.commands._
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
@@ -140,7 +142,7 @@ object Core extends Logging with EmptyLoggingContext {
    *
    * @see [[stealthnet.scala.network.WebCaches]]
    * @see [[stealthnet.scala.network.StealthNetServer]]
-   * @see [[stealthnet.scala.network.StealthNetConnectionsManager]]
+   * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]]
    */
   def start() {
     stopping = false
@@ -164,8 +166,7 @@ object Core extends Logging with EmptyLoggingContext {
    * @see [[stealthnet.scala.network.WebCaches]]
    * @see [[stealthnet.scala.network.StealthNetServer]]
    * @see [[stealthnet.scala.network.StealthNetClient]]
-   * @see [[stealthnet.scala.network.StealthNetConnectionsManager]]
-   * @see [[stealthnet.scala.ui.web.JettyServer]]
+   * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]]
    */
   def stop() {
     stopping = true

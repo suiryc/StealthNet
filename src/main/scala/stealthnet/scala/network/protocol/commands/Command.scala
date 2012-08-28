@@ -20,7 +20,7 @@ import stealthnet.scala.cryptography.io.{
   BCCipherInputStream,
   BCCipherOutputStream
 }
-import stealthnet.scala.network.StealthNetConnection
+import stealthnet.scala.network.connection.StealthNetConnection
 import stealthnet.scala.network.protocol.{BitSize, Encryption, ProtocolStream}
 import stealthnet.scala.network.protocol.exceptions.InvalidDataException
 import stealthnet.scala.util.{HexDumper, UUID}

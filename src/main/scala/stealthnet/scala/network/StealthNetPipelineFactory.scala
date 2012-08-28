@@ -16,6 +16,7 @@ import org.jboss.netty.util.{
   Timer
 }
 import stealthnet.scala.Settings
+import stealthnet.scala.network.connection.StealthNetConnectionParameters
 
 /**
  * ''StealthNet'' pipeline factory companion object.

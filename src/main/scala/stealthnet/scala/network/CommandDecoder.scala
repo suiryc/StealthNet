@@ -6,6 +6,10 @@ import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
 import org.jboss.netty.handler.codec.replay.{ReplayingDecoder, VoidEnum}
 import stealthnet.scala.Settings
 import stealthnet.scala.core.Core
+import stealthnet.scala.network.connection.{
+  StealthNetConnection,
+  StealthNetConnectionsManager
+}
 import stealthnet.scala.network.protocol.commands.Command
 import stealthnet.scala.network.protocol.exceptions.ProtocolException
 import stealthnet.scala.util.HexDumper

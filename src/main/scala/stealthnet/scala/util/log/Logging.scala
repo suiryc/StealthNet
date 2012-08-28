@@ -25,7 +25,7 @@ package stealthnet.scala.util.log
 trait Logging extends LoggingContext {
 
   /** Logger. */
-  protected[util] lazy val logger = Logger(this.getClass, loggerContext)
+  protected[log] lazy val logger = Logger(this.getClass, loggerContext)
 
 }
 

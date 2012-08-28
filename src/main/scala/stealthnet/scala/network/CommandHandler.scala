@@ -20,6 +20,10 @@ import org.jboss.netty.handler.timeout.{
 }
 import stealthnet.scala.{Constants, Settings}
 import stealthnet.scala.core.Core
+import stealthnet.scala.network.connection.{
+  StealthNetConnection,
+  StealthNetConnectionsManager
+}
 import stealthnet.scala.network.protocol.{BitSize, ProtocolStream}
 import stealthnet.scala.network.protocol.commands.Command
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}

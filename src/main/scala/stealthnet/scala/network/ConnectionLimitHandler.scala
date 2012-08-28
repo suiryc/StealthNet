@@ -6,6 +6,10 @@ import org.jboss.netty.channel.{
   SimpleChannelUpstreamHandler
 }
 import stealthnet.scala.core.Core
+import stealthnet.scala.network.connection.{
+  StealthNetConnection,
+  StealthNetConnectionsManager
+}
 import stealthnet.scala.network.protocol.commands.RSAParametersServerCommand
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
@@ -21,8 +25,8 @@ class ConnectionLimitHandler
   /**
    * Handles channel connection event.
    *
-   * Registers the [[stealthnet.scala.network.StealthNetConnection]] associated
-   * to the connected channel.
+   * Registers the [[stealthnet.scala.network.connection.StealthNetConnection]]
+   * associated to the connected channel.
    * If connection limit is reached, the channel is closed.
    *
    * On server side, we start handshaking by sending our
@@ -32,7 +36,7 @@ class ConnectionLimitHandler
    *   possible (e.g. upon channel opening), but this does not seem to work as
    *   well as expected.
    *   So we just wait for the channel to be connected to cleanly close it.
-   * @see [[stealthnet.scala.network.StealthNetConnectionsManager]].`addConnection`
+   * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`addConnection`
    */
   override def channelConnected(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
     val cnx = StealthNetConnectionsManager.connection(e.getChannel)
@@ -52,10 +56,10 @@ class ConnectionLimitHandler
   /**
    * Handles channel closing event.
    *
-   * Unregisters the [[stealthnet.scala.network.StealthNetConnection]]
+   * Unregisters the [[stealthnet.scala.network.connection.StealthNetConnection]]
    * associated to the channel.
    *
-   * @see [[stealthnet.scala.network.StealthNetConnectionsManager]].`closedConnection`
+   * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`closedConnection`
    */
   override def channelClosed(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
     /* Cleanup the connection */
