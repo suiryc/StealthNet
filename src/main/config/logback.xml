@@ -1,4 +1,7 @@
 <configuration>
+
+  <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator"/>
+
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <!-- encoders are assigned the type ch.qos.logback.classic.PatternLayoutEncoder by default -->
     <encoder>
@@ -8,10 +11,11 @@
 
   <!-- <logger name="org.cometd" level="INFO" /> -->
   <!-- <logger name="org.eclipse.jetty" level="INFO" /> -->
-  <logger name="stealthnet.scala" level="DEBUG" />
+  <logger name="stealthnet.scala" level="INFO" />
 
   <!-- The level of root is set to DEBUG by default -->
   <root level="INFO">
     <appender-ref ref="STDOUT" />
   </root>
+
 </configuration>

@@ -22,8 +22,6 @@ object ConnectionsUpdater {
   case class ClosedConnection(cnxInfo: ConnectionInfo)
   case class Stop()
 
-  private lazy val listId = "connections_list"
-
 }
 
 class ConnectionsUpdater(val session: ServerSession)
