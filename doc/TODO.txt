@@ -1,3 +1,6 @@
+Order in which connections are listed (especially upon accessing page: order differs between already-existing and new connections)
+
+
 Shared
 ------
 Message system (completed download, etc): use growl ?

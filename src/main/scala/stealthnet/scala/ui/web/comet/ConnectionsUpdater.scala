@@ -8,7 +8,10 @@ import scala.actors.Actor
 import scala.collection.JavaConversions._
 import scala.xml.{NodeSeq, Text}
 import stealthnet.scala.core.Core
-import stealthnet.scala.network.{ConnectionListener, StealthNetConnection}
+import stealthnet.scala.network.connection.{
+  ConnectionListener,
+  StealthNetConnection
+}
 import stealthnet.scala.ui.web.Constants
 
 object ConnectionsUpdater {
