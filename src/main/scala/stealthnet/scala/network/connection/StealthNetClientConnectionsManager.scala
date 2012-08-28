@@ -27,13 +27,6 @@ protected object StealthNetClientConnectionsManager
    */
   case class RequestPeer()
   /**
-   * Actor message: close client connection.
-   *
-   * This message is sent by the connections manager when a connection needs to
-   * be closed.
-   */
-  case class CloseClient(cnx: StealthNetConnection)
-  /**
    * Actor message: stop manager.
    *
    * This message is expected to be sent before closing the application.
@@ -47,16 +40,23 @@ protected object StealthNetClientConnectionsManager
           if (!Core.stopping) WebCaches.getPeer() match {
             case Some(peer) =>
               val client = new StealthNetClient(peer)
-              client.start()
+
+              /* Note: it is important to notify the manager before starting the
+               * client connection, or actually before the client can send a
+               * channel closing message.
+               */
               StealthNetConnectionsManager !
                 StealthNetConnectionsManager.RequestedPeer()
 
-            case None =>
-          }
+              client.start()
 
-        case CloseClient(cnx) =>
-          cnx.client.get.stop()
-          cnx.peer foreach { StealthNetConnectionsManager ! StealthNetConnectionsManager.RemovePeer(_) }
+            case None =>
+              /* Notify the manager even upon failure to get a peer: it will
+               * keep on requesting if necessary.
+               */
+              StealthNetConnectionsManager !
+                StealthNetConnectionsManager.RequestedPeer()
+          }
 
         case Stop() =>
           /* time to leave */

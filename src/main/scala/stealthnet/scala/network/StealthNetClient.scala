@@ -66,6 +66,8 @@ class StealthNetClient(
    * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`addPeer`
    */
   def start(): Boolean = {
+    logger trace("Starting new client connection")
+
     if (!StealthNetConnectionsManager.addPeer(peer))
       return false
 
@@ -86,34 +88,12 @@ class StealthNetClient(
     future.awaitUninterruptibly()
     if (!future.isSuccess) {
       logger debug("Failed to connect", future.getCause)
-      stop()
       false
     }
     else {
       channel = Some(future.getChannel)
       true
     }
-  }
-
-  /**
-   * Stops client.
-   *
-   * Closes opened channel and cleans resources.
-   * Should be called when connection was successfully started.
-   */
-  def stop() {
-    if (channel map(_.isOpen) getOrElse(false)) {
-      logger debug("Closing connection")
-
-      val ch = channel.get
-      StealthNetConnectionsManager getConnection(ch) map {
-        _.close()
-      } getOrElse {
-        ch.close()
-      }
-      ch.getCloseFuture.awaitUninterruptibly()
-    }
-    /* Note: pipeline factory resources are released by server */
   }
 
   /** Writes to the channel. */

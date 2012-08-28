@@ -29,21 +29,16 @@ import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
  * For each connection, workflow is:
  *   - for client-side only, before initiating connection: `addPeer`
  *     - if peer is not accepted, client does nothing
- *   - channel opening: `getConnection` (creation mode)
+ *   - channel opening: `connection`
  *   - channel connected: `addConnection`
  *     - if connection is not accepted, the channel is closed
  *   - channel closed: `closedChannel`
  *
- * This manager delegates client connections actions to another manager
+ * This manager delegates client connections requests to another manager
  * ([[stealthnet.scala.network.connection.StealthNetClientConnectionsManager]]).
- * This is actually necessary due to the way the actor-based implementation is
- * used (synchronous message/reply), to prevent deadlocks (closing a client
- * connection will call back the connections manager).
  * Thus, when necessary a new peer connection request will be sent to the
  * client connections manager, which will return a response once a new client
- * has been instantiated. Similarly, upon receiving a channel closing message on
- * a client connection, a connection closing request will be sent to the client
- * manager, which will send back a peer removal request upon completion.
+ * has been instantiated.
  */
 object StealthNetConnectionsManager
   extends Actor
@@ -332,17 +327,13 @@ object StealthNetConnectionsManager
   /**
    * Indicates the given channel was closed.
    *
-   * First unregisters the associated connection. Then:
-   *   - on client side, request connection closing to
-   *     [[stealthnet.scala.network.connection.StealthNetClientConnectionsManager]]
-   *   - on server side unregisters the remote peer
+   * First unregisters the associated connection, then the remote peer.
    *
    * @param channel the channel which was closed
    * @return an option value containing the associated
    *   [[stealthnet.scala.network.connection.StealthNetConnection]], or `None`
    *   if none
    * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`remove`
-   * @see [[stealthnet.scala.network.connection.StealthNetClientConnectionsManager]]
    */
   protected def closed(channel: Channel): Option[StealthNetConnection] = {
     val cnx = Option(local.remove(channel))
@@ -350,12 +341,7 @@ object StealthNetConnectionsManager
     logger debug(StealthNetConnection.loggerContext(cnx, channel), "Channel closed")
 
     cnx foreach { cnx =>
-      if (cnx.isClient())
-        StealthNetClientConnectionsManager !
-          StealthNetClientConnectionsManager.CloseClient(cnx)
-      else
-        cnx.peer foreach { remove(_) }
-
+      cnx.peer foreach { remove(_) }
       listeners foreach { _ ! ConnectionListener.ClosedConnection(cnx) }
     }
 

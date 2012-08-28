@@ -20,8 +20,8 @@
     <logback.version>1.0.6</logback.version>
     <config.version>0.5.0</config.version>
     <bouncycastle.version>1.47</bouncycastle.version>
-    <!-- Good: 3.3.1.Final, Bad: 3.4.0.Final ... 3.5.0.Final -->
-    <netty.version>3.3.1.Final</netty.version>
+    <!-- Good: 3.3.1.Final, Bad: 3.4.0.Final ... 3.5.5.Final -->
+    <netty.version>3.5.5.Final</netty.version>
     <junit.version>4.10</junit.version>
     <scalatest.version>1.8</scalatest.version>
 
