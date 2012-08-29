@@ -41,8 +41,7 @@ object Server extends Logging with EmptyLoggingContext {
     SessionManager.start()
     ConnectionsUpdaterServer.start()
 
-    StealthNetConnectionsManager !
-      StealthNetConnectionsManager.AddConnectionsListener(ConnectionsUpdaterServer)
+    StealthNetConnectionsManager.addConnectionsListener(ConnectionsUpdaterServer)
 
     Core.start()
   }
