@@ -8,7 +8,7 @@
 <h:head>
   <h:outputStylesheet library="css" name="main.css" />
   <h:panelGroup>
-    <meta http-equiv="refresh" content="10; url=#{request.contextPath}/login.jsf" />
+    <meta http-equiv="refresh" content="10; url='#{request.contextPath}/login.jsf?reason=unauthorized&amp;path=#{request.servletPath}'" />
   </h:panelGroup>
 </h:head>
 
@@ -26,7 +26,7 @@ Close this dialog or wait a few seconds to be redirected to the login page.<br/>
 
     <script type="text/javascript">
 function redirectLogin() {
-    window.location.replace("#{request.contextPath}/login.jsf");
+    window.location.replace("#{request.contextPath}/login.jsf?reason=unauthorized&amp;path=#{request.servletPath}");
 }
 
 /* Note: we need to wait for the page to be loaded before being able to access

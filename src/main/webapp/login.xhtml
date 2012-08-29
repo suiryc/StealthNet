@@ -15,6 +15,7 @@
 <h:body>
   <f:metadata>
     <f:viewParam name="reason" value="#{loginManager.reason}" />
+    <f:viewParam name="path" value="#{loginManager.path}" />
     <f:event type="preRenderView" listener="#{loginManager.handleReason}" />
   </f:metadata>
 

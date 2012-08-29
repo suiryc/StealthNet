@@ -27,6 +27,20 @@ Ext.event = {
     }
 };
 
+Ext.functions = {
+    shutdown: function(args) {
+        if ((args !== undefined) && (args.acknowledged === true)) {
+            growlMessage('info', 'Server', 'Shutdown acknowledged', false, 10000);
+            Ext.event.trigger('postShutdown');
+        }
+        else {
+            /* Seems like the session expired: reloading the page will raise
+             * the issue to the user. */
+            window.location.reload();
+        }
+    }
+};
+
 $(function() {
     Ext.event.bind('preLogout', function() {
         Ext.event.trigger('preLeave');

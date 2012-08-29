@@ -12,7 +12,7 @@
   <h:outputScript library="js" name="ext/widgets-growl.js" />
 
   <h:panelGroup rendered="#{not userSession.logged}">
-    <meta http-equiv="refresh" content="10; url=#{request.contextPath}/login.jsf" />
+    <meta http-equiv="refresh" content="10; url='#{request.contextPath}/login.jsf?reason=unauthorized&amp;path=#{request.servletPath}'" />
   </h:panelGroup>
 
   <h:panelGroup rendered="#{userSession.logged}">

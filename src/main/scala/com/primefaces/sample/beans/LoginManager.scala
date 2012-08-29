@@ -11,6 +11,9 @@ import scala.reflect.BeanProperty
 class LoginManager {
 
   @BeanProperty
+  protected var path: String = _
+
+  @BeanProperty
   protected var reason: String = _
 
   @BeanProperty
@@ -26,7 +29,17 @@ class LoginManager {
   def login(): String = {
     if ((username == "test") && (password == "test")) {
       userSession.setLogged(true)
-      "home?faces-redirect=true"
+      val targetPath = Option(reason) flatMap {
+        _.toLowerCase match {
+          case "unauthorized" =>
+            Option(path)
+
+          case _ =>
+            None
+        }
+      } getOrElse("home")
+
+      targetPath + "?faces-redirect=true"
     }
     else {
       FacesContext.getCurrentInstance.addMessage("loginManager",
