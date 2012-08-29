@@ -1,6 +1,5 @@
 Manage connection issues
 addPeer does not take into account issues to retry later ...
-"Shutdown" does not fail if session expired
 
 Configuration
 How to save configuration changes ?
