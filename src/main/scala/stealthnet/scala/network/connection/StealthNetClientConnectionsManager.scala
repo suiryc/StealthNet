@@ -2,7 +2,7 @@ package stealthnet.scala.network.connection
 
 import scala.actors.Actor
 import stealthnet.scala.core.Core
-import stealthnet.scala.network.{StealthNetClient, WebCaches}
+import stealthnet.scala.network.{StealthNetClient, WebCachesManager}
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 /**
@@ -37,7 +37,7 @@ protected object StealthNetClientConnectionsManager
     loop {
       react {
         case RequestPeer() =>
-          if (!Core.stopping) WebCaches.getPeer() match {
+          if (!Core.stopping) WebCachesManager.getPeer() match {
             case Some(peer) =>
               val client = new StealthNetClient(peer)
 

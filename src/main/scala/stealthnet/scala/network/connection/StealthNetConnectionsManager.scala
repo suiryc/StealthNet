@@ -6,7 +6,7 @@ import scala.collection.mutable
 import org.jboss.netty.channel.{Channel, ChannelLocal}
 import stealthnet.scala.{Constants, Settings}
 import stealthnet.scala.core.Core
-import stealthnet.scala.network.WebCaches
+import stealthnet.scala.network.WebCachesManager
 import stealthnet.scala.util.Peer
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
@@ -72,7 +72,7 @@ object StealthNetConnectionsManager
    * @note There is no need to unregister a listener, which is stopped with the
    *   application.
    */
-  case class AddConnectionsListener(listener: ConnectionListener)
+  protected case class AddConnectionsListener(listener: ConnectionListener)
   /**
    * Actor message: requests new peer connection.
    *
@@ -98,7 +98,7 @@ object StealthNetConnectionsManager
    * This message is expected to be used as a client-side operation before
    * attempting to connect to a given peer.
    */
-  case class AddPeer(peer: Peer)
+  protected case class AddPeer(peer: Peer)
   /**
    * Actor message: remove remote peer.
    *
@@ -118,7 +118,7 @@ object StealthNetConnectionsManager
    * is accepted (except if we are stopping) as it is expected the remote peer
    * was added beforehand.
    */
-  case class AddConnection(cnx: StealthNetConnection)
+  protected case class AddConnection(cnx: StealthNetConnection)
   /**
    * Actor message: get connection.
    *
@@ -127,7 +127,7 @@ object StealthNetConnectionsManager
    * the given channel. If no connection was found, and creation was requested,
    * a new one is created.
    */
-  case class GetConnection(channel: Channel, create: Boolean = true)
+  protected case class GetConnection(channel: Channel, create: Boolean = true)
   /**
    * Actor message: connection closed.
    *
@@ -139,7 +139,7 @@ object StealthNetConnectionsManager
    * operation when a connection is closed. This effectively unregisters the
    * associated connection against the manager.
    */
-  case class ClosedChannel(channel: Channel)
+  protected case class ClosedChannel(channel: Channel)
   /**
    * Actor message: stop manager.
    *
@@ -147,19 +147,22 @@ object StealthNetConnectionsManager
    * It removes ourself from WebCaches if necessary, closes client connections
    * and stops the client connections manager. No reply is sent.
    */
-  case class Stop()
+  protected case class Stop()
 
   /**
    * Manages this actor messages.
    *
-   * This method first starts the client connections manager and check whether
-   * to add ourself to the WebCaches and request peer connections.
+   * This method starts the WebCaches and client connections managers, and
+   * checks whether to add ourself to the WebCaches and request peer
+   * connections.
    *
+   * @see [[stealthnet.scala.network.WebCachesManager]]
    * @see [[stealthnet.scala.network.connection.StealthNetClientConnectionsManager]]
    * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`checkConnectionsLimit`
    */
   // scalastyle:off method.length
   def act() {
+    WebCachesManager.start()
     StealthNetClientConnectionsManager.start()
     /* Prime the pump. */
     checkConnectionsLimit()
@@ -216,12 +219,13 @@ object StealthNetConnectionsManager
              */
             StealthNetClientConnectionsManager !
               StealthNetClientConnectionsManager.Stop()
+            WebCachesManager.stop()
             exit()
           }
           /* else: there still are connected peers, wait for the connections to
            * close */
           stopping = true
-          WebCaches.removePeer()
+          WebCachesManager.removePeer()
           /* Note: as caller is expected to be stopping right now, WebCaches
            * won't allow re-adding ourself before we really do leave.
            */
@@ -382,11 +386,11 @@ object StealthNetConnectionsManager
    * Removes ourself from WebCaches if beyond the upper limit.
    *
    * @see [[stealthnet.scala.Settings]].`avgCnxCount`
-   * @see [[stealthnet.scala.network.WebCaches]]
+   * @see [[stealthnet.scala.network.WebCachesManager]]
    */
   protected def checkConnectionsLimit() {
     if (peers.size < Settings.core.avgCnxCount) {
-      WebCaches.addPeer()
+      WebCachesManager.addPeer()
       /* one request at a time */
       if (Settings.core.enableClientConnections && !peerRequestOngoing) {
         this ! RequestPeer()
@@ -394,7 +398,7 @@ object StealthNetConnectionsManager
       }
     }
     else if (upperLimitReached())
-      WebCaches.removePeer()
+      WebCachesManager.removePeer()
   }
 
   /** Gets whether the upper connection limit (`1.25 * average`) is reached. */
@@ -452,6 +456,10 @@ object StealthNetConnectionsManager
    */
   def closedChannel(channel: Channel) =
     (this !? ClosedChannel(channel)).asInstanceOf[Option[StealthNetConnection]]
+
+  /** Adds a new connections listener. */
+  def addConnectionsListener(listener: ConnectionListener) =
+    this ! AddConnectionsListener(listener)
 
   /** Stops the manager. */
   def stop() = if (!stopping) this ! Stop()

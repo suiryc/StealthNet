@@ -8,7 +8,7 @@ import stealthnet.scala.cryptography.{RijndaelParameters, RSAKeys}
 import stealthnet.scala.network.{
   StealthNetClient,
   StealthNetServer,
-  WebCaches
+  WebCachesManager
 }
 import stealthnet.scala.network.connection.{
   StealthNetConnection,
@@ -140,13 +140,13 @@ object Core extends Logging with EmptyLoggingContext {
    *   - starts the ''StealthNet'' server
    *   - starts the connections manager
    *
-   * @see [[stealthnet.scala.network.WebCaches]]
+   * @see [[stealthnet.scala.network.WebCachesManager]]
    * @see [[stealthnet.scala.network.StealthNetServer]]
    * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]]
    */
   def start() {
     stopping = false
-    WebCaches.refresh()
+    WebCachesManager.refresh()
     if (Settings.core.enableServerConnections)
       StealthNetServer.start()
     StealthNetConnectionsManager.start()
@@ -163,14 +163,14 @@ object Core extends Logging with EmptyLoggingContext {
    *   - stops the connections manager
    *   - terminates the shared timer
    *
-   * @see [[stealthnet.scala.network.WebCaches]]
+   * @see [[stealthnet.scala.network.WebCachesManager]]
    * @see [[stealthnet.scala.network.StealthNetServer]]
    * @see [[stealthnet.scala.network.StealthNetClient]]
    * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]]
    */
   def stop() {
     stopping = true
-    WebCaches.removePeer()
+    WebCachesManager.removePeer()
     StealthNetServer.stop()
     StealthNetClient.stop()
     StealthNetConnectionsManager.stop()

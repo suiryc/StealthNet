@@ -1,6 +1,3 @@
-Manage connection issues
-addPeer does not take into account issues to retry later ...
-
 Configuration
 How to save configuration changes ?
 
@@ -17,9 +14,7 @@ Other than plain className loggers
 
 Gather DL/UL speeds
 In central object (e.g. Core) ?
-How to make it so that it is easy to display it graphically (console or graphic) ? Gather transfer lengths by time (prevision of 1s, for the first X seconds, then per 5s, etc ...)
-
-Web server to administration interface
+How to make it so that it is easy to display it graphically (console or graphic) ? Gather transfer lengths by time (precision of 1s, for the first X seconds, then per 5s, etc ...)
 
 Manage data download/upload requests
 
