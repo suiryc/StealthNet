@@ -10,6 +10,7 @@ import stealthnet.scala.network.connection.{
   StealthNetConnection
 }
 import stealthnet.scala.ui.web.Constants
+import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 class ConnectionInfo(val cnx: StealthNetConnection, val id: Int)
 
@@ -26,10 +27,13 @@ object ConnectionsNotifications {
 class ConnectionsNotificationsManager(protected val session: ServerSession)
   extends Actor
   with NotificationsManager
+  with Logging
+  with EmptyLoggingContext
 {
 
   import ConnectionsNotifications._
 
+  logger trace("Starting connections notifications manager[" + this + "] session[" + session + "]")
   start
   this ! Start
 
@@ -76,7 +80,7 @@ class ConnectionsNotificationsManager(protected val session: ServerSession)
           deliver(output)
 
         case Stop() =>
-          println("************************************************** Stopping ConnectionsNotificationsManager")
+          logger trace("Stopping connections notifications manager[" + this + "] session[" + session + "]")
           exit()
       }
     }

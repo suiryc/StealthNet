@@ -4,10 +4,13 @@ import org.cometd.bayeux.Message
 import org.cometd.bayeux.server.{BayeuxServer, ServerSession}
 import org.cometd.server.AbstractService
 import scala.collection.JavaConversions._
+import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 class NotificationsService(bayeux: BayeuxServer)
   extends AbstractService(bayeux, "notifications")
   with NotificationsManager
+  with Logging
+  with EmptyLoggingContext
 {
 
   addService("/service/notifications", "processClient")
@@ -39,6 +42,7 @@ class NotificationsService(bayeux: BayeuxServer)
 
     channel match {
       case "connections" =>
+        logger trace("Connections notifications service: registering[" + active + "] session[" + remote + "]")
         if (active)
           new ConnectionsNotificationsManager(remote)
         else

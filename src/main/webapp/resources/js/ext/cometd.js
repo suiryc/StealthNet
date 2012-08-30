@@ -66,7 +66,7 @@ Ext.cometd.CometD = Class.extend({
     },
 
     connect: function(protocol, host, contextPath, servletPath, auth) {
-        Ext.event.bind('preLeave', this.disconnect, this);
+        Ext.event.bind('preLeave', true, this.disconnect, this);
 
         var url = protocol + '//' + host + contextPath + '/' + servletPath;
         this.cometd.configure({

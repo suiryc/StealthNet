@@ -116,7 +116,7 @@ $(function() {
             );
             /* Even if connection is closed upon leaving, explicitly unregister
              * ourself from notifications. */
-            Ext.event.bind('preLeave', function() {
+            Ext.event.bind('preLeave', true, function() {
                 cometd.get().publish('/service/notifications', {
                     channel: 'connections',
                     active: 'false'

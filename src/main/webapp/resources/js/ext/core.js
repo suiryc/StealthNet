@@ -9,11 +9,16 @@ Ext.event = {
 
     bindings: {},
 
-    bind: function(name, callback, scope) {
+    bind: function(name, first, callback, scope) {
         if (this.bindings[name] === undefined) {
             this.bindings[name] = [];
         }
-        this.bindings[name].push($.proxy(callback, scope));
+        if (first) {
+            this.bindings[name].unshift($.proxy(callback, scope));
+        }
+        else {
+            this.bindings[name].push($.proxy(callback, scope));
+        }
     },
 
     trigger: function(name) {
@@ -65,21 +70,33 @@ Ext.functions = {
 };
 
 $(function() {
-    Ext.event.bind('preLogout', function() {
+    Ext.event.bind('preLogout', true, function() {
         Ext.event.trigger('preLeave');
     });
 
-    Ext.event.bind('preShutdown', function() {
+    Ext.event.bind('preShutdown', true, function() {
         growlMessage('info', 'Server', 'Shutdown requested', false, 10000);
         Ext.event.trigger('preLeave');
     });
 
-    Ext.event.bind('postShutdown', function() {
+    Ext.event.bind('postShutdown', true, function() {
         $('.ext-admin').each(function() {
             $(this).off().attr('onclick', 'return false;').addClass('ui-state-disabled');
         });
     });
 
+    /* Trigger preLeave ASAP.
+     *
+     * Note: sometimes it is too late to do things upon 'unload' (e.g. cometd
+     * connections are usually broken right before), so try 'beforeunload' if
+     * available.
+     * Reminder: when triggering an event, pending actions are performed and
+     * removed from pending list. So triggering it again would not redo those
+     * actions.
+     */
+    $(window).on('beforeunload', function () {
+        Ext.event.trigger('preLeave');
+    });
     $(window).unload(function() {
         Ext.event.trigger('preLeave');
     });
