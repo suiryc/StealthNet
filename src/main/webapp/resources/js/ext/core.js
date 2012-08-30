@@ -28,6 +28,29 @@ Ext.event = {
 };
 
 Ext.functions = {
+    stringify: function(data) {
+        var content = '';
+
+        if (typeof data == 'object') {
+            content = '[';
+            for (var field in data) {
+                if (!data.hasOwnProperty(field)) {
+                    continue;
+                }
+                if (content.length > 1) {
+                    content += '; ';
+                }
+                content += field + '=' + this.stringify(data[field]);
+            }
+            content += ']';
+        }
+        else {
+            content = data;
+        }
+
+        return content;
+    },
+
     shutdown: function(args) {
         if ((args !== undefined) && (args.acknowledged === true)) {
             growlMessage('info', 'Server', 'Shutdown acknowledged', false, 10000);

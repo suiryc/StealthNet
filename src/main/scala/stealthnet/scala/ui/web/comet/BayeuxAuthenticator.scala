@@ -54,7 +54,7 @@ class BayeuxAuthenticator
   }
 
   override def removed(session: ServerSession, expired: Boolean) {
-    ConnectionsUpdaterServer ! ConnectionsUpdaterServer.ActorLeft(session)
+    ConnectionsNotificationsManager ! ConnectionsNotificationsManager.ActorLeft(session)
   }
 
 }

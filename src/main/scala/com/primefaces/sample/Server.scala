@@ -8,7 +8,7 @@ import stealthnet.scala.network.connection.StealthNetConnectionsManager
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 import stealthnet.scala.ui.web.Settings
 import stealthnet.scala.ui.web.comet.{
-  ConnectionsUpdaterServer,
+  ConnectionsNotificationsManager,
   SessionManager
 }
 
@@ -39,9 +39,9 @@ object Server extends Logging with EmptyLoggingContext {
     server.start()
 
     SessionManager.start()
-    ConnectionsUpdaterServer.start()
+    ConnectionsNotificationsManager.start()
 
-    StealthNetConnectionsManager.addConnectionsListener(ConnectionsUpdaterServer)
+    StealthNetConnectionsManager.addConnectionsListener(ConnectionsNotificationsManager)
 
     Core.start()
   }
@@ -57,7 +57,7 @@ object Server extends Logging with EmptyLoggingContext {
       server.join()
     }
     SessionManager.stop()
-    ConnectionsUpdaterServer.stop()
+    ConnectionsNotificationsManager.stop()
 
     Core.stop()
 

@@ -1,5 +1,10 @@
 Order in which connections are listed (especially upon accessing page: order differs between already-existing and new connections)
 
+'Shutdown' triggers page refresh which can fail if server is already terminated ?
+
+
+********************************************************************************
+
 
 Shared
 ------

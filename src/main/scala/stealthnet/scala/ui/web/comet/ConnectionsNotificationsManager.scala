@@ -1,12 +1,9 @@
 package stealthnet.scala.ui.web.comet
 
 import java.text.SimpleDateFormat
-import org.cometd.bayeux.Message
-import org.cometd.bayeux.server.{BayeuxServer, ServerSession}
-import org.cometd.server.AbstractService
+import org.cometd.bayeux.server.ServerSession
 import scala.actors.Actor
 import scala.collection.JavaConversions._
-import scala.xml.{NodeSeq, Text}
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.connection.{
   ConnectionListener,
@@ -14,7 +11,9 @@ import stealthnet.scala.network.connection.{
 }
 import stealthnet.scala.ui.web.Constants
 
-object ConnectionsUpdater {
+class ConnectionInfo(val cnx: StealthNetConnection, val id: Int)
+
+object ConnectionsNotifications {
 
   case object Start
   case class NewConnection(cnxInfo: ConnectionInfo)
@@ -24,25 +23,24 @@ object ConnectionsUpdater {
 
 }
 
-class ConnectionsUpdater(val session: ServerSession)
+class ConnectionsNotificationsManager(protected val session: ServerSession)
   extends Actor
+  with NotificationsManager
 {
 
-  import ConnectionsUpdater._
+  import ConnectionsNotifications._
 
   start
   this ! Start
 
-  // scalastyle:off null
-  private def deliver(output: Map[String, Object]) =
-    session.deliver(session, "/cnxUpdates", output:java.util.Map[String, Object], null)
-  // scalastyle:on null
+  private def deliver(data: Map[String, Object]): Unit =
+    deliver(session, "connections", data)
 
   def act() {
     loop {
       react {
         case Start =>
-          ConnectionsUpdaterServer ! ConnectionsUpdaterServer.NewActor(this)
+          ConnectionsNotificationsManager ! ConnectionsNotificationsManager.NewActor(this)
 
         case NewConnection(cnxInfo) =>
           val cnx = cnxInfo.cnx
@@ -78,6 +76,7 @@ class ConnectionsUpdater(val session: ServerSession)
           deliver(output)
 
         case Stop() =>
+          println("************************************************** Stopping ConnectionsNotificationsManager")
           exit()
       }
     }
@@ -85,13 +84,14 @@ class ConnectionsUpdater(val session: ServerSession)
 
 }
 
-class ConnectionInfo(val cnx: StealthNetConnection, val id: Int)
-
-object ConnectionsUpdaterServer extends Actor with ConnectionListener {
+object ConnectionsNotificationsManager
+  extends Actor
+  with ConnectionListener
+{
 
   import ConnectionListener._
 
-  case class NewActor(actor: ConnectionsUpdater)
+  case class NewActor(actor: ConnectionsNotificationsManager)
   case class ActorLeft(session: ServerSession)
   /* XXX - manager connection updates (state, etc) and closing */
   private case class RefreshConnections()
@@ -109,7 +109,7 @@ object ConnectionsUpdaterServer extends Actor with ConnectionListener {
         case NewActor(actor) =>
           actors += actor.session.getId -> actor
           /* notify the new actor about current connections */
-          connections foreach { actor ! ConnectionsUpdater.NewConnection(_) }
+          connections foreach { actor ! ConnectionsNotifications.NewConnection(_) }
           if (!refreshRunning) {
             refreshRunning = true
             this ! RefreshConnections()
@@ -118,7 +118,7 @@ object ConnectionsUpdaterServer extends Actor with ConnectionListener {
         case ActorLeft(session) =>
           actors.get(session.getId) match {
             case Some(actor) =>
-              actor ! ConnectionsUpdater.Stop()
+              actor ! ConnectionsNotifications.Stop()
               actors -= session.getId
               if (actors.isEmpty)
                 refreshRunning = false
@@ -131,12 +131,12 @@ object ConnectionsUpdaterServer extends Actor with ConnectionListener {
           connections ::= cnxInfo
           id += 1
           /* notify each actor about the new connection */
-          actors foreach { _._2 ! ConnectionsUpdater.NewConnection(cnxInfo) }
+          actors foreach { _._2 ! ConnectionsNotifications.NewConnection(cnxInfo) }
 
         case RefreshConnections() =>
           if (refreshRunning) {
             connections foreach { cnxInfo =>
-              actors foreach { _._2 ! ConnectionsUpdater.RefreshConnection(cnxInfo) }
+              actors foreach { _._2 ! ConnectionsNotifications.RefreshConnection(cnxInfo) }
             }
             Core.schedule(this ! RefreshConnections(), Constants.cnxInfoRefreshPeriod)
           }
@@ -150,11 +150,11 @@ object ConnectionsUpdaterServer extends Actor with ConnectionListener {
           val (left, right) = connections partition { _.cnx.channel.getId == cnx.channel.getId }
           connections = right
           left foreach { cnxInfo =>
-            actors foreach { _._2 ! ConnectionsUpdater.ClosedConnection(cnxInfo) }
+            actors foreach { _._2 ! ConnectionsNotifications.ClosedConnection(cnxInfo) }
           }
 
         case Stop() =>
-          actors foreach { _._2 ! ConnectionsUpdater.Stop() }
+          actors foreach { _._2 ! ConnectionsNotifications.Stop() }
           exit()
       }
     }
@@ -162,26 +162,5 @@ object ConnectionsUpdaterServer extends Actor with ConnectionListener {
   // scalastyle:on method.length
 
   def stop() = this ! Stop()
-
-}
-
-class ConnectionsUpdaterService(bayeux: BayeuxServer)
-  extends AbstractService(bayeux, "cnxUpdater")
-{
-
-  addService("/service/cnxUpdater", "processClient")
-
-  def processClient(remote: ServerSession, message: Message) {
-    val active = Option(message.getDataAsMap().get("active").asInstanceOf[String]) map {
-      _.toBoolean
-    } getOrElse {
-      false
-    }
-
-    if (active)
-      new ConnectionsUpdater(remote)
-    else
-      ConnectionsUpdaterServer ! ConnectionsUpdaterServer.ActorLeft(remote)
-  }
 
 }
