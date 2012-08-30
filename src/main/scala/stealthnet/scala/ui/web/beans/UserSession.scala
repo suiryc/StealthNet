@@ -1,4 +1,4 @@
-package com.primefaces.sample.beans
+package stealthnet.scala.ui.web.beans
 
 import javax.faces.bean.{ManagedBean, SessionScoped}
 import scala.reflect.BeanProperty

@@ -1,6 +1,7 @@
-package com.primefaces.sample
+package stealthnet.scala.ui.web.sandbox
 
 import org.slf4j.bridge.SLF4JBridgeHandler
+import stealthnet.scala.ui.web.Server
 
 // scalastyle:off regex
 object TestServer {

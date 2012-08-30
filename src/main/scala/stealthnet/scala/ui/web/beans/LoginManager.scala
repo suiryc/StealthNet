@@ -1,4 +1,4 @@
-package com.primefaces.sample.beans
+package stealthnet.scala.ui.web.beans
 
 import javax.faces.application.FacesMessage
 import javax.faces.bean.{ManagedBean, ManagedProperty, RequestScoped}

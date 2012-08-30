@@ -1,12 +1,10 @@
-package com.primefaces.sample
+package stealthnet.scala.ui.web
 
-import java.io.File
-import org.eclipse.jetty.server.{Server => jettyServer }
+import org.eclipse.jetty.server.{Server => jettyServer}
 import org.eclipse.jetty.webapp.WebAppContext
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.connection.StealthNetConnectionsManager
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
-import stealthnet.scala.ui.web.Settings
 import stealthnet.scala.ui.web.comet.{
   ConnectionsNotificationsManager,
   SessionManager
