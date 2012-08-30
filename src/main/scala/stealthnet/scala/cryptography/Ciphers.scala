@@ -152,7 +152,8 @@ object Ciphers {
    * exponent) to proper ''RSA'' public key.
    */
   implicit def keySpecToKey(keySpec: RSAPublicKeySpec): RSAPublicKey =
-    KeyFactory.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME).generatePublic(keySpec).asInstanceOf[RSAPublicKey]
+    KeyFactory.getInstance("RSA", BouncyCastleProvider.PROVIDER_NAME)
+      .generatePublic(keySpec).asInstanceOf[RSAPublicKey]
 
   /**
    * Gets new ''RSA'' cipher.
@@ -208,7 +209,11 @@ object Ciphers {
       case PaddingMode.ISO10126 => Some(new ISO10126d2Padding())
     }
 
-    val cipher = padding map(new PaddedBufferedBlockCipher(blockCipher, _)) getOrElse(new BufferedBlockCipher(blockCipher))
+    val cipher = padding map {
+      new PaddedBufferedBlockCipher(blockCipher, _)
+    }  getOrElse {
+      new BufferedBlockCipher(blockCipher)
+    }
     cipher.init(encryption, new ParametersWithIV(new KeyParameter(rijndael.key), rijndael.iv))
 
     cipher
