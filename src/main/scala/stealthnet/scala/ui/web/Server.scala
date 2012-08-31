@@ -26,6 +26,9 @@ object Server extends Logging with EmptyLoggingContext {
     val server = new jettyServer(Settings.ui.webServerPort)
     this.server = Some(server)
 
+    server.setGracefulShutdown(Settings.ui.shutdownGracePeriod.intValue)
+    server.setStopAtShutdown(true)
+
     val context = new WebAppContext()
     context.setDescriptor("webapp/WEB-INF/web.xml")
     context.setResourceBase("webapp")

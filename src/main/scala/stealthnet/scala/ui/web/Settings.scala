@@ -22,4 +22,8 @@ class Settings(config: Config) extends BaseSettings(config) {
   /** Web server port. */
   val webServerPort = config.getInt(optionPath("server.port"))
 
+  /** Shutdown grace period (ms). `2s` by default. */
+  val shutdownGracePeriod: Long =
+    config.getMilliseconds(optionPath("server.shutdown.grace.period"))
+
 }
