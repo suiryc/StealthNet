@@ -38,6 +38,9 @@ object StealthNetClient {
  * ''StealthNet'' client.
  *
  * Manages client-side actions.
+ *
+ * Each created client first registers the remote peer as a to-be
+ * [[stealthnet.scala.network.connection.StealthNetConnection]].
  */
 class StealthNetClient(
   /** Remote peer to connect to. */
@@ -51,14 +54,15 @@ class StealthNetClient(
 
   /** Client connection channel. */
   private var channel: Option[Channel] = None
+  /** Whether connecting to this client peer is accepted. */
+  private val allowed = StealthNetConnectionsManager.addPeer(peer)
 
   /**
    * Starts client.
    *
-   * First registers the remote peer as a to-be
-   * [[stealthnet.scala.network.connection.StealthNetConnection]]. If connection
-   * limit is reached, nothing is done and this method returns `false`,
-   * otherwise connection is attempted to remote peer.
+   * If connection to the peer is not accepted (e.g. limit reached) nothing is
+   * done and this method returns `false`, otherwise connection is attempted to
+   * remote peer.
    *
    * If connection was successful, `stop` should be called to stop the client.
    *
@@ -68,7 +72,7 @@ class StealthNetClient(
   def start(): Boolean = {
     logger trace("Starting new client connection")
 
-    if (!StealthNetConnectionsManager.addPeer(peer))
+    if (!allowed)
       return false
 
     val bootstrap: ClientBootstrap = new ClientBootstrap(factory)

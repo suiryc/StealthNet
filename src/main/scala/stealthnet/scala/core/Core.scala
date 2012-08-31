@@ -159,21 +159,33 @@ object Core extends Logging with EmptyLoggingContext {
    *   - removes ourself from WebCaches if necessary
    *     - this is also done by the connections manager upon stopping, but it is
    *       better to do it as soon as possible
-   *   - stops the ''StealthNet'' server and cleans client shared resources
    *   - stops the connections manager
-   *   - terminates the shared timer
+   * The connections manager is expected to call back the `shutdown` method once
+   * all connections are terminated.
    *
    * @see [[stealthnet.scala.network.WebCachesManager]]
-   * @see [[stealthnet.scala.network.StealthNetServer]]
-   * @see [[stealthnet.scala.network.StealthNetClient]]
    * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]]
+   * @see [[stealthnet.scala.core.Core]].`shutdown`
    */
   def stop() {
     stopping = true
     WebCachesManager.removePeer()
+    StealthNetConnectionsManager.stop()
+  }
+
+  /**
+   * Shutdowns core.
+   *
+   * Performs the following actions:
+   *   - stops the ''StealthNet'' server and cleans client shared resources
+   *   - terminates the shared timer
+   *
+   * @see [[stealthnet.scala.network.StealthNetServer]]
+   * @see [[stealthnet.scala.network.StealthNetClient]]
+   */
+  def shutdown() {
     StealthNetServer.stop()
     StealthNetClient.stop()
-    StealthNetConnectionsManager.stop()
     timer.cancel()
   }
 

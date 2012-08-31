@@ -50,17 +50,29 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
   /**
    * Stops server.
    *
-   * Closes channel group and cleans resources.
+   * Cleans resources. Connections are supposed to be closed beforehand.
    */
   def stop() {
     logger debug "Stopping"
 
-    val future: ChannelGroupFuture = group.close()
-    future.awaitUninterruptibly()
     factory.releaseExternalResources()
     StealthNetPipelineFactory.releaseExternalResources()
 
     logger debug "Stopped"
+  }
+
+  /**
+   * Closes connections.
+   *
+   * Closes channel group.
+   */
+  def closeConnections() {
+    logger debug "Closing connections"
+
+    val future: ChannelGroupFuture = group.close()
+    future.awaitUninterruptibly()
+
+    logger debug "Closed connections"
   }
 
 }

@@ -41,9 +41,11 @@ protected object StealthNetClientConnectionsManager
             case Some(peer) =>
               val client = new StealthNetClient(peer)
 
-              /* Note: it is important to notify the manager before starting the
-               * client connection, or actually before the client can send a
-               * channel closing message.
+              /* Note: it is important to notify the manager
+               *   - after registering the remote peer
+               *  and
+               *   - before starting the client connection, or actually before
+               *     the client can send a channel closing message
                */
               StealthNetConnectionsManager !
                 StealthNetConnectionsManager.RequestedPeer()

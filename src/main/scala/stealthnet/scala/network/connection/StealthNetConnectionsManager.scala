@@ -6,7 +6,7 @@ import scala.collection.mutable
 import org.jboss.netty.channel.{Channel, ChannelLocal}
 import stealthnet.scala.{Constants, Settings}
 import stealthnet.scala.core.Core
-import stealthnet.scala.network.WebCachesManager
+import stealthnet.scala.network.{WebCachesManager, StealthNetServer}
 import stealthnet.scala.util.Peer
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
@@ -39,6 +39,13 @@ import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
  * Thus, when necessary a new peer connection request will be sent to the
  * client connections manager, which will return a response once a new client
  * has been instantiated.
+ *
+ * Stopping the application core is a bit subtle: we have to keep resources
+ * available until all connections are terminated, then cleanup can be done.
+ * Thus the core only notifies the manager to stop: at this point, no new
+ * peer/connection is allowed; once there is no more client request ongoing
+ * (which could cause race conditions), we can close all connections; once the
+ * last connection is terminated we can then call back the core to shutdown.
  */
 object StealthNetConnectionsManager
   extends Actor
@@ -174,7 +181,7 @@ object StealthNetConnectionsManager
 
         case RequestPeer() =>
           peerRequestOngoing = false
-          if (!upperLimitReached() || peerRequestSent) {
+          if ((!upperLimitReached() || peerRequestSent) && !stopping) {
             /* one request at a time */
             if (!peerRequestSent) {
               StealthNetClientConnectionsManager !
@@ -193,6 +200,12 @@ object StealthNetConnectionsManager
 
         case RequestedPeer() =>
           peerRequestSent = false
+          if (stopping) {
+            /* Nothing more ongoing on client side, time to close connections */
+            StealthNetServer.closeConnections()
+
+            this ! Stop()
+          }
 
         case AddPeer(peer) =>
           reply(add(peer))
@@ -210,8 +223,8 @@ object StealthNetConnectionsManager
           reply(closed(channel))
 
         case Stop() =>
-          if (stopping || (peers.size == 0)) {
-            /* time to leave */
+          if (!peerRequestSent && (peers.size == 0)) {
+            /* last connection terminated: time to leave */
             logger debug("Stopped")
             /* Note: we get back here when the last peer is unregistered, which
              * is when the last connection is closed. So we know we won't be
@@ -220,15 +233,22 @@ object StealthNetConnectionsManager
             StealthNetClientConnectionsManager !
               StealthNetClientConnectionsManager.Stop()
             WebCachesManager.stop()
+            Core.shutdown()
             exit()
           }
-          /* else: there still are connected peers, wait for the connections to
-           * close */
-          stopping = true
-          WebCachesManager.removePeer()
-          /* Note: as caller is expected to be stopping right now, WebCaches
-           * won't allow re-adding ourself before we really do leave.
-           */
+          else if (!stopping) {
+            /* there still are connected peers, wait for the connections to
+             * close */
+            stopping = true
+            WebCachesManager.removePeer()
+            /* Note: as caller is expected to be stopping right now, WebCaches
+             * won't allow re-adding ourself before we really do leave.
+             */
+
+            if (!peerRequestSent)
+              /* Nothing ongoing on client side, time to close connections */
+              StealthNetServer.closeConnections()
+          }
       }
     }
   }
@@ -370,17 +390,17 @@ object StealthNetConnectionsManager
     if (peers.remove(peer))
       logger trace("Removed peer[" + peer + "]")
 
-    if (stopping && (peers.size == 0))
-      /* time to really stop now */
-      this ! Stop()
-    else
+    if (!stopping)
       checkConnectionsLimit()
+    else if (peers.size == 0)
+      /* may be time to really stop now */
+      this ! Stop()
   }
 
   /**
    * Checks the current number of opened connections.
    *
-   * If below the lower limit:
+   * If not stopping and below the lower limit:
    *   - adds ourself to WebCaches
    *   - start requesting peer connections
    * Removes ourself from WebCaches if beyond the upper limit.
@@ -389,7 +409,7 @@ object StealthNetConnectionsManager
    * @see [[stealthnet.scala.network.WebCachesManager]]
    */
   protected def checkConnectionsLimit() {
-    if (peers.size < Settings.core.avgCnxCount) {
+    if (!stopping && (peers.size < Settings.core.avgCnxCount)) {
       WebCachesManager.addPeer()
       /* one request at a time */
       if (Settings.core.enableClientConnections && !peerRequestOngoing) {
