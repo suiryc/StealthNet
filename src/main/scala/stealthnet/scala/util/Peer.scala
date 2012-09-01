@@ -1,14 +1,10 @@
 package stealthnet.scala.util
 
-/**
- * Peer companion object.
- *
- * @todo Handle IPv6 ?
- */
+/** Peer companion object. */
 object Peer {
 
-  /** Regular expression to extract IP and port number. */
-  val regexp = "^([^:]+):(\\d+)$".r
+  /** Regular expression to extract host and port number. */
+  val regexp = "^(.+):(\\d+)$".r
 
 }
 

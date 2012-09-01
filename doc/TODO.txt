@@ -2,10 +2,12 @@ Fix missing peer/remote in some logs ?
 Sometimes upon (client) connection timeout, the log context does not contain any peer/remote address:
 01:40:07.246 TRACE [New I/O client boss #1-0] stealthnet.scala.network.CommandHandler - [remote=null] Caught exception: java.net.ConnectException: Connection refused: no further information
 
-Handle IPv6
-01:39:56.335 DEBUG [ForkJoinPool-1-worker-6] stealthnet.scala.webservices.WebCacheClient$ - Got unhandled peer[2a01:e34:ef1f:9:6097] from service[http://webcache.stealthnet.at/rwpmws.php]
-01:40:41.829 DEBUG [ForkJoinPool-1-worker-16] stealthnet.scala.webservices.WebCacheClient$ - Got unhandled peer[2a00:e080:124d::6097] from service[http://webcache.stealthnet.at/rwpmws.php]
-01:51:11.820 DEBUG [ForkJoinPool-1-worker-15] stealthnet.scala.webservices.WebCacheClient$ - Got unhandled peer[2001:41d0:fe0c::8559] from service[http://webcache.stealthnet.at/rwpmws.php]
+Handle IPv6 ?
+The IPv6 addresses returned by WebCaches seem truncated :/
+Examples:
+  - 2a01:e34:ef1f:9:6097
+  - 2a00:e080:124d::6097
+  - 2001:41d0:fe0c::8559
 
 Configuration
 How to save configuration changes ?

@@ -54,11 +54,11 @@ class Settings(config: Config) extends BaseSettings(config) {
 
   /** Whether to enable server connections. For testing purposes. */
   val enableServerConnections: Boolean =
-    config.getBoolean(optionPath("connection.server"))
+    config.getBoolean(optionPath("connection.server.enable"))
 
   /** Whether to enable client connections. For testing purposes. */
   val enableClientConnections: Boolean =
-    config.getBoolean(optionPath("connection.client"))
+    config.getBoolean(optionPath("connection.client.enable"))
 
   /**
    * Average connection count. `6` by default.
