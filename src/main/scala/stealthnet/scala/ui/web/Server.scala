@@ -26,6 +26,7 @@ object Server extends Logging with EmptyLoggingContext {
     val server = new jettyServer(Settings.ui.webServerPort)
     this.server = Some(server)
 
+    /* XXX - replaced by setStopTimeout(long) in Jetty 9 ? */
     server.setGracefulShutdown(Settings.ui.shutdownGracePeriod.intValue)
     server.setStopAtShutdown(true)
 

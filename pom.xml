@@ -15,21 +15,21 @@
     <encoding>UTF-8</encoding>
 
     <!-- Dependencies versions -->
-    <scala.version>2.9.2</scala.version>
-    <slf4j.version>1.7.0</slf4j.version>
-    <logback.version>1.0.7</logback.version>
-    <config.version>0.5.2</config.version>
-    <jetty.version>8.1.6.v20120903</jetty.version>
-    <jsf.version>2.1.9</jsf.version>
-    <primefaces.version>3.4</primefaces.version>
-    <cometd.version>2.4.3</cometd.version>
+    <scala.version>2.9.3</scala.version>
+    <slf4j.version>1.7.2</slf4j.version>
+    <logback.version>1.0.9</logback.version>
+    <config.version>1.0.0</config.version>
+    <jetty.version>8.1.9.v20130131</jetty.version>
+    <jsf.version>2.1.20</jsf.version>
+    <primefaces.version>3.5</primefaces.version>
+    <cometd.version>2.5.1</cometd.version>
     <stealthnet-core.version>0.1.0</stealthnet-core.version>
 
     <!-- Plugins versions -->
-    <scala-maven-plugin.version>3.1.0</scala-maven-plugin.version>
-    <maven-compiler-plugin.version>2.5.1</maven-compiler-plugin.version>
-    <maven-surefire-plugin.version>2.12.3</maven-surefire-plugin.version>
-    <maven-dependency-plugin.version>2.5.1</maven-dependency-plugin.version>
+    <scala-maven-plugin.version>3.1.3</scala-maven-plugin.version>
+    <maven-compiler-plugin.version>3.0</maven-compiler-plugin.version>
+    <maven-surefire-plugin.version>2.14</maven-surefire-plugin.version>
+    <maven-dependency-plugin.version>2.7</maven-dependency-plugin.version>
     <maven-resources-plugin.version>2.6</maven-resources-plugin.version>
     <maven-antrun-plugin.version>1.7</maven-antrun-plugin.version>
     <maven-jar-plugin.version>2.4</maven-jar-plugin.version>
@@ -94,6 +94,7 @@
       <version>${jetty.version}</version>
     </dependency>
     <!-- Useful for CometD WebSocket support (which otherwise rely on earlier versions). -->
+    <!-- jetty-websocket replaced by org.eclipse.jetty.websocket/websocket-server in Jetty 9 ? -->
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-websocket</artifactId>
@@ -109,6 +110,18 @@
       <artifactId>jetty-jmx</artifactId>
       <version>${jetty.version}</version>
     </dependency>
+    <!-- jetty-continuation now needs explicit dependency in Jetty 9 ?
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-continuation</artifactId>
+      <version>${jetty.version}</version>
+    </dependency> -->
+    <!-- jetty-util-ajax is separated from jetty-util in Jetty 9, and needs explicit dependency ?
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-util-ajax</artifactId>
+      <version>${jetty.version}</version>
+    </dependency> -->
 
     <!-- JSF -->
     <dependency>
