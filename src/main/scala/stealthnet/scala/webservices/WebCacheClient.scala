@@ -51,7 +51,7 @@ object WebCacheClient extends Logging with EmptyLoggingContext {
         false
 
       case Right(r) =>
-        logger debug ("Added (self) peer on service[" + url + "]")
+        logger debug ("Added (self) peer port[" + port + "] on service[" + url + "]")
         true
     }
   }
