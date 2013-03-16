@@ -65,7 +65,7 @@ class UserService {
 
   def getAllUsers = USERS_TABLE.values.toList:java.util.List[User]
 
-  def getUser(userId: Int): User = USERS_TABLE get(userId) orNull
+  def getUser(userId: Int): User = USERS_TABLE.get(userId).orNull
 
   def searchUsers(username: String) =
     /* We need to return a Java Collection */
