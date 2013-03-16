@@ -22,6 +22,7 @@ import org.bouncycastle.crypto.modes.{
   OFBBlockCipher
 }
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import scala.language.implicitConversions
 
 /**
  * Cipher modes.

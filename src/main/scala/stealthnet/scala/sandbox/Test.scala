@@ -178,7 +178,7 @@ object Test {
           println("Command: " + command)
         }
         catch {
-          case e =>
+          case e: Throwable =>
             println("Builder for command[%02X] failed!".format(code))
             e.printStackTrace()
         }

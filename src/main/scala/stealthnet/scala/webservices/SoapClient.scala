@@ -49,7 +49,7 @@ object SoapClient {
       Right(XML.load(conn.getInputStream))
     }
     catch {
-      case e =>
+      case e: Throwable =>
         try {
           val response = Source.fromInputStream(conn.getErrorStream).mkString
           val details = try {
@@ -59,7 +59,7 @@ object SoapClient {
                 "]: " + (doc \\ "faultstring").text
           }
           catch {
-            case e => response
+            case e: Throwable => response
           }
 
           Left("Response code[" + conn.getResponseCode +
@@ -67,7 +67,7 @@ object SoapClient {
               "] details[" + details + "]")
         }
         catch {
-          case _ =>
+          case _: Throwable =>
           /* Usually means we could not even connect to the server, let alone
            * get a response (code / message).
            */

@@ -1,5 +1,7 @@
 package stealthnet.scala.cryptography
 
+import scala.language.implicitConversions
+
 /**
  * Hash class companion object.
  */

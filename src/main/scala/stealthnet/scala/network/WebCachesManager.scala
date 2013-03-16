@@ -81,7 +81,6 @@ object WebCachesManager
     val readd = addedPeer
     _removePeer()
 
-    Settings.core.wsWebCacheUpdateEnabled
     val unfiltered: List[String] = (if (Settings.core.wsWebCacheUpdateEnabled)
         UpdateClient.getWebCaches(Settings.core.wsWebCacheUpdateURL)
       else
@@ -103,13 +102,13 @@ object WebCachesManager
     val excluded = Settings.core.wsWebCacheExcluded
     webCaches = unfiltered filterNot { webCache =>
       excluded.find { regex =>
-        val filtered = regex.r findFirstIn(webCache) isDefined
+        val filtered = regex.r.findFirstIn(webCache).isDefined
 
         if (filtered)
           logger debug("WebCache[" + webCache + "] excluded[" + regex + "]")
 
         filtered
-      } isDefined
+      } .isDefined
     }
 
     cyclicIt = webCaches.iterator

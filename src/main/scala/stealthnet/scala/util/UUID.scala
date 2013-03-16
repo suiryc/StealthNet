@@ -1,9 +1,8 @@
 package stealthnet.scala.util
 
 import java.util.{UUID => jUUID}
-
 import scala.collection.mutable.ListBuffer
-
+import scala.language.implicitConversions
 import stealthnet.scala.cryptography.Hash
 
 /**

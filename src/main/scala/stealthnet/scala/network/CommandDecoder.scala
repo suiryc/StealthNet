@@ -112,7 +112,7 @@ class CommandDecoder
         logger trace(cnx.loggerContext, "Decrypted data:\n" + HexDumper.dump(decrypted))
     }
     catch {
-      case e =>
+      case e: Throwable =>
         if (issue) {
           logger error(cnx.loggerContext, "Could not decrypt data:\n" + HexDumper.dump(buf.array, buf.readerIndex, buf.readableBytes), e)
           logger error(cnx.loggerContext, "Decrypting data are: " + builder.decryptingData(cnx))

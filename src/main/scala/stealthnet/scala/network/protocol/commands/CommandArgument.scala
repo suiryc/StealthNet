@@ -3,6 +3,7 @@ package stealthnet.scala.network.protocol.commands
 import java.io.{InputStream, OutputStream}
 import java.math.BigInteger
 import scala.collection.mutable
+import scala.language.existentials
 import stealthnet.scala.cryptography.Hash
 import stealthnet.scala.network.protocol.{BitSize, ProtocolStream}
 import stealthnet.scala.network.protocol.exceptions.ProtocolException
@@ -141,7 +142,7 @@ trait CommandArgumentsReader[T] {
       }
     }
     catch {
-      case e =>
+      case e: Throwable =>
         throw new ProtocolException("Cannot read command argument[" + argumentName + "]. Arguments that could be read: " + result, e)
     }
 
