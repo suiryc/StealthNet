@@ -15,6 +15,7 @@ object ConnectionListener {
 
 }
 
+/* XXX - use a type alias of ActorRef ? */
 /**
  * Connection listener.
  *
