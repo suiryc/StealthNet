@@ -80,16 +80,16 @@ class Command54(
   def argumentDefinitions = Command54.argumentDefinitions
 
   def arguments = Map(
-    "commandId" -> commandId,
-    "senderPeerID" -> senderPeerID,
-    "receiverPeerID" -> receiverPeerID,
-    "sourceSearchID" -> sourceSearchID,
-    "fileSize" -> fileSize,
-    "fileName" -> fileName,
-    "metaData" -> metaData,
-    "comment" -> comment,
-    "rating" -> rating.byteValue,
-    "sectorsMap" -> sectorsMap
+    ("commandId", commandId),
+    ("senderPeerID", senderPeerID),
+    ("receiverPeerID", receiverPeerID),
+    ("sourceSearchID", sourceSearchID),
+    ("fileSize", fileSize),
+    ("fileName", fileName),
+    ("metaData", metaData),
+    ("comment", comment),
+    ("rating", rating.byteValue),
+    ("sectorsMap", sectorsMap)
   )
 
 }

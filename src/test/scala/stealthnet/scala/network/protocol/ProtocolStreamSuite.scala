@@ -42,24 +42,24 @@ class ProtocolStreamSuite extends FunSuite {
 
   test("convertInteger") {
     val tests: List[((Long, Int), Array[Byte])] = List(
-      (0x00000000L, BitSize.Byte) -> buildArray(0x00),
-      (0x00000001L, BitSize.Byte) -> buildArray(0x01),
-      (0x0000007FL, BitSize.Byte) -> buildArray(0x7F),
-      (0x00000080L, BitSize.Byte) -> buildArray(0x80),
-      (0x000000FEL, BitSize.Byte) -> buildArray(0xFE),
-      (0x000000FFL, BitSize.Byte) -> buildArray(0xFF),
-      (0x00000000L, BitSize.Short) -> buildArray(0x00, 0x00),
-      (0x00000001L, BitSize.Short) -> buildArray(0x01, 0x00),
-      (0x00007FFFL, BitSize.Short) -> buildArray(0xFF, 0x7F),
-      (0x00008000L, BitSize.Short) -> buildArray(0x00, 0x80),
-      (0x0000FFFEL, BitSize.Short) -> buildArray(0xFE, 0xFF),
-      (0x0000FFFFL, BitSize.Short) -> buildArray(0xFF, 0xFF),
-      (0x00000000L, BitSize.Int) -> buildArray(0x00, 0x00, 0x00, 0x00),
-      (0x00000001L, BitSize.Int) -> buildArray(0x01, 0x00, 0x00, 0x00),
-      (0x7FFFFFFFL, BitSize.Int) -> buildArray(0xFF, 0xFF, 0xFF, 0x7F),
-      (0x80000000L, BitSize.Int) -> buildArray(0x00, 0x00, 0x00, 0x80),
-      (0xFFFFFFFEL, BitSize.Int) -> buildArray(0xFE, 0xFF, 0xFF, 0xFF),
-      (0xFFFFFFFFL, BitSize.Int) -> buildArray(0xFF, 0xFF, 0xFF, 0xFF)
+      ((0x00000000L, BitSize.Byte), buildArray(0x00)),
+      ((0x00000001L, BitSize.Byte), buildArray(0x01)),
+      ((0x0000007FL, BitSize.Byte), buildArray(0x7F)),
+      ((0x00000080L, BitSize.Byte), buildArray(0x80)),
+      ((0x000000FEL, BitSize.Byte), buildArray(0xFE)),
+      ((0x000000FFL, BitSize.Byte), buildArray(0xFF)),
+      ((0x00000000L, BitSize.Short), buildArray(0x00, 0x00)),
+      ((0x00000001L, BitSize.Short), buildArray(0x01, 0x00)),
+      ((0x00007FFFL, BitSize.Short), buildArray(0xFF, 0x7F)),
+      ((0x00008000L, BitSize.Short), buildArray(0x00, 0x80)),
+      ((0x0000FFFEL, BitSize.Short), buildArray(0xFE, 0xFF)),
+      ((0x0000FFFFL, BitSize.Short), buildArray(0xFF, 0xFF)),
+      ((0x00000000L, BitSize.Int), buildArray(0x00, 0x00, 0x00, 0x00)),
+      ((0x00000001L, BitSize.Int), buildArray(0x01, 0x00, 0x00, 0x00)),
+      ((0x7FFFFFFFL, BitSize.Int), buildArray(0xFF, 0xFF, 0xFF, 0x7F)),
+      ((0x80000000L, BitSize.Int), buildArray(0x00, 0x00, 0x00, 0x80)),
+      ((0xFFFFFFFEL, BitSize.Int), buildArray(0xFE, 0xFF, 0xFF, 0xFF)),
+      ((0xFFFFFFFFL, BitSize.Int), buildArray(0xFF, 0xFF, 0xFF, 0xFF))
     )
 
     for (((value, bitSize), bytes) <- tests) {

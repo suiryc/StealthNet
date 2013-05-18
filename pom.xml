@@ -118,7 +118,8 @@
         <configuration>
           <args>
             <arg>-deprecation</arg>
-            <arg>-explaintypes</arg>
+            <arg>-feature</arg>
+            <arg>-Yinline-warnings</arg>
             <arg>-optimize</arg>
             <arg>-unchecked</arg>
           </args>

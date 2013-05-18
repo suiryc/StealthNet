@@ -76,15 +76,15 @@ class Command53(
   def argumentDefinitions = Command53.argumentDefinitions
 
   def arguments = Map(
-    "commandId" -> commandId,
-    "senderPeerID" -> senderPeerID,
-    "receiverPeerID" -> receiverPeerID,
-    "sourceSearchID" -> sourceSearchID,
-    "fileSize" -> fileSize,
-    "fileName" -> fileName,
-    "metaData" -> metaData,
-    "comment" -> comment,
-    "rating" -> rating.byteValue
+    ("commandId", commandId),
+    ("senderPeerID", senderPeerID),
+    ("receiverPeerID", receiverPeerID),
+    ("sourceSearchID", sourceSearchID),
+    ("fileSize", fileSize),
+    ("fileName", fileName),
+    ("metaData", metaData),
+    ("comment", comment),
+    ("rating", rating.byteValue)
   )
 
 }

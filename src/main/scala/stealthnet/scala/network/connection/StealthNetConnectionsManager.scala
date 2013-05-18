@@ -67,7 +67,7 @@ object StealthNetConnectionsManager {
    *  - use akka logging ?
    *  - cleanup
    */
-  implicit val timeout = Timeout(36500 days)
+  implicit val timeout = Timeout(36500.days)
 
   /**
    * Actor message: register a connection listener.
