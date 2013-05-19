@@ -61,25 +61,25 @@ class ConnectionsNotificationsManager(protected val session: ServerSession)
     case NewConnection(cnxInfo) =>
       val cnx = cnxInfo.cnx
       val output = Map[String, Object](
-        "event" -> "new",
-        "id" -> ("connection_" + cnxInfo.id),
-        "host" -> cnx.peer.map(_.host).getOrElse("<unknown host>"),
-        "port" -> (cnx.peer.map(_.port).getOrElse[Int](-1):java.lang.Integer),
-        "created" -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cnx.createDate),
-        "receivedCommands" -> (cnx.receivedCommands:java.lang.Integer),
-        "sentCommands" -> (cnx.sentCommands:java.lang.Integer),
-        "status" -> (if (cnx.established) "established" else "initiated")
+        ("event", "new"),
+        ("id", "connection_" + cnxInfo.id),
+        ("host", cnx.peer.map(_.host).getOrElse("<unknown host>")),
+        ("port", cnx.peer.map(_.port).getOrElse[Int](-1):java.lang.Integer),
+        ("created", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cnx.createDate)),
+        ("receivedCommands", cnx.receivedCommands:java.lang.Integer),
+        ("sentCommands", cnx.sentCommands:java.lang.Integer),
+        ("status", if (cnx.established) "established" else "initiated")
       )
       deliver(output)
 
     case RefreshConnection(cnxInfo) =>
       val cnx = cnxInfo.cnx
       val output = Map[String, Object](
-        "event" -> "refresh",
-        "id" -> ("connection_" + cnxInfo.id),
-        "receivedCommands" -> (cnx.receivedCommands:java.lang.Integer),
-        "sentCommands" -> (cnx.sentCommands:java.lang.Integer),
-        "status" -> (if (cnx.established) "established" else "initiated")
+        ("event", "refresh"),
+        ("id", "connection_" + cnxInfo.id),
+        ("receivedCommands", cnx.receivedCommands:java.lang.Integer),
+        ("sentCommands", cnx.sentCommands:java.lang.Integer),
+        ("status", if (cnx.established) "established" else "initiated")
       )
       deliver(output)
 
