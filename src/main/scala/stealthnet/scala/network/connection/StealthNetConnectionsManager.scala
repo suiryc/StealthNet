@@ -54,7 +54,7 @@ import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
  */
 object StealthNetConnectionsManager {
 
-  /* XXX: migrate to aka
+  /* XXX: migrate to akka
    *  - create actor class inside object: DONE
    *  - instantiate actor inside object: DONE
    *  - update API methods to use instantiated actor: DONE
@@ -62,7 +62,7 @@ object StealthNetConnectionsManager {
    *  - use less ambiguous Stop message
    *  - use same system for all actors
    *    - use actorOf to create actor ?
-   *    - address messages inside object to prevent ambigous names ?
+   *    - address messages inside object to prevent ambiguous names ?
    *  - use a shutdown pattern ? (http://letitcrash.com/post/30165507578/shutdown-patterns-in-akka-2)
    *  - use akka logging ?
    *  - cleanup
@@ -77,7 +77,7 @@ object StealthNetConnectionsManager {
    * @note There is no need to unregister a listener, which is stopped with the
    *   application.
    */
-  protected case class AddConnectionsListener(listener: ConnectionListener)
+  protected case class AddConnectionsListener(listener: ActorRef)
   /**
    * Actor message: requested remote peer.
    *
@@ -153,7 +153,7 @@ object StealthNetConnectionsManager {
       new ChannelLocal(false)
 
     /** Listeners. */
-    private var listeners = List.empty[ConnectionListener]
+    private var listeners = List.empty[ActorRef]
 
     /** Whether a peer request is ongoing (inside this manager). */
     private var peerRequestOngoing  = false
@@ -497,7 +497,7 @@ object StealthNetConnectionsManager {
     Await.result(actor ? ClosedChannel(channel), Duration.Inf).asInstanceOf[Option[StealthNetConnection]]
 
   /** Adds a new connections listener. */
-  def addConnectionsListener(listener: ConnectionListener) =
+  def addConnectionsListener(listener: ActorRef) =
     actor ! AddConnectionsListener(listener)
 
   /** Stops the manager. */

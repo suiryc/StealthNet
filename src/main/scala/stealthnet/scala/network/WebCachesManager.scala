@@ -20,7 +20,7 @@ import stealthnet.scala.webservices.{UpdateClient, WebCacheClient}
  */
 object WebCachesManager {
 
-  /* XXX: migrate to aka
+  /* XXX: migrate to akka
    *  - create actor class inside object: DONE
    *  - instantiate actor inside object: DONE
    *  - update API methods to use instantiated actor: DONE
@@ -28,7 +28,7 @@ object WebCachesManager {
    *  - use less ambiguous Stop message
    *  - use same system for all actors
    *    - use actorOf to create actor ?
-   *    - address messages inside object to prevent ambigous names ?
+   *    - address messages inside object to prevent ambiguous names ?
    *  - use a shutdown pattern ? (http://letitcrash.com/post/30165507578/shutdown-patterns-in-akka-2)
    *  - use akka logging ?
    *  - cleanup

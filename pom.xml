@@ -67,6 +67,7 @@
       <artifactId>scala-library</artifactId>
       <version>${scala-library.version}</version>
     </dependency>
+    <!-- Akka -->
     <dependency>
       <groupId>com.typesafe.akka</groupId>
       <artifactId>akka-actor_${scala.version}</artifactId>

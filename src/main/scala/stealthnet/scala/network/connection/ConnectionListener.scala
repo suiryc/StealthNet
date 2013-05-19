@@ -14,19 +14,3 @@ object ConnectionListener {
   case class ClosedConnection(cnx: StealthNetConnection)
 
 }
-
-/* XXX - use a type alias of ActorRef ? */
-/**
- * Connection listener.
- *
- * Basically, a listener is an actor. But there actually are many kind (that is
- * implementations) of actors. The common trait being the `!` method used to
- * send a message.
- */
-trait ConnectionListener {
-
-  // scalastyle:off method.name
-  def !(msg: Any): Unit
-  // scalastyle:on method.name
-
-}
