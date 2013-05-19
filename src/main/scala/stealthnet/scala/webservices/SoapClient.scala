@@ -62,9 +62,7 @@ object SoapClient {
             case e: Throwable => response
           }
 
-          Left("Response code[" + conn.getResponseCode +
-              "] message[" + conn.getResponseMessage +
-              "] details[" + details + "]")
+          Left(s"Response code[${conn.getResponseCode}] message[${conn.getResponseMessage}] details[$details]")
         }
         catch {
           case _: Throwable =>

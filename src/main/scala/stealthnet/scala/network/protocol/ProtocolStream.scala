@@ -41,7 +41,7 @@ object ProtocolStream {
    */
   def convertInteger(value: Long, bitSize: Int): Array[Byte] = {
     if (value > (-1L >>> (64 - bitSize)))
-      throw new IllegalArgumentException("Number value[" + value + "] exceeds capacity")
+      throw new IllegalArgumentException(s"Number value[$value] exceeds capacity")
 
     if (bitSize == 8)
       Array[Byte](value.asInstanceOf[Byte])

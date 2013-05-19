@@ -17,7 +17,7 @@ object UpdateClient extends Logging with EmptyLoggingContext {
   def getWebCaches(url: String): Option[List[String]] = {
     SoapClient.doRequest(url, <GetWebCaches xmlns="http://rshare.de/rshareupdates.asmx" />) match {
       case Left(l) =>
-        logger error ("Failed to get WebCaches from service[" + url + "]: " + l)
+        logger error s"Failed to get WebCaches from service[$url]: $l"
         None
 
       case Right(r) =>
@@ -30,7 +30,7 @@ object UpdateClient extends Logging with EmptyLoggingContext {
         }
         catch {
           case e: Exception =>
-            logger error ("Failed to get WebCaches from service[" + url + "]!", e)
+            logger error (s"Failed to get WebCaches from service[$url]!", e)
             None
         }
     }

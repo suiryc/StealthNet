@@ -143,7 +143,7 @@ trait CommandArgumentsReader[T] {
     }
     catch {
       case e: Throwable =>
-        throw new ProtocolException("Cannot read command argument[" + argumentName + "]. Arguments that could be read: " + result, e)
+        throw new ProtocolException(s"Cannot read command argument[$argumentName]. Arguments that could be read: $result", e)
     }
 
     /* no need to be immutable anymore */

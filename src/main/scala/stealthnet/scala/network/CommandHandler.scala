@@ -49,7 +49,7 @@ class CommandHandler
     val cnx = StealthNetConnectionsManager.connection(e.getChannel)
 
     if (Settings.core.debugIOCommands)
-      logger debug(cnx.loggerContext, "Received command: " + command)
+      logger debug(cnx.loggerContext, s"Received command: $command")
 
     Core.receivedCommand(command, cnx)
   }
@@ -75,7 +75,7 @@ class CommandHandler
     val output = new ChannelBufferOutputStream(buf)
 
     if (Settings.core.debugIOCommands)
-      logger debug(cnx.loggerContext, "Sending command: " + command)
+      logger debug(cnx.loggerContext, s"Sending command: $command")
 
     val cipherStart = buf.writerIndex + Constants.commandOffset
     val unencryptedLength = command.write(cnx, output)
@@ -100,7 +100,7 @@ class CommandHandler
     val cnx = StealthNetConnectionsManager.getConnection(e.getChannel)
     val loggerContext = StealthNetConnection.loggerContext(cnx,  e.getChannel)
 
-    logger trace(loggerContext, "Caught exception: " + e.getCause.toString())
+    logger trace(loggerContext, s"Caught exception: ${e.getCause}")
     e.getCause match {
       case e: ReadTimeoutException =>
         logger debug(loggerContext, "Read timeout")

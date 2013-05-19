@@ -59,12 +59,8 @@ class RijndaelParameters(
 ) {
 
   override def toString() = getClass.getSimpleName + '(' +
-    "blockSize=" + blockSize + ", " +
-    "feedbackSize=" + feedbackSize + ", " +
-    "keySize=" + keySize + ", " +
-    "cipherMode=" + cipherMode + ", " +
-    "paddingMode=" + paddingMode + ", " +
-    "iv=\n" + HexDumper.dump(iv) + "\n, " +
-    "key=\n" + HexDumper.dump(key) + "\n)"
+    s"blockSize=$blockSize, feedbackSize=$feedbackSize, keySize=$keySize, " +
+    s"cipherMode=$cipherMode, paddingMode=$paddingMode, iv=\n${HexDumper.dump(iv)}\n, " +
+    s"key=\n${HexDumper.dump(key)}\n)"
 
 }

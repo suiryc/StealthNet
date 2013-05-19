@@ -107,15 +107,15 @@ object WebCachesManager {
           None
       ) match {
         case Some(urls) =>
-          logger debug("Got webCaches: " + urls)
+          logger debug s"Got webCaches: $urls"
           urls
 
         case None =>
           val default = Settings.core.wsWebCacheDefault
           if (Settings.core.wsWebCacheUpdateEnabled)
-            logger debug("Got no webCache: using default[" + default + "]")
+            logger debug s"Got no webCache: using default[$default]"
           else
-            logger debug("WebCache update disabled: using default[" + default + "]")
+            logger debug s"WebCache update disabled: using default[$default]"
           default
       }
 
@@ -125,7 +125,7 @@ object WebCachesManager {
           val filtered = regex.r.findFirstIn(webCache).isDefined
 
           if (filtered)
-            logger debug("WebCache[" + webCache + "] excluded[" + regex + "]")
+            logger debug s"WebCache[$webCache] excluded[$regex]"
 
           filtered
         } .isDefined

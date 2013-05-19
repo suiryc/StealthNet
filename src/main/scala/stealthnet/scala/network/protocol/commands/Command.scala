@@ -324,6 +324,6 @@ abstract class Command extends CommandArguments {
   }
 
   override def toString = getClass.getSimpleName +
-    "(code=" + code.formatted("0x%02X") + ", arguments=" + argumentsToString + ")"
+    f"(code=0x$code%02X, arguments=$argumentsToString%s)"
 
 }

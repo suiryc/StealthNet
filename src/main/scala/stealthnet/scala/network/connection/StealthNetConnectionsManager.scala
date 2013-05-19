@@ -278,19 +278,19 @@ object StealthNetConnectionsManager {
      */
     protected def add(peer: Peer): Boolean = {
       if (stopping) {
-        logger debug("Refused connection with peer[" + peer + "]: stop pending")
+        logger debug s"Refused connection with peer[$peer]: stop pending"
         false
       }
       else if (upperLimitReached()) {
-        logger debug("Refused connection with peer[" + peer + "]: limit reached")
+        logger debug s"Refused connection with peer[$peer]: limit reached"
         false
       }
       else if (peers.contains(peer)) {
-        logger debug("Refused connection with peer[" + peer + "]: already connected")
+        logger debug s"Refused connection with peer[$peer]: already connected"
         false
       }
       else {
-        logger debug("Accepted connection with peer[" + peer + "]")
+        logger debug s"Accepted connection with peer[$peer]"
         peers.add(peer)
         checkConnectionsLimit()
         true
@@ -324,7 +324,7 @@ object StealthNetConnectionsManager {
 
         case _ =>
           /* shall not happen */
-          logger debug("Refused connection with endpoint[" + remoteAddress + "]: unhandled address type")
+          logger debug s"Refused connection with endpoint[$remoteAddress]: unhandled address type"
           false
       }
 
@@ -401,7 +401,7 @@ object StealthNetConnectionsManager {
       // scalastyle:on null
 
       if (peers.remove(peer))
-        logger trace("Removed peer[" + peer + "]")
+        logger trace s"Removed peer[$peer]"
 
       if (!stopping)
         checkConnectionsLimit()

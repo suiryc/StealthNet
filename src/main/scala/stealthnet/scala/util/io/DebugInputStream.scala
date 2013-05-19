@@ -43,7 +43,7 @@ class DebugInputStream(
   override def skip(n: Long): Long = {
     val result = super.skip(n)
 
-    logger debug("Skipped: " + result)
+    logger debug s"Skipped: $result"
 
     result
   }

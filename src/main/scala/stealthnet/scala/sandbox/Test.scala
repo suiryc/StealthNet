@@ -175,7 +175,7 @@ object Test {
       case Some(builder) =>
         try {
           val command = builder.read(input)
-          println("Command: " + command)
+          println(s"Command: $command")
         }
         catch {
           case e: Throwable =>
