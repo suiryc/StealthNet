@@ -26,7 +26,7 @@ class CommandDecoder
 {
 
   /** Command builder. */
-  private var builder: Command.Builder = new Command.Builder()
+  private val builder: Command.Builder = new Command.Builder()
 
   /**
    * Reads incoming data and rebuilds a

@@ -75,16 +75,17 @@ object ProtocolStream {
   private def _read(input: InputStream, buffer: Array[Byte], offset: Int,
     length: Int): Int =
   {
-    var actual = 0
-
-    while (actual < length) {
-      val read = input.read(buffer, offset + actual, length - actual)
-      if (read < 0)
-        return actual
-      actual += read
+    @annotation.tailrec
+    def _read(offset: Int, length: Int, acc: Int): Int = {
+      if (length <= 0) acc
+      else {
+        val read = input.read(buffer, offset, length)
+        if (read < 0) acc
+        else _read(offset + read, length - read, acc + read)
+      }
     }
 
-    actual
+    _read(offset, length, 0)
   }
 
   /**
@@ -159,10 +160,13 @@ object ProtocolStream {
    * @throws EOFException if ''EOF'' was reached before reading value
    */
   def readInteger(input: InputStream, bitSize: Int): Long = {
-    var value: Long = 0
-    for (idx <- 0 until (bitSize / 8))
-      value |= (0xFF & readByte(input).asInstanceOf[Long]) << (8 * idx)
-    value
+    val idxMax = bitSize / 8
+    @annotation.tailrec
+    def readInteger(idx: Int, acc: Long): Long = if (idx >= idxMax) acc
+      else readInteger(idx + 1,
+        acc | ((0xFF & readByte(input).asInstanceOf[Long]) << (8 * idx)))
+
+    readInteger(0, 0)
   }
 
   /**

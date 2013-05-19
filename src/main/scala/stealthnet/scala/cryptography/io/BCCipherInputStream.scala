@@ -15,7 +15,7 @@ class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
 {
 
   /** Filtered input stream buffer. */
-  protected var inputBuffer: Array[Byte] = new Array[Byte](Constants.cipherBufferLength)
+  protected val inputBuffer: Array[Byte] = new Array[Byte](Constants.cipherBufferLength)
   /** Decrypted data buffer. */
   protected var buffer: Array[Byte] = new Array[Byte](Constants.cipherBufferLength)
   /** Decrypted data buffer end offset. */
