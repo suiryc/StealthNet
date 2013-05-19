@@ -3,7 +3,6 @@ package stealthnet.scala.ui.web.comet
 import java.text.SimpleDateFormat
 import org.cometd.bayeux.server.ServerSession
 import akka.actor._
-import akka.actor.ActorDSL._
 import scala.collection.JavaConversions._
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.connection.{
@@ -26,24 +25,15 @@ object ConnectionsNotifications {
 }
 
 class ConnectionsNotificationsManager(protected val session: ServerSession)
-  extends ActWithStash
+  extends Actor
   with NotificationsManager
   with Logging
   with EmptyLoggingContext
 {
 
   /* XXX: migrate to akka
-   *  - create actor class inside object: DONE
-   *  - instantiate actor inside object: DONE
-   *  - update API methods to use instantiated actor: DONE
-   *  - shutdown system: DONE
-   *  - use less ambiguous Stop message
-   *  - use same system for all actors
-   *    - use actorOf to create actor ?
-   *    - address messages inside object to prevent ambiguous names ?
-   *  - use a shutdown pattern ? (http://letitcrash.com/post/30165507578/shutdown-patterns-in-akka-2)
    *  - use akka logging ?
-   *  - cleanup
+   *  - refactor classes ?
    */
 
   import ConnectionsNotifications._
@@ -101,17 +91,8 @@ class ConnectionsNotificationsManager(protected val session: ServerSession)
 object ConnectionsNotificationsManager {
 
   /* XXX: migrate to akka
-   *  - create actor class inside object: DONE
-   *  - instantiate actor inside object: DONE
-   *  - update API methods to use instantiated actor: DONE
-   *  - shutdown system: DONE
-   *  - use less ambiguous Stop message
-   *  - use same system for all actors
-   *    - use actorOf to create actor ?
-   *    - address messages inside object to prevent ambiguous names ?
-   *  - use a shutdown pattern ? (http://letitcrash.com/post/30165507578/shutdown-patterns-in-akka-2)
    *  - use akka logging ?
-   *  - cleanup
+   *  - refactor classes ?
    */
 
   import ConnectionListener._
@@ -122,14 +103,12 @@ object ConnectionsNotificationsManager {
   private case object RefreshConnections
   case object Stop
 
-  private class ConnectionsNotificationsManagerActor extends ActWithStash {
+  private class ConnectionsNotificationsManagerActor extends Actor {
 
     private var actors = Map.empty[String, ActorRef]
     private var connections = List.empty[ConnectionInfo]
     private var id: Int = _
     private var refreshRunning = false
-
-    override def postStop() = context.system.shutdown()
 
     // scalastyle:off method.length
     override def receive = {
@@ -188,18 +167,20 @@ object ConnectionsNotificationsManager {
 
   }
 
-  private val system = ActorSystem("ConnectionsNotificationsManager")
-  lazy val actor = ActorDSL.actor(system)(new ConnectionsNotificationsManagerActor)
+  val actor = ActorDSL.actor(Core.actorSystem.system, "UI-ConnectionsNotificationsManager")(
+    new ConnectionsNotificationsManagerActor
+  )
+  Core.actorSystem.watch(actor)
 
   def stop() = actor ! Stop
 
   /** Dummy method to start the manager. */
-  def start() {
-    actor
-  }
+  def start() { }
 
   def register(session: ServerSession) {
-    ActorDSL.actor(system)(new ConnectionsNotificationsManager(session))
+    ActorDSL.actor(Core.actorSystem.system)(
+      new ConnectionsNotificationsManager(session)
+    )
   }
 
   def unregister(session: ServerSession) {
