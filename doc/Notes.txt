@@ -1,3 +1,16 @@
+Proper launching
+----------------
+Logs should say something like:
+INFO  [main] org.eclipse.jetty.server.Server - jetty-8.1.10.v20130312
+INFO  [main] j.enterprise.resource.webcontainer.jsf.config - Initialisation de Mojarra 2.1.22 ( 20130508-2000 https://svn.java.net/svn/mojarra~svn/tags/2.1.22@11945) pour le contexte «»
+INFO  [main] j.e.resource.webcontainer.jsf.application - JSF1048 : Présence d’annotations PostConstruct/PreDestroy  Les méthodes de beans gérés marquées avec ces annotations auront des annotations dites traitées.
+INFO  [main] o.p.webapp.PostConstructApplicationEventListener - Running on PrimeFaces 3.5
+INFO  [main] org.eclipse.jetty.server.AbstractConnector - Started SelectChannelConnector@0.0.0.0:8080
+
+If something is missing (e.g. no log about PrimeFaces being run), corresponding dependency may be corrupted and weird errors may appear like
+  javax.el.ELException: ...: The class '...' does not have the property '...'.
+
+
 Beans
 -----
 To help create beans in Scala, the @BeanProperty annotation can be used on fields to automatically generate the corresponding get/set access methods.
