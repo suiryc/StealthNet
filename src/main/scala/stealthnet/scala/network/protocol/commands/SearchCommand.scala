@@ -50,8 +50,9 @@ object SearchCommand extends CommandBuilder {
   /**
    * Generates a new flooding hash.
    *
-   * The flooding hash needs special care, see
-   * http://www.scribd.com/doc/28681327/69/Stealthnet-decloaked.
+   * The flooding hash needs special care.
+   *
+   * @see [[http://www.scribd.com/doc/28681327/69/Stealthnet-decloaked]]
    */
   def generateFloodingHash(): Hash = {
     var hash: Hash = Command.generateId()

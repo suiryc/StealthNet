@@ -26,6 +26,9 @@ object Core extends Logging with EmptyLoggingContext {
   if (Option(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)) == None)
     Security.addProvider(new BouncyCastleProvider())
 
+  /** Core actor system. */
+  val actorSystem = stealthnet.scala.actor.System
+
   /** Shared timer. */
   val timer = new Timer()
 

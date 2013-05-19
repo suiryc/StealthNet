@@ -108,6 +108,12 @@
       <version>${scalatest.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.typesafe.akka</groupId>
+      <artifactId>akka-testkit_${scala.version}</artifactId>
+      <version>${akka-actor.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

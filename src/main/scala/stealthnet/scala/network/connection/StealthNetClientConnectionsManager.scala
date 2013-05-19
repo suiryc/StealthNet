@@ -1,9 +1,6 @@
 package stealthnet.scala.network.connection
 
 import akka.actor._
-import akka.actor.ActorDSL._
-import scala.concurrent._
-import scala.concurrent.duration._
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.{StealthNetClient, WebCachesManager}
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
@@ -19,17 +16,8 @@ import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 protected object StealthNetClientConnectionsManager {
 
   /* XXX: migrate to akka
-   *  - create actor class inside object: DONE
-   *  - instantiate actor inside object: DONE
-   *  - update API methods to use instantiated actor: DONE
-   *  - shutdown system: DONE
-   *  - use less ambiguous Stop message
-   *  - use same system for all actors
-   *    - use actorOf to create actor ?
-   *    - address messages inside object to prevent ambiguous names ?
-   *  - use a shutdown pattern ? (http://letitcrash.com/post/30165507578/shutdown-patterns-in-akka-2)
    *  - use akka logging ?
-   *  - cleanup
+   *  - refactor classes ?
    */
 
   /**
@@ -46,13 +34,11 @@ protected object StealthNetClientConnectionsManager {
    */
   case object Stop
 
-  private class StealthNetClientConnectionsActor
-    extends ActWithStash
+  private class StealthNetClientConnectionsManagerActor
+    extends Actor
     with Logging
     with EmptyLoggingContext
   {
-
-    override def postStop() = context.system.shutdown()
 
     override def receive = {
       case RequestPeer =>
@@ -86,12 +72,12 @@ protected object StealthNetClientConnectionsManager {
     }
   }
 
-  private val system = ActorSystem("StealthNetClientConnections")
-  lazy val actor = ActorDSL.actor(system)(new StealthNetClientConnectionsActor)
+  val actor = ActorDSL.actor(Core.actorSystem.system, "StealthNetClientConnectionsManager")(
+    new StealthNetClientConnectionsManagerActor
+  )
+  Core.actorSystem.watch(actor)
 
   /** Dummy method to start the manager. */
-  def start() {
-    actor
-  }
+  def start() { }
 
 }

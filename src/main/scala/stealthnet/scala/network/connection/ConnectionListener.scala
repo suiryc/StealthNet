@@ -1,7 +1,7 @@
 package stealthnet.scala.network.connection
 
 /**
- * Connection listener companion object.
+ * Connection listener object.
  *
  * Defines messages that can be notified to listeners.
  */

@@ -1,7 +1,6 @@
 package stealthnet.scala.network
 
 import akka.actor._
-import akka.actor.ActorDSL._
 import akka.pattern.ask
 import akka.util.Timeout
 import scala.concurrent._
@@ -21,17 +20,8 @@ import stealthnet.scala.webservices.{UpdateClient, WebCacheClient}
 object WebCachesManager {
 
   /* XXX: migrate to akka
-   *  - create actor class inside object: DONE
-   *  - instantiate actor inside object: DONE
-   *  - update API methods to use instantiated actor: DONE
-   *  - shutdown system: DONE
-   *  - use less ambiguous Stop message
-   *  - use same system for all actors
-   *    - use actorOf to create actor ?
-   *    - address messages inside object to prevent ambiguous names ?
-   *  - use a shutdown pattern ? (http://letitcrash.com/post/30165507578/shutdown-patterns-in-akka-2)
    *  - use akka logging ?
-   *  - cleanup
+   *  - refactor classes ?
    */
   implicit val timeout = Timeout(36500.days)
 
@@ -48,8 +38,8 @@ object WebCachesManager {
   /** Actor message: stop. */
   protected case object Stop
 
-  private class WebCachesActor
-    extends ActWithStash
+  private class WebCachesManagerActor
+    extends Actor
     with Logging
     with EmptyLoggingContext
   {
@@ -64,8 +54,6 @@ object WebCachesManager {
     private var addedPeer = false
     /** Whether WebCaches check is ongoing. */
     private var checkOngoing = false
-
-    override def postStop() = context.system.shutdown()
 
     /**
      * Manages this actor messages.
@@ -161,7 +149,7 @@ object WebCachesManager {
         _removePeer()
 
         val results = for (webCache <- webCaches)
-          yield (webCache -> WebCacheClient.addPeer(webCache, Settings.core.serverPort))
+          yield (webCache, WebCacheClient.addPeer(webCache, Settings.core.serverPort))
 
         toCheck = results filterNot { _._2 } map { _._1 }
         if (!toCheck.isEmpty && !checkOngoing) {
@@ -213,13 +201,14 @@ object WebCachesManager {
     protected def checkWebCaches() =
       if (addedPeer && !toCheck.isEmpty) {
         val results = for (webCache <- toCheck)
-          yield (webCache -> WebCacheClient.addPeer(webCache, Settings.core.serverPort))
+          yield (webCache, WebCacheClient.addPeer(webCache, Settings.core.serverPort))
 
         toCheck = results filterNot { _._2 } map { _._1 }
 
         /* check again later */
         if (!toCheck.isEmpty)
-          Core.schedule(self ! CheckWebCaches, Settings.core.wsWebCacheCheckPeriod)
+          Core.schedule(self ! CheckWebCaches,
+            Settings.core.wsWebCacheCheckPeriod)
         else
           checkOngoing = true
       }
@@ -228,8 +217,10 @@ object WebCachesManager {
 
   }
 
-  private val system = ActorSystem("WebCaches")
-  private lazy val actor = ActorDSL.actor(system)(new WebCachesActor)
+  val actor = ActorDSL.actor(Core.actorSystem.system, "WebCachesManager")(
+    new WebCachesManagerActor
+  )
+  Core.actorSystem.watch(actor)
 
   /** Refreshes WebCaches. */
   def refresh() = actor ! Refresh
@@ -246,14 +237,13 @@ object WebCachesManager {
    * @return an option value containing the retrieved peer, or `None` if none
    */
   def getPeer(): Option[Peer] =
-    Await.result(actor ? GetPeer, Duration.Inf).asInstanceOf[Option[Peer]]
+    Await.result(actor ? GetPeer,
+      Duration.Inf).asInstanceOf[Option[Peer]]
 
   /** Stops the manager. */
   def stop() = actor ! Stop
 
   /** Dummy method to start the manager. */
-  def start() {
-    actor
-  }
+  def start() { }
 
 }
