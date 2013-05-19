@@ -48,7 +48,7 @@ class ConnectionsNotificationsManager(protected val session: ServerSession)
 
   import ConnectionsNotifications._
 
-  logger trace("Starting connections notifications manager[" + this + "] session[" + session + "]")
+  logger trace s"Starting connections notifications manager[$this] session[$session]"
   self ! Start
 
   private def deliver(data: Map[String, Object]): Unit =
@@ -92,7 +92,7 @@ class ConnectionsNotificationsManager(protected val session: ServerSession)
       deliver(output)
 
     case Stop() =>
-      logger trace("Stopping connections notifications manager[" + this + "] session[" + session + "]")
+      logger trace s"Stopping connections notifications manager[$this] session[$session]"
       context.stop(self)
   }
 

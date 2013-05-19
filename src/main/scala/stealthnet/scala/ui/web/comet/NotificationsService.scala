@@ -42,14 +42,14 @@ class NotificationsService(bayeux: BayeuxServer)
 
     channel match {
       case "connections" =>
-        logger trace("Connections notifications service: registering[" + active + "] session[" + remote + "]")
+        logger trace s"Connections notifications service: registering[$active] session[$remote]"
         if (active) ConnectionsNotificationsManager.register(remote)
         else ConnectionsNotificationsManager.unregister(remote)
 
       case _ =>
         val output = Map[String, Object](
           "level" -> "error",
-          "message" -> ("Unknown channel[" + channel + "]")
+          "message" -> s"Unknown channel[$channel]"
         )
         deliver(remote, output)
         return
