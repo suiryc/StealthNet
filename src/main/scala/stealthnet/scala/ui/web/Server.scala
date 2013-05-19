@@ -43,7 +43,7 @@ object Server extends Logging with EmptyLoggingContext {
     SessionManager.start()
     ConnectionsNotificationsManager.start()
 
-    StealthNetConnectionsManager.addConnectionsListener(ConnectionsNotificationsManager)
+    StealthNetConnectionsManager.addConnectionsListener(ConnectionsNotificationsManager.actor)
 
     Core.start()
   }

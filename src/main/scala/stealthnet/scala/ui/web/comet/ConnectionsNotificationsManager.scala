@@ -2,7 +2,8 @@ package stealthnet.scala.ui.web.comet
 
 import java.text.SimpleDateFormat
 import org.cometd.bayeux.server.ServerSession
-import scala.actors.Actor
+import akka.actor._
+import akka.actor.ActorDSL._
 import scala.collection.JavaConversions._
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.connection.{
@@ -25,146 +26,184 @@ object ConnectionsNotifications {
 }
 
 class ConnectionsNotificationsManager(protected val session: ServerSession)
-  extends Actor
+  extends ActWithStash
   with NotificationsManager
   with Logging
   with EmptyLoggingContext
 {
 
+  /* XXX: migrate to akka
+   *  - create actor class inside object: DONE
+   *  - instantiate actor inside object: DONE
+   *  - update API methods to use instantiated actor: DONE
+   *  - shutdown system: DONE
+   *  - use less ambiguous Stop message
+   *  - use same system for all actors
+   *    - use actorOf to create actor ?
+   *    - address messages inside object to prevent ambiguous names ?
+   *  - use a shutdown pattern ? (http://letitcrash.com/post/30165507578/shutdown-patterns-in-akka-2)
+   *  - use akka logging ?
+   *  - cleanup
+   */
+
   import ConnectionsNotifications._
 
   logger trace("Starting connections notifications manager[" + this + "] session[" + session + "]")
-  start
-  this ! Start
+  self ! Start
 
   private def deliver(data: Map[String, Object]): Unit =
     deliver(session, "connections", data)
 
-  def act() {
-    loop {
-      react {
-        case Start =>
-          ConnectionsNotificationsManager ! ConnectionsNotificationsManager.NewActor(this)
+  override def receive = {
+    case Start =>
+      ConnectionsNotificationsManager.actor ! ConnectionsNotificationsManager.NewActor(self, session.getId)
 
-        case NewConnection(cnxInfo) =>
-          val cnx = cnxInfo.cnx
-          val output = Map[String, Object](
-            "event" -> "new",
-            "id" -> ("connection_" + cnxInfo.id),
-            "host" -> cnx.peer.map(_.host).getOrElse("<unknown host>"),
-            "port" -> (cnx.peer.map(_.port).getOrElse[Int](-1):java.lang.Integer),
-            "created" -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cnx.createDate),
-            "receivedCommands" -> (cnx.receivedCommands:java.lang.Integer),
-            "sentCommands" -> (cnx.sentCommands:java.lang.Integer),
-            "status" -> (if (cnx.established) "established" else "initiated")
-          )
-          deliver(output)
+    case NewConnection(cnxInfo) =>
+      val cnx = cnxInfo.cnx
+      val output = Map[String, Object](
+        "event" -> "new",
+        "id" -> ("connection_" + cnxInfo.id),
+        "host" -> cnx.peer.map(_.host).getOrElse("<unknown host>"),
+        "port" -> (cnx.peer.map(_.port).getOrElse[Int](-1):java.lang.Integer),
+        "created" -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cnx.createDate),
+        "receivedCommands" -> (cnx.receivedCommands:java.lang.Integer),
+        "sentCommands" -> (cnx.sentCommands:java.lang.Integer),
+        "status" -> (if (cnx.established) "established" else "initiated")
+      )
+      deliver(output)
 
-        case RefreshConnection(cnxInfo) =>
-          val cnx = cnxInfo.cnx
-          val output = Map[String, Object](
-            "event" -> "refresh",
-            "id" -> ("connection_" + cnxInfo.id),
-            "receivedCommands" -> (cnx.receivedCommands:java.lang.Integer),
-            "sentCommands" -> (cnx.sentCommands:java.lang.Integer),
-            "status" -> (if (cnx.established) "established" else "initiated")
-          )
-          deliver(output)
+    case RefreshConnection(cnxInfo) =>
+      val cnx = cnxInfo.cnx
+      val output = Map[String, Object](
+        "event" -> "refresh",
+        "id" -> ("connection_" + cnxInfo.id),
+        "receivedCommands" -> (cnx.receivedCommands:java.lang.Integer),
+        "sentCommands" -> (cnx.sentCommands:java.lang.Integer),
+        "status" -> (if (cnx.established) "established" else "initiated")
+      )
+      deliver(output)
 
-        case ClosedConnection(cnxInfo) =>
-          val cnx = cnxInfo.cnx
-          val output = Map[String, Object](
-            "event" -> "closed",
-            "id" -> ("connection_" + cnxInfo.id)
-          )
-          deliver(output)
+    case ClosedConnection(cnxInfo) =>
+      val cnx = cnxInfo.cnx
+      val output = Map[String, Object](
+        "event" -> "closed",
+        "id" -> ("connection_" + cnxInfo.id)
+      )
+      deliver(output)
 
-        case Stop() =>
-          logger trace("Stopping connections notifications manager[" + this + "] session[" + session + "]")
-          exit()
-      }
-    }
+    case Stop() =>
+      logger trace("Stopping connections notifications manager[" + this + "] session[" + session + "]")
+      context.stop(self)
   }
 
 }
 
-object ConnectionsNotificationsManager
-  extends Actor
-  with ConnectionListener
-{
+object ConnectionsNotificationsManager {
+
+  /* XXX: migrate to akka
+   *  - create actor class inside object: DONE
+   *  - instantiate actor inside object: DONE
+   *  - update API methods to use instantiated actor: DONE
+   *  - shutdown system: DONE
+   *  - use less ambiguous Stop message
+   *  - use same system for all actors
+   *    - use actorOf to create actor ?
+   *    - address messages inside object to prevent ambiguous names ?
+   *  - use a shutdown pattern ? (http://letitcrash.com/post/30165507578/shutdown-patterns-in-akka-2)
+   *  - use akka logging ?
+   *  - cleanup
+   */
 
   import ConnectionListener._
 
-  case class NewActor(actor: ConnectionsNotificationsManager)
+  case class NewActor(actor: ActorRef, id: String)
   case class ActorLeft(session: ServerSession)
   /* XXX - manager connection updates (state, etc) and closing */
-  private case class RefreshConnections()
-  case class Stop()
+  private case object RefreshConnections
+  case object Stop
 
-  private var actors = Map.empty[String, Actor]
-  private var connections = List.empty[ConnectionInfo]
-  private var id: Int = _
-  private var refreshRunning = false
+  private class ConnectionsNotificationsManagerActor extends ActWithStash {
 
-  // scalastyle:off method.length
-  def act() {
-    loop {
-      react {
-        case NewActor(actor) =>
-          actors += actor.session.getId -> actor
-          /* notify the new actor about current connections */
-          connections foreach { actor ! ConnectionsNotifications.NewConnection(_) }
-          if (!refreshRunning) {
-            refreshRunning = true
-            this ! RefreshConnections()
+    private var actors = Map.empty[String, ActorRef]
+    private var connections = List.empty[ConnectionInfo]
+    private var id: Int = _
+    private var refreshRunning = false
+
+    override def postStop() = context.system.shutdown()
+
+    // scalastyle:off method.length
+    override def receive = {
+      case NewActor(actor, id) =>
+        actors += id -> actor
+        /* notify the new actor about current connections */
+        connections foreach { actor ! ConnectionsNotifications.NewConnection(_) }
+        if (!refreshRunning) {
+          refreshRunning = true
+          self ! RefreshConnections
+        }
+
+      case ActorLeft(session) =>
+        actors.get(session.getId) match {
+          case Some(actor) =>
+            actor ! ConnectionsNotifications.Stop()
+            actors -= session.getId
+            if (actors.isEmpty)
+              refreshRunning = false
+
+          case None =>
+        }
+
+      case NewConnection(cnx) =>
+        val cnxInfo = new ConnectionInfo(cnx, id)
+        connections ::= cnxInfo
+        id += 1
+        /* notify each actor about the new connection */
+        actors foreach { _._2 ! ConnectionsNotifications.NewConnection(cnxInfo) }
+
+      case RefreshConnections =>
+        if (refreshRunning) {
+          connections foreach { cnxInfo =>
+            actors foreach { _._2 ! ConnectionsNotifications.RefreshConnection(cnxInfo) }
           }
+          Core.schedule(self ! RefreshConnections, Constants.cnxInfoRefreshPeriod)
+        }
+        /* else: refresh stopped */
 
-        case ActorLeft(session) =>
-          actors.get(session.getId) match {
-            case Some(actor) =>
-              actor ! ConnectionsNotifications.Stop()
-              actors -= session.getId
-              if (actors.isEmpty)
-                refreshRunning = false
+      case ClosedConnection(cnx) =>
+        /* remove the connection and notify each actor */
+        /* Note: comparison on cnx or cnx.channel reference should work, but
+         * comparing the channel id shall be more future-proof.
+         */
+        val (left, right) = connections partition { _.cnx.channel.getId == cnx.channel.getId }
+        connections = right
+        left foreach { cnxInfo =>
+          actors foreach { _._2 ! ConnectionsNotifications.ClosedConnection(cnxInfo) }
+        }
 
-            case None =>
-          }
-
-        case NewConnection(cnx) =>
-          val cnxInfo = new ConnectionInfo(cnx, id)
-          connections ::= cnxInfo
-          id += 1
-          /* notify each actor about the new connection */
-          actors foreach { _._2 ! ConnectionsNotifications.NewConnection(cnxInfo) }
-
-        case RefreshConnections() =>
-          if (refreshRunning) {
-            connections foreach { cnxInfo =>
-              actors foreach { _._2 ! ConnectionsNotifications.RefreshConnection(cnxInfo) }
-            }
-            Core.schedule(this ! RefreshConnections(), Constants.cnxInfoRefreshPeriod)
-          }
-          /* else: refresh stopped */
-
-        case ClosedConnection(cnx) =>
-          /* remove the connection and notify each actor */
-          /* Note: comparison on cnx or cnx.channel reference should work, but
-           * comparing the channel id shall be more future-proof.
-           */
-          val (left, right) = connections partition { _.cnx.channel.getId == cnx.channel.getId }
-          connections = right
-          left foreach { cnxInfo =>
-            actors foreach { _._2 ! ConnectionsNotifications.ClosedConnection(cnxInfo) }
-          }
-
-        case Stop() =>
-          actors foreach { _._2 ! ConnectionsNotifications.Stop() }
-          exit()
-      }
+      case Stop =>
+        actors foreach { _._2 ! ConnectionsNotifications.Stop() }
+        context.stop(self)
     }
-  }
-  // scalastyle:on method.length
+    // scalastyle:on method.length
 
-  def stop() = this ! Stop()
+  }
+
+  private val system = ActorSystem("ConnectionsNotificationsManager")
+  lazy val actor = ActorDSL.actor(system)(new ConnectionsNotificationsManagerActor)
+
+  def stop() = actor ! Stop
+
+  /** Dummy method to start the manager. */
+  def start() {
+    actor
+  }
+
+  def register(session: ServerSession) {
+    ActorDSL.actor(system)(new ConnectionsNotificationsManager(session))
+  }
+
+  def unregister(session: ServerSession) {
+    actor ! ConnectionsNotificationsManager.ActorLeft(session)
+  }
 
 }

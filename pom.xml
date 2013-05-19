@@ -19,6 +19,8 @@
     <scala.version>2.10</scala.version>
     <!-- org.scala-lang/scala-library -->
     <scala-library.version>${scala.version}.1</scala-library.version>
+    <!-- com.typesafe.akka/akka-actor -->
+    <akka-actor.version>2.1.4</akka-actor.version>
     <!-- org.slf4j/slf4j-api -->
     <slf4j.version>1.7.5</slf4j.version>
     <!-- ch.qos.logback/logback-classic -->
@@ -28,7 +30,7 @@
     <!-- org.eclipse.jetty/jetty-server -->
     <jetty.version>8.1.10.v20130312</jetty.version>
     <!-- com.sun.faces/jsf-api -->
-    <jsf.version>2.1.22</jsf.version>
+    <mojara.version>2.1.22</mojara.version>
     <!-- org.primefaces/primefaces -->
     <primefaces.version>3.5</primefaces.version>
     <!-- org.cometd.java/bayeux-api -->
@@ -86,6 +88,12 @@
       <artifactId>scala-library</artifactId>
       <version>${scala-library.version}</version>
     </dependency>
+    <!-- Akka -->
+    <dependency>
+      <groupId>com.typesafe.akka</groupId>
+      <artifactId>akka-actor_${scala.version}</artifactId>
+      <version>${akka-actor.version}</version>
+    </dependency>
 
     <!-- Configuration management -->
     <dependency>
@@ -141,16 +149,32 @@
     </dependency> -->
 
     <!-- JSF -->
+    <!-- Mojara implementation (https://javaserverfaces.java.net/download.html) -->
+    <!-- Note: could be replaced by MyFaces implementation -->
     <dependency>
       <groupId>com.sun.faces</groupId>
       <artifactId>jsf-api</artifactId>
-      <version>${jsf.version}</version>
+      <version>${mojara.version}</version>
     </dependency>
     <dependency>
       <groupId>com.sun.faces</groupId>
       <artifactId>jsf-impl</artifactId>
-      <version>${jsf.version}</version>
+      <version>${mojara.version}</version>
     </dependency>
+    <!-- Alternative way ? -->
+    <!-- <dependency>
+      <groupId>javax.faces</groupId>
+      <artifactId>javax.faces-api</artifactId>
+      <version>2.1</version>
+      <scope>provided</scope>
+    </dependency> -->
+    <!-- <dependency>
+      <groupId>org.glassfish</groupId>
+      <artifactId>javax.faces</artifactId>
+      <version>${mojara.version}</version>
+      <scope>provided</scope>
+    </dependency> -->
+    <!-- PrimeFaces -->
     <dependency>
       <groupId>org.primefaces</groupId>
       <artifactId>primefaces</artifactId>
@@ -191,7 +215,8 @@
         <configuration>
           <args>
             <arg>-deprecation</arg>
-            <arg>-explaintypes</arg>
+            <arg>-feature</arg>
+            <arg>-Yinline-warnings</arg>
             <arg>-optimize</arg>
             <arg>-unchecked</arg>
           </args>
