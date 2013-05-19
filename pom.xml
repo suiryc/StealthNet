@@ -28,6 +28,7 @@
     <!-- com.typesafe/config -->
     <config.version>1.0.0</config.version>
     <!-- org.eclipse.jetty/jetty-server -->
+    <!-- Note: Jetty 9 does not work with CometD 2.x; needs to-be CometD 3.0 -->
     <jetty.version>8.1.10.v20130312</jetty.version>
     <!-- com.sun.faces/jsf-api -->
     <mojara.version>2.1.22</mojara.version>
