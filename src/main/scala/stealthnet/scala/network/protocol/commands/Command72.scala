@@ -2,8 +2,8 @@ package stealthnet.scala.network.protocol.commands
 
 import java.io.InputStream
 import stealthnet.scala.Constants
-import stealthnet.scala.cryptography.Hash
 import stealthnet.scala.network.protocol.{Encryption, ProtocolStream}
+import stealthnet.scala.util.Hash
 
 object Command72 extends CommandBuilder {
 

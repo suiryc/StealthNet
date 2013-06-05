@@ -16,7 +16,7 @@ import stealthnet.scala.util.HexDumper
 import java.security.KeyFactory
 import java.security.spec.RSAPrivateKeySpec
 import java.math.BigInteger
-import stealthnet.scala.cryptography.Hash
+import stealthnet.scala.util.Hash
 import java.security.interfaces.RSAPrivateKey
 import stealthnet.scala.network.protocol.ProtocolStream
 import stealthnet.scala.util.io.DebugInputStream

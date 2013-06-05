@@ -1,4 +1,4 @@
-package stealthnet.scala.cryptography
+package stealthnet.scala.util
 
 import scala.language.implicitConversions
 

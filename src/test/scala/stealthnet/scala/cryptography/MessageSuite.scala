@@ -3,6 +3,7 @@ package stealthnet.scala.cryptography
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+import stealthnet.scala.util.Hash
 
 @RunWith(classOf[JUnitRunner])
 class MessageSuite extends FunSuite {

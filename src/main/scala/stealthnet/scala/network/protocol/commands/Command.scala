@@ -9,12 +9,7 @@ import java.io.{
 import javax.crypto.{CipherInputStream, CipherOutputStream}
 import scala.collection.mutable.WrappedArray
 import stealthnet.scala.{Constants, Settings}
-import stealthnet.scala.cryptography.{
-  Algorithm,
-  Hash,
-  Message,
-  RSAKeys
-}
+import stealthnet.scala.cryptography.{Algorithm, Message, RSAKeys}
 import stealthnet.scala.cryptography.Ciphers._
 import stealthnet.scala.cryptography.io.{
   BCCipherInputStream,
@@ -23,7 +18,7 @@ import stealthnet.scala.cryptography.io.{
 import stealthnet.scala.network.connection.StealthNetConnection
 import stealthnet.scala.network.protocol.{BitSize, Encryption, ProtocolStream}
 import stealthnet.scala.network.protocol.exceptions.InvalidDataException
-import stealthnet.scala.util.{HexDumper, UUID}
+import stealthnet.scala.util.{Hash, HexDumper, UUID}
 import stealthnet.scala.util.io.DebugInputStream
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
