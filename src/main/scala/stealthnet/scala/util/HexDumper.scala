@@ -1,7 +1,6 @@
 package stealthnet.scala.util
 
 import scala.collection.mutable.IndexedSeqView
-import stealthnet.scala.util.Hash
 
 /**
  * Hexadecimal data dumper.

@@ -6,7 +6,6 @@ import scala.collection.mutable.WrappedArray
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSuite
-import stealthnet.scala.util.Hash
 
 // scalastyle:off magic.number
 @RunWith(classOf[JUnitRunner])
