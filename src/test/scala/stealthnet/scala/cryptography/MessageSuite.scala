@@ -15,15 +15,13 @@ class MessageSuite extends FunSuite {
         val a = Hash(hash)
         val b = m.hash(algorithm)
         assert(a === b,
-            "Algorithm[%s] message[%s] digest[%s] does not match expected[%s]".format(
-                Algorithm.algorithm(algorithm), message, b, a)
-            )
+          s"Algorithm[${Algorithm.algorithm(algorithm)}] message[$message] digest[$b] does not match expected[$a]"
+        )
 
         val c = Message.hash(message.getBytes("US-ASCII"), algorithm)
         assert(a === c,
-            "Algorithm[%s] message[%s] digest[%s] does not match expected[%s]".format(
-                Algorithm.algorithm(algorithm), message, c, a)
-            )
+          s"Algorithm[${Algorithm.algorithm(algorithm)}] message[$message] digest[$c] does not match expected[$a]"
+        )
       }
     }
   }
