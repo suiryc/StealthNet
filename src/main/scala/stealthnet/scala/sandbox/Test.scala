@@ -32,10 +32,12 @@ object Test {
 
     Security.addProvider(new BouncyCastleProvider())
 
+    if (false) {
     val test = RijndaelParameters()
     println(test)
     println(RSAKeys.privateKey)
     return
+    }
 
     if (false) {
     val input = "test".getBytes()

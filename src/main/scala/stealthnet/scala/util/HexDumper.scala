@@ -44,9 +44,11 @@ object HexDumper {
      * consecutive bytes sliding over the data to dump.
      */
 
+    type BytesView = scala.collection.IterableView[Byte, Array[Byte]]
+
     /** Builds the Stream, each element giving a 16-bytes view. */
-    def stream: Stream[IndexedSeqView[Byte, Array[Byte]]] = {
-      def loop(rest: IndexedSeqView[Byte, Array[Byte]]): Stream[IndexedSeqView[Byte, Array[Byte]]] =
+    def stream: Stream[BytesView] = {
+      def loop(rest: BytesView): Stream[BytesView] =
         rest.splitAt(viewBytes) match {
           case (head, tail) if (!head.isEmpty) =>
             head #:: loop(tail)
@@ -74,7 +76,7 @@ object HexDumper {
       section.map(c => if ((c >= 0x20) && (c < 0x7F)) c.asInstanceOf[Char] else '.').mkString("")
 
     /** Process one 'line' (that is 16-bytes view) */
-    def processLine(result: StringBuilder, line: IndexedSeqView[Byte, Array[Byte]], index: Int) {
+    def processLine(result: StringBuilder, line: BytesView, index: Int) {
       val (first, second) = line.force.splitAt(viewBytes / 2)
 
       if (result.length > 0)
@@ -97,13 +99,15 @@ object HexDumper {
      *   which does prevent tail recursion).
      */
     @annotation.tailrec
-    def processLines(result: StringBuilder, stream: Stream[IndexedSeqView[Byte, Array[Byte]]], index: Int): Unit = stream match {
-      case Stream.Empty =>
+    def processLines(result: StringBuilder, stream: Stream[BytesView],
+        index: Int): Unit =
+      stream match {
+        case Stream.Empty =>
 
-      case head #:: tail =>
-        processLine(result, head, index)
-        processLines(result, tail, index + 16)
-    }
+        case head #:: tail =>
+          processLine(result, head, index)
+          processLines(result, tail, index + 16)
+      }
 
     processLines(result, stream, 0)
   }
@@ -112,39 +116,24 @@ object HexDumper {
   /**
    * Dumps data.
    *
-   * @param result where to dump the hexadecimal representation of data
-   * @param data data to dump
-   */
-  def dump(result: StringBuilder, data: Array[Byte]): Unit =
-    dump(result, data, 0, data.length)
-
-  /**
-   * Dumps data.
-   *
    * @param data data to dump
    * @param offset data offset
-   * @param length data length
+   * @param length data length, negative value means whole array
+   * @param result where to dump the hexadecimal representation of data
    * @return result containing the hexadecimal representation of data
    */
-  def dump(data: Array[Byte], offset: Int, length: Int): StringBuilder = {
-    val result = new StringBuilder()
-    dump(result, data, offset, length)
+  def dump(data: Array[Byte], offset: Int = 0, length: Int = -1,
+      result: StringBuilder = new StringBuilder()): StringBuilder =
+  {
+    dump(result, data, offset,
+      if (length < 0) data.length - offset else length)
     result
   }
 
-  /**
-   * Dumps data.
-   *
-   * @param data data to dump
-   * @return result containing the hexadecimal representation of data
-   */
-  def dump(data: Array[Byte]): StringBuilder =
-    dump(data, 0, data.length)
-
   /** Regular expression extracting hexadecimal representation. */
-  private val lineFormat = "[^:]*:?([\\s-0-9A-Fa-f]+)\\|?".r
+  private val lineFormat = """[^:]*:?([\s-0-9A-Fa-f]+)\|?""".r
   /** Regular expression extracting hexadecimal data from a representation. */
-  private val hexFormat = "([0-9A-Fa-f]{2})".r
+  private val hexFormat = """([0-9A-Fa-f]{2})""".r
 
   /**
    * Undumps data.
@@ -153,11 +142,11 @@ object HexDumper {
    * @return original data corresponding to the given hexadecimal representation
    */
   def undump(dump: String): Array[Byte] = {
-    val data = for (lineFormat(data) <- lineFormat findAllIn dump;
-        hexFormat(hex) <- hexFormat findAllIn data)
-      yield hex
-    val hash: Hash = data.mkString("")
-    hash.bytes
+    val data = for {
+      lineFormat(data) <- lineFormat findAllIn dump
+      hexFormat(hex) <- hexFormat findAllIn data
+    } yield hex
+    (data.mkString: Hash).bytes
   }
 
 }
