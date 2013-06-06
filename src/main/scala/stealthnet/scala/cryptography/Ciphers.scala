@@ -28,7 +28,10 @@ import scala.language.implicitConversions
  * Cipher modes.
  *
  * The different modes and values are the ones available in ''C#'' (on which
- * rely original ''StealthNet'' application).
+ * rely original ''StealthNet'' application):
+ * {{{
+ * public enum CipherMode { CBC = 1, ECB = 2, OFB = 3, CFB = 4, CTS = 5 }
+ * }}}
  */
 object CipherMode extends Enumeration {
 
@@ -85,7 +88,10 @@ object CipherMode extends Enumeration {
  * Padding modes.
  *
  * The different modes and values are the ones available in ''C#'' (on which
- * rely original ''StealthNet'' application).
+ * rely original ''StealthNet'' application):
+ * {{{
+ * public enum PaddingMode { None = 1, PKCS7 = 2, Zeros = 3, ANSIX923 = 4, ISO10126 = 5 }
+ * }}}
  */
 object PaddingMode extends Enumeration {
 
@@ -195,27 +201,37 @@ object Ciphers {
   private def rijndaelCipher(rijndael: RijndaelParameters, encryption: Boolean): BufferedBlockCipher =
   {
     val engine = new RijndaelEngine(rijndael.blockSize)
-    val blockCipher: BlockCipher = rijndael.cipherMode match {
-      case CipherMode.CBC => new CBCBlockCipher(engine)
-      case CipherMode.ECB => engine
-      case CipherMode.OFB => new OFBBlockCipher(engine, rijndael.feedbackSize)
-      case CipherMode.CFB => new CFBBlockCipher(engine, rijndael.feedbackSize)
-      case CipherMode.CTS => return new CTSBlockCipher(engine)
-    }
-    val padding: Option[BlockCipherPadding] = rijndael.paddingMode match {
-      case PaddingMode.None => None
-      case PaddingMode.PKCS7 => Some(new PKCS7Padding())
-      case PaddingMode.Zeros => Some(new ZeroBytePadding())
-      case PaddingMode.ANSIX923 => Some(new X923Padding())
-      case PaddingMode.ISO10126 => Some(new ISO10126d2Padding())
-    }
 
-    val cipher = padding map {
-      new PaddedBufferedBlockCipher(blockCipher, _)
-    }  getOrElse {
-      new BufferedBlockCipher(blockCipher)
-    }
-    cipher.init(encryption, new ParametersWithIV(new KeyParameter(rijndael.key), rijndael.iv))
+    /* Note: ECB and CTS don't use IV, and only expect the key as parameter */
+    val (blockCipher, useIV): (Either[BlockCipher, BufferedBlockCipher], Boolean) =
+      rijndael.cipherMode match {
+        case CipherMode.CBC => (Left(new CBCBlockCipher(engine)), true)
+        case CipherMode.ECB => (Left(engine), false)
+        case CipherMode.OFB => (Left(new OFBBlockCipher(engine, rijndael.feedbackSize)), true)
+        case CipherMode.CFB => (Left(new CFBBlockCipher(engine, rijndael.feedbackSize)), true)
+        case CipherMode.CTS => (Right(new CTSBlockCipher(engine)), false)
+      }
+    /* Note: CTS does not use padding at all */
+    val cipher = blockCipher.fold({ blockCipher =>
+      val padding: Option[BlockCipherPadding] = rijndael.paddingMode match {
+        case PaddingMode.None => None
+        case PaddingMode.PKCS7 => Some(new PKCS7Padding())
+        case PaddingMode.Zeros => Some(new ZeroBytePadding())
+        case PaddingMode.ANSIX923 => Some(new X923Padding())
+        case PaddingMode.ISO10126 => Some(new ISO10126d2Padding())
+      }
+
+      padding map {
+        new PaddedBufferedBlockCipher(blockCipher, _)
+      }  getOrElse {
+        new BufferedBlockCipher(blockCipher)
+      }
+    }, { blockCipher => blockCipher })
+
+    cipher.init(encryption,
+      if (!useIV) new KeyParameter(rijndael.key)
+      else new ParametersWithIV(new KeyParameter(rijndael.key), rijndael.iv)
+    )
 
     cipher
   }
