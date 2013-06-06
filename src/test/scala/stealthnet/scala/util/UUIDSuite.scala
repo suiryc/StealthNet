@@ -20,7 +20,7 @@ class UUIDSuite extends FunSuite {
       0xba.asInstanceOf[Byte], 0x98.asInstanceOf[Byte], 0x76.asInstanceOf[Byte],
       0x54.asInstanceOf[Byte], 0x32.asInstanceOf[Byte], 0x10.asInstanceOf[Byte])
 
-    assert((a:WrappedArray[Byte]) === (bytes:WrappedArray[Byte]))
+    assert(a === bytes)
   }
 
 }

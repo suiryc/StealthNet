@@ -86,6 +86,7 @@ class CiphersSuite extends FunSuite {
           )
       }
 
+      /* Note: for Array, '===' compares the content, while '=='/'!=' compares object reference */
       assert((encrypted:WrappedArray[Byte]) != (input:WrappedArray[Byte]),
         s"Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize] keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] encrypted data equals unencrypted data"
       )
@@ -105,7 +106,7 @@ class CiphersSuite extends FunSuite {
           )
       }
 
-      assert((decrypted.take(decryptedLength):WrappedArray[Byte]) === (actualInput:WrappedArray[Byte]),
+      assert(decrypted.take(decryptedLength) === actualInput,
         s"Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize] keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] decrypted data does not equal initial data"
       )
     }
@@ -149,7 +150,7 @@ class CiphersSuite extends FunSuite {
           )
       }
 
-      assert((decrypted.take(decryptedLength):WrappedArray[Byte]) === (input:WrappedArray[Byte]),
+      assert(decrypted.take(decryptedLength) === input,
         s"RSA keySize[${Constants.RSAKeyLength}] decrypted data does not equal initial data"
       )
   }

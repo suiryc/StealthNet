@@ -31,8 +31,7 @@ class HashSuite extends FunSuite {
 
   test("Bytes array shall match initial hexadecimal representation") {
     val a = Hash(hex)
-    /* Note: compare as Collection (content) and not as Array (instance) */
-    assert((bytes:WrappedArray[Byte]) === (a.bytes:WrappedArray[Byte]))
+    assert(bytes === a.bytes)
   }
 
   test("Object equality") {

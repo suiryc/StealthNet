@@ -58,7 +58,7 @@ class HexDumperSuite extends FunSuite {
     for (input <- List(binary.take(3), binary.take(16), binary)) {
       val a = HexDumper.dump(input).toString
       val b = HexDumper.undump(a)
-      assert((b:Array[Byte]) === (input:Array[Byte]))
+      assert(b === input)
     }
   }
 
