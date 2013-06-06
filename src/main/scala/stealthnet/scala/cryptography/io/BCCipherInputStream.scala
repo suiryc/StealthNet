@@ -67,10 +67,6 @@ class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
 
   override def available(): Int = bufferEnd - bufferOffset
 
-  /**
-   * @todo test suite to ensure that 0x80-0xFF bytes are correctly read as
-   * positive integers (previously fixed bug)
-   */
   override def read(): Int = {
     while (available == 0) {
       if (fillBuffer() == -1)
