@@ -17,11 +17,11 @@ class CiphersSuite extends FunSuite {
   if (Option(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)) == None)
     Security.addProvider(new BouncyCastleProvider())
 
-  val blockSizes = List(128, 160, 192, 224, 256)
-  val keyLengths = List(128, 160, 192, 224, 256)
-  val feedbackSizes = List(64, 128, 256)
-  val random = new SecureRandom()
-  val input = "The quick brown fox jumps over the lazy dog".getBytes("US-ASCII")
+  private val blockSizes = List(128, 160, 192, 224, 256)
+  private val keyLengths = List(128, 160, 192, 224, 256)
+  private val feedbackSizes = List(64, 128, 256)
+  private val random = new SecureRandom()
+  private val input = "The quick brown fox jumps over the lazy dog".getBytes("US-ASCII")
 
   test("Rijndael encryption/decryption") {
     /* Notes:
