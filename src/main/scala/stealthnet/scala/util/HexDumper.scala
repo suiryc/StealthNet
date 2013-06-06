@@ -56,7 +56,7 @@ object HexDumper {
             Stream.empty
         }
 
-      loop(data.view(offset, length))
+      loop(data.view(offset, offset + length))
     }
 
     /** Padding. */
