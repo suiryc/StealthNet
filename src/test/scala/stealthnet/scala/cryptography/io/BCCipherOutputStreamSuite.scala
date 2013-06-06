@@ -33,7 +33,7 @@ class BCCipherOutputStreamSuite extends FunSuite {
     assert(a === encrypted)
   }
 
-  test("write(byte) produces same output than write(bytes)") {
+  test("write(byte) produces same result than write(bytes)") {
     val params = RijndaelParameters()
     val encrypter = Ciphers.rijndaelEncrypter(params)
     val baos1 = new ByteArrayOutputStream()
