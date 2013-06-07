@@ -32,6 +32,11 @@ object BitSize {
  */
 object ProtocolStream {
 
+  /* Constants about Long values.
+   * Mainly used to prevent warnings about magic numbers. */
+  final private val LONG_BITSIZE = 64
+  final private val LONG_BITMASK = -1L
+
   /**
    * Converts an integer to its corresponding byte array.
    *
@@ -40,7 +45,7 @@ object ProtocolStream {
    * @return corresponding byte array
    */
   def convertInteger(value: Long, bitSize: Int): Array[Byte] = {
-    if (value > (-1L >>> (64 - bitSize)))
+    if (value > (LONG_BITMASK >>> (LONG_BITSIZE - bitSize)))
       throw new IllegalArgumentException(s"Number value[$value] exceeds capacity")
 
     if (bitSize == 8)

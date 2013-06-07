@@ -10,6 +10,7 @@ import org.scalatest.junit.JUnitRunner
 
 import stealthnet.scala.Constants
 
+// scalastyle:off magic.number
 @RunWith(classOf[JUnitRunner])
 class CiphersSuite extends FunSuite {
 
@@ -48,7 +49,8 @@ class CiphersSuite extends FunSuite {
       } catch {
         case e: Throwable =>
           throw new Error(
-            s"Failed to create Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize] keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] encrypter",
+            s"Failed to create Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize]" +
+            " keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] encrypter",
             e
           )
       }
@@ -57,7 +59,8 @@ class CiphersSuite extends FunSuite {
       } catch {
         case e: Throwable =>
           throw new Error(
-            s"Failed to create Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize] keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] decrypter",
+            s"Failed to create Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize]" +
+            " keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] decrypter",
             e
           )
       }
@@ -81,14 +84,16 @@ class CiphersSuite extends FunSuite {
       } catch {
         case e: Throwable =>
           throw new Error(
-            s"Failed to process data with Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize] keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] encrypter",
+            s"Failed to process data with Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize]" +
+            " keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] encrypter",
             e
           )
       }
 
       /* Note: for Array, '===' compares the content, while '=='/'!=' compares object reference */
       assert((encrypted:WrappedArray[Byte]) != (input:WrappedArray[Byte]),
-        s"Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize] keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] encrypted data equals unencrypted data"
+        s"Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize] keySize[$keySize]" +
+        " cipherMode[$cipherMode] paddingMode[$paddingMode] encrypted data equals unencrypted data"
       )
 
       /* test decryption */
@@ -101,13 +106,15 @@ class CiphersSuite extends FunSuite {
       } catch {
         case e: Throwable =>
           throw new Error(
-            s"Failed to process data with Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize] keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] decrypter",
+            s"Failed to process data with Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize]" +
+            " keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] decrypter",
             e
           )
       }
 
       assert(decrypted.take(decryptedLength) === actualInput,
-        s"Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize] keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] decrypted data does not equal initial data"
+        s"Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize] keySize[$keySize]" +
+        " cipherMode[$cipherMode] paddingMode[$paddingMode] decrypted data does not equal initial data"
       )
     }
   }
@@ -156,3 +163,4 @@ class CiphersSuite extends FunSuite {
   }
 
 }
+// scalastyle:on magic.number
