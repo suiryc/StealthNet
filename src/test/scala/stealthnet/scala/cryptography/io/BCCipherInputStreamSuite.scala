@@ -8,6 +8,7 @@ import org.scalatest.junit.JUnitRunner
 
 import stealthnet.scala.cryptography.{Ciphers, RijndaelParameters}
 
+// scalastyle:off magic.number
 @RunWith(classOf[JUnitRunner])
 class BCCipherInputStreamSuite extends FunSuite {
 
@@ -84,3 +85,4 @@ class BCCipherInputStreamSuite extends FunSuite {
   }
 
 }
+// scalastyle:on magic.number

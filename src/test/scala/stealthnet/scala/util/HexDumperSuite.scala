@@ -4,6 +4,7 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
+// scalastyle:off magic.number
 @RunWith(classOf[JUnitRunner])
 class HexDumperSuite extends FunSuite {
 
@@ -63,3 +64,4 @@ class HexDumperSuite extends FunSuite {
   }
 
 }
+// scalastyle:on magic.number
