@@ -23,7 +23,7 @@ object WebCachesManager {
    *  - use akka logging ?
    *  - refactor classes ?
    */
-  implicit val timeout = Timeout(36500.days)
+  implicit val timeout = Timeout(1.hour)
 
   /** Actor message: refresh WebCaches. */
   protected case object Refresh
@@ -217,9 +217,7 @@ object WebCachesManager {
 
   }
 
-  val actor = ActorDSL.actor(Core.actorSystem.system, "WebCachesManager")(
-    new WebCachesManagerActor
-  )
+  val actor = Core.actorSystem.system.actorOf(Props[WebCachesManagerActor], "WebCachesManager")
   Core.actorSystem.watch(actor)
 
   /** Refreshes WebCaches. */

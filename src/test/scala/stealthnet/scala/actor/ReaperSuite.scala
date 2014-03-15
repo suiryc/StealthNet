@@ -1,7 +1,7 @@
 package stealthnet.scala.actor
 
 import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import org.scalatest.{BeforeAndAfterAll, FunSuiteLike}
 import org.scalatest.junit.JUnitRunner
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
@@ -10,7 +10,7 @@ import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 class ReaperSuite
   extends TestKit(ActorSystem("ReaperSpec"))
   with ImplicitSender
-  with FunSuite
+  with FunSuiteLike
   with BeforeAndAfterAll
 {
   import Reaper._

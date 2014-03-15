@@ -1,15 +1,17 @@
 package stealthnet.scala.network
 
-import java.net.InetSocketAddress
-import java.util.concurrent.Executors
-import org.jboss.netty.bootstrap.ServerBootstrap
-import org.jboss.netty.channel.{Channel, ChannelFactory}
-import org.jboss.netty.channel.group.{
+import io.netty.bootstrap.ServerBootstrap
+import io.netty.channel.{Channel, EventLoopGroup}
+import io.netty.channel.group.{
   ChannelGroup,
   ChannelGroupFuture,
   DefaultChannelGroup
 }
-import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
+import io.netty.channel.nio.NioEventLoopGroup
+import io.netty.channel.socket.nio.NioServerSocketChannel
+import io.netty.util.concurrent.GlobalEventExecutor
+import java.net.InetSocketAddress
+import java.util.concurrent.Executors
 import stealthnet.scala.Settings
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.connection.StealthNetConnectionParameters
@@ -23,12 +25,12 @@ import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 object StealthNetServer extends Logging with EmptyLoggingContext {
 
   /** Channel group. */
-  val group: ChannelGroup = new DefaultChannelGroup("StealthNet server")
-  /** Channel factory. */
-  val factory: ChannelFactory = new NioServerSocketChannelFactory(
-    Executors.newCachedThreadPool(),
-    Executors.newCachedThreadPool()
-  )
+  val group: ChannelGroup = new DefaultChannelGroup("StealthNet server",
+    GlobalEventExecutor.INSTANCE)
+  /** Boss EventLoopGroup. */
+  val bossGroup: EventLoopGroup = new NioEventLoopGroup()
+  /** Worker EventLoopGroup. */
+  val workerGroup: EventLoopGroup = new NioEventLoopGroup()
 
   /**
    * Starts server.
@@ -38,12 +40,15 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
   def start() {
     logger debug "Starting"
 
-    val bootstrap: ServerBootstrap = new ServerBootstrap(factory)
+    val bootstrap: ServerBootstrap = new ServerBootstrap()
 
-    bootstrap.setPipelineFactory(StealthNetPipelineFactory(
+    bootstrap.group(bossGroup, workerGroup)
+    bootstrap.channel(classOf[NioServerSocketChannel])
+
+    bootstrap.childHandler(StealthNetChannelInitializer(
       new StealthNetConnectionParameters(group = Some(group))))
 
-    val channel: Channel = bootstrap.bind(new InetSocketAddress(Settings.core.serverPort))
+    val channel: Channel = bootstrap.bind(Settings.core.serverPort).sync().channel()
     group.add(channel)
   }
 
@@ -55,8 +60,8 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
   def stop() {
     logger debug "Stopping"
 
-    factory.releaseExternalResources()
-    StealthNetPipelineFactory.releaseExternalResources()
+    bossGroup.shutdownGracefully().awaitUninterruptibly()
+    workerGroup.shutdownGracefully().awaitUninterruptibly()
 
     logger debug "Stopped"
   }
@@ -67,12 +72,12 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
    * Closes channel group.
    */
   def closeConnections() {
-    logger debug "Closing connections"
+    logger debug s"Closing connections in $group"
 
-    val future: ChannelGroupFuture = group.close()
-    future.awaitUninterruptibly()
-
-    logger debug "Closed connections"
+    /* Note: we *MUST NOT* await since this would block the caller thread which
+     * is also needed when channel closing event is fired.
+     */
+    group.close()
   }
 
 }

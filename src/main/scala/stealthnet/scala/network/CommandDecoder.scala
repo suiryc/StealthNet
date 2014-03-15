@@ -1,9 +1,9 @@
 package stealthnet.scala.network
 
+import io.netty.buffer.{ByteBuf, ByteBufInputStream}
+import io.netty.channel.{Channel, ChannelHandlerContext}
+import io.netty.handler.codec.ReplayingDecoder
 import java.io.EOFException
-import org.jboss.netty.buffer.{ChannelBuffer, ChannelBufferInputStream}
-import org.jboss.netty.channel.{Channel, ChannelHandlerContext}
-import org.jboss.netty.handler.codec.replay.{ReplayingDecoder, VoidEnum}
 import stealthnet.scala.Settings
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.connection.{
@@ -20,7 +20,7 @@ import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
  * Upstream command decoder.
  */
 class CommandDecoder
-  extends ReplayingDecoder[VoidEnum]
+  extends ReplayingDecoder[Void]
   with Logging
   with EmptyLoggingContext
 {
@@ -33,43 +33,43 @@ class CommandDecoder
    * [[stealthnet.scala.network.protocol.commands.Command]].
    */
   // scalastyle:off method.length null
-  override protected def decode(ctx: ChannelHandlerContext, channel: Channel,
-    buf: ChannelBuffer, state_unused: VoidEnum): Object =
+  override protected def decode(ctx: ChannelHandlerContext, buf: ByteBuf, out: java.util.List[Object]): Unit =
   {
-    val cnx = StealthNetConnectionsManager.connection(channel)
+    val cnx = StealthNetConnectionsManager.connection(ctx.channel)
     if (cnx.closing || Core.stopping) {
       /* drop data */
       buf.skipBytes(buf.readableBytes)
       checkpoint()
-      return null
+      return
     }
 
-    var encryptedDuplicate: Option[ChannelBuffer] = None
+    var encryptedDuplicate: Option[ByteBuf] = None
     try {
       val length = if (Settings.core.debugIOData)
-          builder.readHeader(cnx, new DebugInputStream(new ChannelBufferInputStream(buf), cnx.loggerContext ++ List("step" -> "header")))
+          builder.readHeader(cnx, new DebugInputStream(new ByteBufInputStream(buf), cnx.loggerContext ++ List("step" -> "header")))
         else
-          builder.readHeader(cnx, new ChannelBufferInputStream(buf))
+          builder.readHeader(cnx, new ByteBufInputStream(buf))
 
       /* Note: checkpoint since we could read data and advance one step */
       checkpoint()
       if (length < 0)
-        return null
+        return
 
       val encrypted = buf.readBytes(length)
       encryptedDuplicate = Some(encrypted.duplicate())
       val command = if (Settings.core.debugIOData)
-          builder.readCommand(cnx, new DebugInputStream(new ChannelBufferInputStream(encrypted), cnx.loggerContext ++ List("step" -> "encrypted")))
+          builder.readCommand(cnx, new DebugInputStream(new ByteBufInputStream(encrypted), cnx.loggerContext ++ List("step" -> "encrypted")))
         else
-          builder.readCommand(cnx, new ChannelBufferInputStream(encrypted))
+          builder.readCommand(cnx, new ByteBufInputStream(encrypted))
       checkpoint()
 
       if (Settings.core.debugIOCommands && command.isDefined && logger.isTraceEnabled)
         encryptedDuplicate foreach { logData(cnx, false, _) }
 
-      command getOrElse {
+      command.fold {
         encryptedDuplicate foreach { logData(cnx, true, _) }
-        null
+      } { command =>
+        out.add(command)
       }
     }
     catch {
@@ -77,15 +77,13 @@ class CommandDecoder
        * what is thrown by ReplayingDecoder buffer. */
       case e: Exception =>
         checkpoint()
-        /* XXX - special case for EOFException ? */
-        if (!cnx.closing && !Core.stopping) {
+        if (ctx.channel.isActive && !cnx.closing && !Core.stopping) {
           logger error(cnx.loggerContext, "Protocol issue", e)
           /* Note: closing channel is not done right away ... */
           cnx.close()
           encryptedDuplicate foreach { logData(cnx, true, _) }
         }
         /* else: nothing to say here */
-        null
     }
   }
   // scalastyle:on method.length null
@@ -102,7 +100,7 @@ class CommandDecoder
    * @todo Find way to manage both TRACE and ERROR log level ?
    */
   private def logData(cnx: StealthNetConnection, issue: Boolean,
-    buf: ChannelBuffer)
+    buf: ByteBuf)
   {
     try {
       val decrypted = builder.decryptData(cnx, buf.array, buf.readerIndex, buf.readableBytes)

@@ -1,19 +1,13 @@
 package stealthnet.scala.network
 
-import org.jboss.netty.channel.{
-  ChannelHandlerContext,
-  ChannelStateEvent,
-  SimpleChannelHandler
-}
-import org.jboss.netty.channel.ChannelEvent
-import org.jboss.netty.channel.ChannelState
+import io.netty.channel.{ChannelDuplexHandler, ChannelHandlerContext}
 import stealthnet.scala.network.connection.{
   StealthNetConnectionParameters,
   StealthNetConnectionsManager
 }
 
 /**
- * Upstream/downstream parameters handler.
+ * Inbound/outbound parameters handler.
  *
  * The sole purpose of this handler is to be used first in the handlers list so
  * that it can initialize a [[stealthnet.scala.network.connection.StealthNetConnection]]
@@ -22,7 +16,7 @@ import stealthnet.scala.network.connection.{
  * On server side, the channel is also added to a `ChannelGroup`.
  */
 class ParametersHandler(val parameters: StealthNetConnectionParameters)
-  extends SimpleChannelHandler
+  extends ChannelDuplexHandler
 {
 
   /**
@@ -34,8 +28,8 @@ class ParametersHandler(val parameters: StealthNetConnectionParameters)
    *
    * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`getConnection`
    */
-  override def channelOpen(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
-    val cnx = StealthNetConnectionsManager.connection(e.getChannel)
+  override def channelActive(ctx: ChannelHandlerContext) {
+    val cnx = StealthNetConnectionsManager.connection(ctx.channel)
 
     cnx.group = parameters.group
     cnx.client = parameters.client
@@ -43,7 +37,7 @@ class ParametersHandler(val parameters: StealthNetConnectionParameters)
 
     cnx.group foreach { _.add(cnx.channel) }
 
-    super.channelOpen(ctx, e)
+    super.channelActive(ctx)
   }
 
 }

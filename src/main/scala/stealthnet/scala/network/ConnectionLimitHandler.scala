@@ -1,10 +1,6 @@
 package stealthnet.scala.network
 
-import org.jboss.netty.channel.{
-  ChannelHandlerContext,
-  ChannelStateEvent,
-  SimpleChannelUpstreamHandler
-}
+import io.netty.channel.{ChannelInboundHandlerAdapter, ChannelHandlerContext}
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.connection.{
   StealthNetConnection,
@@ -17,7 +13,7 @@ import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
  * Upstream connection limiter.
  */
 class ConnectionLimitHandler
-  extends SimpleChannelUpstreamHandler
+  extends ChannelInboundHandlerAdapter
   with Logging
   with EmptyLoggingContext
 {
@@ -38,8 +34,8 @@ class ConnectionLimitHandler
    *   So we just wait for the channel to be connected to cleanly close it.
    * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`addConnection`
    */
-  override def channelConnected(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
-    val cnx = StealthNetConnectionsManager.connection(e.getChannel)
+  override def channelActive(ctx: ChannelHandlerContext) {
+    val cnx = StealthNetConnectionsManager.connection(ctx.channel)
 
     if (!StealthNetConnectionsManager.addConnection(cnx)) {
       cnx.close()
@@ -50,7 +46,7 @@ class ConnectionLimitHandler
     if (!cnx.isClient)
       cnx.channel.write(new RSAParametersServerCommand())
 
-    super.channelConnected(ctx, e)
+    super.channelActive(ctx)
   }
 
   /**
@@ -61,27 +57,18 @@ class ConnectionLimitHandler
    *
    * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`closedConnection`
    */
-  override def channelClosed(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
-    /* Cleanup the connection */
-    StealthNetConnectionsManager.closedChannel(e.getChannel)
-    super.channelClosed(ctx, e)
-  }
-
-  /**
-   * Handles channel disconnection event.
-   *
-   * Simply logs disconnection.
-   */
-  override def channelDisconnected(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
-    val cnx = StealthNetConnectionsManager.getConnection(e.getChannel)
-    val loggerContext = StealthNetConnection.loggerContext(cnx, e.getChannel)
+  override def channelInactive(ctx: ChannelHandlerContext) {
+    val cnx = StealthNetConnectionsManager.getConnection(ctx.channel)
+    val loggerContext = StealthNetConnection.loggerContext(cnx, ctx.channel)
 
     if (cnx map(cnx => !cnx.closing && !Core.stopping && (cnx.isClient || cnx.accepted)) getOrElse(false))
       logger debug(loggerContext, "Remote host disconnected")
     else
       logger debug(loggerContext, "Disconnected")
 
-    super.channelDisconnected(ctx, e)
+    /* Cleanup the connection */
+    StealthNetConnectionsManager.closedChannel(ctx.channel)
+    super.channelInactive(ctx)
   }
 
 }

@@ -15,7 +15,7 @@ object System
   val system = ActorSystem("StealthNet")
 
   /** Our reaper. */
-  private val reaper = system.actorOf(Props(new ProductionReaper), "Reaper")
+  private val reaper = system.actorOf(Props[ProductionReaper], "Reaper")
 
   /** Let the reaper watch over a new actor. */
   def watch(actor: ActorRef) {

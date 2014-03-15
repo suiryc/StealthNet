@@ -1,13 +1,14 @@
 package stealthnet.scala.network.connection
 
-import java.net.InetSocketAddress
 import akka.actor._
 import akka.pattern.ask
 import akka.util.Timeout
+import io.netty.channel.Channel
+import io.netty.util.AttributeKey
+import java.net.InetSocketAddress
 import scala.concurrent._
 import scala.concurrent.duration._
 import scala.collection.mutable
-import org.jboss.netty.channel.{Channel, ChannelLocal}
 import stealthnet.scala.{Constants, Settings}
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.{WebCachesManager, StealthNetServer}
@@ -57,7 +58,7 @@ object StealthNetConnectionsManager {
    *  - use akka logging ?
    *  - refactor classes ?
    */
-  implicit val timeout = Timeout(36500.days)
+  implicit val timeout = Timeout(1.hour)
 
   /**
    * Actor message: register a connection listener.
@@ -146,8 +147,8 @@ object StealthNetConnectionsManager {
     private val peers = mutable.Set[Peer]()
 
     /** Channel/connection association. */
-    private val local: ChannelLocal[StealthNetConnection] =
-      new ChannelLocal(false)
+    private val STEALTHNET_CONNECTION: AttributeKey[StealthNetConnection] =
+      AttributeKey.valueOf("StealthNet.connection");
 
     /** Listeners. */
     private var listeners = List.empty[ActorRef]
@@ -294,7 +295,7 @@ object StealthNetConnectionsManager {
      * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`add(Peer)`
      */
     protected def add(cnx: StealthNetConnection): Boolean = {
-      val remoteAddress = cnx.channel.getRemoteAddress
+      val remoteAddress = cnx.channel.remoteAddress
 
       cnx.accepted = remoteAddress match {
         case socketAddress: InetSocketAddress =>
@@ -337,17 +338,16 @@ object StealthNetConnectionsManager {
      *   [[stealthnet.scala.network.connection.StealthNetConnection]], or `None`
      *   if none
      */
-    protected def get(channel: Channel, create: Boolean): Option[StealthNetConnection] =
-      Option(local.get(channel)) orElse {
-        if (create) {
+    protected def get(channel: Channel, create: Boolean): Option[StealthNetConnection] = {
+      val attr = channel.attr[StealthNetConnection](STEALTHNET_CONNECTION)
+      if (create) {
+        attr.setIfAbsent {
           /* initialize the connection object */
-          val cnx = new StealthNetConnection(channel)
-          local.set(channel, cnx)
-          Some(cnx)
+          new StealthNetConnection(channel)
         }
-        else
-          None
       }
+      Option(attr.get)
+    }
 
     /**
      * Indicates the given channel was closed.
@@ -361,7 +361,7 @@ object StealthNetConnectionsManager {
      * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`remove`
      */
     protected def closed(channel: Channel): Option[StealthNetConnection] = {
-      val cnx = Option(local.remove(channel))
+      val cnx = Option(channel.attr[StealthNetConnection](STEALTHNET_CONNECTION).getAndRemove())
 
       logger debug(StealthNetConnection.loggerContext(cnx, channel), "Channel closed")
 
@@ -428,9 +428,7 @@ object StealthNetConnectionsManager {
 
   }
 
-  val actor = ActorDSL.actor(Core.actorSystem.system, "StealthNetConnectionsManager")(
-    new StealthNetConnectionsManagerActor
-  )
+  val actor = Core.actorSystem.system.actorOf(Props[StealthNetConnectionsManagerActor], "StealthNetConnectionsManager")
   Core.actorSystem.watch(actor)
 
   /**

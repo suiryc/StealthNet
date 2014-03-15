@@ -1,7 +1,7 @@
 package stealthnet.scala.network.connection
 
+import io.netty.channel.Channel
 import java.util.Date
-import org.jboss.netty.channel.Channel
 
 /**  ''StealthNet'' connection companion object. */
 object StealthNetConnection {
@@ -12,7 +12,7 @@ object StealthNetConnection {
     if (ctx.find(_._1 == "peer").isDefined)
       ctx
     else
-      ctx ::: List("remote" -> channel.getRemoteAddress)
+      ctx ::: List("remote" -> channel.remoteAddress)
   }
 
 }

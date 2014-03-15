@@ -1,10 +1,10 @@
 package stealthnet.scala.network
 
+import io.netty.bootstrap.{Bootstrap, ChannelFactory}
+import io.netty.channel.{Channel, ChannelOption, EventLoopGroup}
+import io.netty.channel.nio.NioEventLoopGroup
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
-import org.jboss.netty.bootstrap.ClientBootstrap
-import org.jboss.netty.channel.{Channel, ChannelFactory}
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory
 import stealthnet.scala.Settings
 import stealthnet.scala.network.connection.{
   StealthNetConnectionParameters,
@@ -20,17 +20,15 @@ import stealthnet.scala.util.log.Logging
  */
 object StealthNetClient {
 
-  /** Channel factory. */
-  private val factory: ChannelFactory = new NioClientSocketChannelFactory(
-    Executors.newCachedThreadPool(),
-    Executors.newCachedThreadPool()
-  )
+  /** Worker EventLoopGroup. */
+  private val workerGroup: EventLoopGroup = new NioEventLoopGroup()
 
   /**
    * Cleans shared resources.
+   * @todo Caller may need to wait for returned future completion ?
    */
   def stop() =
-    factory.releaseExternalResources()
+    workerGroup.shutdownGracefully().awaitUninterruptibly()
 
 }
 
@@ -75,10 +73,10 @@ class StealthNetClient(
     if (!allowed)
       return false
 
-    val bootstrap: ClientBootstrap = new ClientBootstrap(factory)
+    val bootstrap: Bootstrap = new Bootstrap()
 
     /* Add the channel to the (server) group: will be closed with server. */
-    bootstrap.setPipelineFactory(StealthNetPipelineFactory(
+    bootstrap.handler(StealthNetChannelInitializer(
       new StealthNetConnectionParameters(
         group = Some(StealthNetServer.group),
         client = Some(this),
@@ -86,16 +84,17 @@ class StealthNetClient(
       )
     ))
 
-    bootstrap.setOption("connectTimeoutMillis", Settings.core.connectTimeout)
+    bootstrap.option[Integer](ChannelOption.CONNECT_TIMEOUT_MILLIS, Settings.core.connectTimeout.toInt)
 
+    /* XXX - do not block, but add listener and queue write requests until channel is set ? (what if caller needs to react on connection failure ?) */
     val future = bootstrap.connect(new InetSocketAddress(peer.host, peer.port))
     future.awaitUninterruptibly()
     if (!future.isSuccess) {
-      logger debug("Failed to connect", future.getCause)
+      logger debug("Failed to connect", future.cause)
       false
     }
     else {
-      channel = Some(future.getChannel)
+      channel = Some(future.channel)
       true
     }
   }

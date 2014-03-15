@@ -72,9 +72,7 @@ protected object StealthNetClientConnectionsManager {
     }
   }
 
-  val actor = ActorDSL.actor(Core.actorSystem.system, "StealthNetClientConnectionsManager")(
-    new StealthNetClientConnectionsManagerActor
-  )
+  val actor = Core.actorSystem.system.actorOf(Props[StealthNetClientConnectionsManagerActor], "StealthNetClientConnectionsManager")
   Core.actorSystem.watch(actor)
 
   /** Dummy method to start the manager. */

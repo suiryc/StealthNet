@@ -1,7 +1,7 @@
 package stealthnet.scala.network.connection
 
+import io.netty.channel.group.ChannelGroup
 import java.security.interfaces.RSAPublicKey
-import org.jboss.netty.channel.group.ChannelGroup
 import org.bouncycastle.crypto.BufferedBlockCipher
 import stealthnet.scala.cryptography.{Ciphers, RijndaelParameters}
 import stealthnet.scala.network.StealthNetClient
