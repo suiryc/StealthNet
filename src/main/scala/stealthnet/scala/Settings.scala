@@ -1,6 +1,7 @@
 package stealthnet.scala
 
 import com.typesafe.config.{Config, ConfigFactory}
+import java.util.concurrent.TimeUnit
 import scala.collection.JavaConversions._
 
 /** ''StealthNet'' core settings companion object. */
@@ -38,15 +39,15 @@ class Settings(config: Config) extends BaseSettings(config) {
 
   /** Connection timeout (ms). `5s` by default. */
   val connectTimeout: Long =
-    config.getMilliseconds(optionPath("timeout.connection"))
+    config.getDuration(optionPath("timeout.connection"), TimeUnit.MILLISECONDS)
 
   /** Connection read timeout (ms). `30s` by default. */
   val readTimeout: Long =
-    config.getMilliseconds(optionPath("timeout.read"))
+    config.getDuration(optionPath("timeout.read"), TimeUnit.MILLISECONDS)
 
   /** Connection write timeout (ms). `30s` by default. */
   val writeTimeout: Long =
-    config.getMilliseconds(optionPath("timeout.write"))
+    config.getDuration(optionPath("timeout.write"), TimeUnit.MILLISECONDS)
 
   /** ''StealthNet'' server port. `6097` by default. */
   val serverPort: Int =
@@ -98,6 +99,6 @@ class Settings(config: Config) extends BaseSettings(config) {
    * Used when peer adding failed on WebCaches.
    */
   val wsWebCacheCheckPeriod: Long =
-    config.getMilliseconds(optionPath("webservice.webcache.check.period"))
+    config.getDuration(optionPath("webservice.webcache.check.period"), TimeUnit.MILLISECONDS)
 
 }
