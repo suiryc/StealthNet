@@ -41,7 +41,7 @@ class StealthNetChannelInitializer(val parameters: StealthNetConnectionParameter
     /* Reminder: inbound is when we are receiving data, outbound when we are
      * sending.
      * Channels listed in the pipeline are processed in given order for an
-     * upstream event, and in reverse order for a downstream event.
+     * inbound event, and in reverse order for an outbound event.
      */
 
     /* inbound/outbound parameters handler */

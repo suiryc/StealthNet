@@ -10,7 +10,7 @@ import stealthnet.scala.network.protocol.commands.RSAParametersServerCommand
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 /**
- * Upstream connection limiter.
+ * Inbound connection limiter.
  */
 class ConnectionLimitHandler
   extends ChannelInboundHandlerAdapter

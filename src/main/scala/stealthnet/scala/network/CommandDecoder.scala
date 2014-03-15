@@ -17,7 +17,7 @@ import stealthnet.scala.util.io.DebugInputStream
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 /**
- * Upstream command decoder.
+ * Inbound command decoder.
  */
 class CommandDecoder
   extends ReplayingDecoder[Void]

@@ -20,7 +20,7 @@ import stealthnet.scala.network.protocol.commands.Command
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 /**
- * Upstream/downstream command handler.
+ * Inbound/outbound command handler.
  *
  * Handles received/to send commands.
  */
@@ -48,7 +48,7 @@ class CommandHandler
   /**
    * Handles [[stealthnet.scala.network.protocol.commands.Command]] to send.
    *
-   * Writes the command into a new channel buffer propagated downstream.
+   * Writes the command into a new channel buffer propagated outbound.
    *
    * @see [[stealthnet.scala.network.protocol.commands.Command]].`write`
    * @todo queue messages (up to limit) until connection is established, then
