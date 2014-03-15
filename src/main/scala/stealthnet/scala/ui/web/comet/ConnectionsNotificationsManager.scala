@@ -153,7 +153,7 @@ object ConnectionsNotificationsManager {
         /* Note: comparison on cnx or cnx.channel reference should work, but
          * comparing the channel id shall be more future-proof.
          */
-        val (left, right) = connections partition { _.cnx.channel.getId == cnx.channel.getId }
+        val (left, right) = connections partition { _.cnx.channel eq cnx.channel }
         connections = right
         left foreach { cnxInfo =>
           actors foreach { _._2 ! ConnectionsNotifications.ClosedConnection(cnxInfo) }
@@ -167,9 +167,7 @@ object ConnectionsNotificationsManager {
 
   }
 
-  val actor = ActorDSL.actor(Core.actorSystem.system, "UI-ConnectionsNotificationsManager")(
-    new ConnectionsNotificationsManagerActor
-  )
+  val actor = Core.actorSystem.system.actorOf(Props[ConnectionsNotificationsManagerActor], "UI-ConnectionsNotificationsManager")
   Core.actorSystem.watch(actor)
 
   def stop() = actor ! Stop
@@ -178,9 +176,7 @@ object ConnectionsNotificationsManager {
   def start() { }
 
   def register(session: ServerSession) {
-    ActorDSL.actor(Core.actorSystem.system)(
-      new ConnectionsNotificationsManager(session)
-    )
+    Core.actorSystem.system.actorOf(Props(new ConnectionsNotificationsManager(session)))
   }
 
   def unregister(session: ServerSession) {

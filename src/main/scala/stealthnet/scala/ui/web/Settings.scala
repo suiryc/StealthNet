@@ -1,6 +1,7 @@
 package stealthnet.scala.ui.web
 
 import com.typesafe.config.{Config, ConfigFactory}
+import java.util.concurrent.TimeUnit
 import stealthnet.scala.{BaseSettings, Settings => coreSettings}
 
 /** ''StealthNet'' web UI settings companion object. */
@@ -24,6 +25,6 @@ class Settings(config: Config) extends BaseSettings(config) {
 
   /** Shutdown grace period (ms). `2s` by default. */
   val shutdownGracePeriod: Long =
-    config.getMilliseconds(optionPath("server.shutdown.grace.period"))
+    config.getDuration(optionPath("server.shutdown.grace.period"), TimeUnit.MILLISECONDS)
 
 }

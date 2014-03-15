@@ -29,7 +29,7 @@ object SessionManager {
    *  - use akka logging ?
    *  - refactor classes ?
    */
-  implicit val timeout = Timeout(36500.days)
+  implicit val timeout = Timeout(1.hour)
 
   private val sessions = mutable.Map[String, HttpSession]()
 
@@ -55,9 +55,7 @@ object SessionManager {
     }
   }
 
-  private val actor = ActorDSL.actor(Core.actorSystem.system, "UI-SessionManager")(
-    new SessionManagerActor
-  )
+  private val actor = Core.actorSystem.system.actorOf(Props[SessionManagerActor], "UI-SessionManager")
   Core.actorSystem.watch(actor)
 
   def addSession(session: HttpSession) = actor ! AddSession(session)

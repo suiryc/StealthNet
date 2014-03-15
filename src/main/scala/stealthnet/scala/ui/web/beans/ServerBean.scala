@@ -24,9 +24,7 @@ object ServerBean {
     }
   }
 
-  private val actor = ActorDSL.actor(Core.actorSystem.system, "UI-ServerBean")(
-    new ServerBeanActor
-  )
+  private val actor = Core.actorSystem.system.actorOf(Props[ServerBeanActor], "UI-ServerBean")
   Core.actorSystem.watch(actor)
 
 }
