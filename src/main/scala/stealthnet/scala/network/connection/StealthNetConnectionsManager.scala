@@ -117,6 +117,13 @@ object StealthNetConnectionsManager {
    */
   protected case class GetConnection(channel: Channel, create: Boolean = true)
   /**
+   * Actor message: remove remote peer.
+   *
+   * This message is expected to be used as a client-side operation upon
+   * connection failure.
+   */
+  protected case class RemovePeer(peer: Peer)
+  /**
    * Actor message: connection closed.
    *
    * The manager will reply with an option value containing the
@@ -222,6 +229,9 @@ object StealthNetConnectionsManager {
 
       case GetConnection(channel, create) =>
         sender ! get(channel, create)
+
+      case RemovePeer(peer) =>
+        remove(peer)
 
       case ClosedChannel(channel) =>
         sender ! closed(channel)
@@ -390,6 +400,8 @@ object StealthNetConnectionsManager {
 
       if (peers.remove(peer))
         logger trace s"Removed peer[$peer]"
+      else
+        logger debug s"Peer[$peer] was unknown"
 
       if (!stopping)
         checkConnectionsLimit()
@@ -475,6 +487,14 @@ object StealthNetConnectionsManager {
   def addPeer(peer: Peer): Boolean =
     Await.result(actor ? AddPeer(peer),
       Duration.Inf).asInstanceOf[Boolean]
+
+  /**
+   * Removes given peer.
+   *
+   * @param peer the peer to remove
+   */
+  def removePeer(peer: Peer) =
+    actor ! RemovePeer(peer)
 
   /**
    * Indicates the given channel was closed.

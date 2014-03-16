@@ -19,7 +19,6 @@ object System
 
   /** Let the reaper watch over a new actor. */
   def watch(actor: ActorRef) {
-    logger debug s"Watching $actor"
     reaper ! Reaper.WatchMe(actor)
   }
 
