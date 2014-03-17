@@ -5,6 +5,7 @@ import io.netty.util.concurrent.GenericFutureListener
 import scala.concurrent.{Future, Promise}
 import scala.util.{Failure, Success}
 import scala.concurrent.Future
+import scala.language.implicitConversions
 
 /** Helper to convert netty Future to scala one. */
 object NettyFuture {
