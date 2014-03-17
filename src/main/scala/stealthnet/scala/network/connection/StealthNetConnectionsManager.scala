@@ -187,7 +187,7 @@ object StealthNetConnectionsManager {
         sender ! add(cnx)
 
       case RemovePeer(peer) =>
-        remove(peer)
+        remove(peer, true)
 
       case ClosedChannel(channel) =>
         closed(channel)
@@ -302,7 +302,7 @@ object StealthNetConnectionsManager {
       logger debug(StealthNetConnection.loggerContext(cnx, channel), "Channel closed")
 
       cnx foreach { cnx =>
-        cnx.peer foreach { remove(_) }
+        cnx.peer foreach { remove(_, cnx.accepted) }
         listeners foreach { _ ! ConnectionListener.ClosedConnection(cnx) }
       }
     }
@@ -315,16 +315,17 @@ object StealthNetConnectionsManager {
      * stop the manager.
      *
      * @param peer the peer to remove
+     * @param accepted whether peer had been accepted
      * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`checkConnectionsLimit`
      */
-    protected def remove(peer: Peer) {
+    protected def remove(peer: Peer, accepted: Boolean) {
       // scalastyle:off null
       assert(peer != null)
       // scalastyle:on null
 
       if (peers.remove(peer))
         logger trace s"Removed peer[$peer]"
-      else
+      else if (accepted)
         logger debug s"Peer[$peer] was unknown"
 
       if (!stopping)
