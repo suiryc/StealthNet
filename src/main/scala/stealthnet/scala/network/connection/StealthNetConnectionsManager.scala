@@ -7,7 +7,6 @@ import io.netty.channel.Channel
 import io.netty.util.AttributeKey
 import java.net.InetSocketAddress
 import scala.concurrent._
-import scala.concurrent.duration._
 import scala.collection.mutable
 import stealthnet.scala.{Constants, Settings}
 import stealthnet.scala.core.Core
@@ -50,11 +49,7 @@ import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
  */
 object StealthNetConnectionsManager {
 
-  /* XXX: migrate to akka
-   *  - use akka logging ?
-   *  - refactor classes ?
-   */
-  implicit private val timeout = Timeout(1.hour)
+  /* XXX: use akka logging ? */
 
   /** Channel/connection association. */
   private val STEALTHNET_CONNECTION: AttributeKey[StealthNetConnection] =

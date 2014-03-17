@@ -4,7 +4,6 @@ import akka.actor._
 import akka.pattern.ask
 import akka.util.Timeout
 import scala.concurrent._
-import scala.concurrent.duration._
 import stealthnet.scala.Settings
 import stealthnet.scala.core.Core
 import stealthnet.scala.util.Peer
@@ -21,11 +20,7 @@ import stealthnet.scala.webservices.{UpdateClient, WebCacheClient}
  */
 object WebCachesManager {
 
-  /* XXX: migrate to akka
-   *  - use akka logging ?
-   *  - refactor classes ?
-   */
-  implicit private val timeout = Timeout(1.hour)
+  /* XXX: use akka logging ? */
 
   /** Actor message: refresh WebCaches. */
   case object Refresh

@@ -3,7 +3,6 @@ package stealthnet.scala.util.netty
 import akka.util.Timeout
 import io.netty.channel.ChannelHandlerContext
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration._
 import scala.reflect.ClassTag
 import scala.util.Try
 
@@ -14,8 +13,6 @@ import scala.util.Try
  * executor.
  */
 object NettyDeferrer {
-
-  implicit private val timeout = Timeout(1.hour)
 
   def defer[T](ctx: ChannelHandlerContext, future: Future[T])(onComplete: Try[T] => Unit) {
     future.onComplete(onComplete)(ExecutionContext.fromExecutorService(ctx.executor()))
