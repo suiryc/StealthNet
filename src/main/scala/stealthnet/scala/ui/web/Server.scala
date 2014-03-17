@@ -2,6 +2,7 @@ package stealthnet.scala.ui.web
 
 import org.eclipse.jetty.server.{Server => jettyServer}
 import org.eclipse.jetty.webapp.WebAppContext
+import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.connection.StealthNetConnectionsManager
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
@@ -26,8 +27,9 @@ object Server extends Logging with EmptyLoggingContext {
     val server = new jettyServer(Settings.ui.webServerPort)
     this.server = Some(server)
 
-    /* XXX - replaced by setStopTimeout(long) in Jetty 9 ? */
-    server.setGracefulShutdown(Settings.ui.shutdownGracePeriod.intValue)
+    /* setGracefulShutdown in Jetty 8 replaced by setStopTimeout(long) in Jetty 9 */
+    //server.setGracefulShutdown(Settings.ui.shutdownGracePeriod.intValue)
+    server.setStopTimeout(Settings.ui.shutdownGracePeriod)
     server.setStopAtShutdown(true)
 
     val context = new WebAppContext()
@@ -37,6 +39,12 @@ object Server extends Logging with EmptyLoggingContext {
     context.setParentLoaderPriority(true)
 
     server.setHandler(context)
+
+    /* Initialize the JSR-356 layer in Jetty 9.
+     * Needs to be done before starting, otherwise service fails to start due to
+     * NullPointerException during initialization (WebSocketTransport).
+     */
+    WebSocketServerContainerInitializer.configureContext(context)
 
     server.start()
 

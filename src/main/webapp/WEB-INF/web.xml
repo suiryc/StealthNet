@@ -32,13 +32,22 @@
   <!-- CometD servlet -->
   <servlet>
     <servlet-name>cometd</servlet-name>
-    <servlet-class>org.cometd.server.CometdServlet</servlet-class>
-    <!-- http://docs.cometd.org/reference/#java_server_configuration -->
+    <!-- CometdServlet in CometD 2.x renamed to CometDServlet in CometD 3.x -->
+    <servlet-class>org.cometd.server.CometDServlet</servlet-class>
+    <!-- http://docs.cometd.org/reference/java_server.html#java_server_configuration -->
     <async-supported>true</async-supported>
-    <!-- http://docs.cometd.org/reference/#java_server_transports -->
+    <!-- http://docs.cometd.org/reference/java_server.html#java_server_transports -->
     <init-param>
       <param-name>transports</param-name>
+      <!-- Comet 3.x offers both 'javax' (JSR 356) and 'Jetty' transport; provided by separate projects -->
+      <!-- JSR 356 version retains generic name WebSocketTransport from CometD 2.x -->
+      <!-- Jetty version is named JettyWebSocketTransport -->
       <param-value>org.cometd.websocket.server.WebSocketTransport</param-value>
+    </init-param>
+    <!-- WS URL mapping parameter needed in CometD 3.x -->
+    <init-param>
+      <param-name>ws.cometdURLMapping</param-name>
+      <param-value>/cometd/*</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>

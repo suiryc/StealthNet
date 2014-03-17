@@ -28,14 +28,15 @@
     <!-- com.typesafe/config -->
     <config.version>1.2.0</config.version>
     <!-- org.eclipse.jetty/jetty-server -->
-    <!-- Note: Jetty 9 does not work with CometD 2.x; needs to-be CometD 3.0 -->
-    <jetty.version>8.1.14.v20131031</jetty.version>
+    <jetty.version>9.1.3.v20140225</jetty.version>
+    <!-- org.eclipse.jetty.toolchain/jetty-jsp-jdt -->
+    <jetty-jsp-jdt.version>2.3.3</jetty-jsp-jdt.version>
     <!-- com.sun.faces/jsf-api -->
     <mojara.version>2.2.6</mojara.version>
     <!-- org.primefaces/primefaces -->
     <primefaces.version>4.0</primefaces.version>
     <!-- org.cometd.java/bayeux-api -->
-    <cometd.version>2.8.0</cometd.version>
+    <cometd.version>3.0.0.beta2</cometd.version>
     <stealthnet-core.version>0.1.0</stealthnet-core.version>
 
     <!-- Plugins versions -->
@@ -119,35 +120,41 @@
       <artifactId>jetty-jsp</artifactId>
       <version>${jetty.version}</version>
     </dependency>
-    <!-- Useful for CometD WebSocket support (which otherwise rely on earlier versions). -->
-    <!-- jetty-websocket replaced by org.eclipse.jetty.websocket/websocket-server in Jetty 9 ? -->
+    <!-- JSP compiler necessary with Jetty 9; previously provided by org.apache.jasper.glassfish through jetty-jsp -->
     <dependency>
+      <groupId>org.eclipse.jetty.toolchain</groupId>
+      <artifactId>jetty-jsp-jdt</artifactId>
+      <version>${jetty-jsp-jdt.version}</version>
+    </dependency>
+    <!-- Useful for CometD support (which otherwise relies on earlier versions). -->
+    <!-- org.eclipse.jetty/jetty-websocket in Jetty 8 moved to org.eclipse.jetty.websocket/websocket-server in Jetty 9 -->
+    <!-- <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-websocket</artifactId>
       <version>${jetty.version}</version>
-    </dependency>
+    </dependency> -->
+    <!-- Jetty 9 supports JSR 356 -->
     <dependency>
+      <groupId>org.eclipse.jetty.websocket</groupId>
+      <artifactId>javax-websocket-server-impl</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    <!-- <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-client</artifactId>
       <version>${jetty.version}</version>
-    </dependency>
+    </dependency> -->
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-jmx</artifactId>
       <version>${jetty.version}</version>
     </dependency>
-    <!-- jetty-continuation now needs explicit dependency in Jetty 9 ?
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-continuation</artifactId>
-      <version>${jetty.version}</version>
-    </dependency> -->
-    <!-- jetty-util-ajax is separated from jetty-util in Jetty 9, and needs explicit dependency ?
+    <!-- jetty-util-ajax is separated from jetty-util in Jetty 9 -->
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-util-ajax</artifactId>
       <version>${jetty.version}</version>
-    </dependency> -->
+    </dependency>
 
     <!-- JSF -->
     <!-- Mojara implementation (https://javaserverfaces.java.net/download.html) -->
@@ -193,9 +200,11 @@
       <artifactId>cometd-java-server</artifactId>
       <version>${cometd.version}</version>
     </dependency>
+    <!-- cometd-websocket-jetty in CometD 2.x moved to cometd-java-websocket-jetty-server in CometD 3.x -->
+    <!-- cometd-java-websocket-javax-server supports JSR 356 in CometD 3.x -->
     <dependency>
       <groupId>org.cometd.java</groupId>
-      <artifactId>cometd-websocket-jetty</artifactId>
+      <artifactId>cometd-java-websocket-javax-server</artifactId>
       <version>${cometd.version}</version>
     </dependency>
 
