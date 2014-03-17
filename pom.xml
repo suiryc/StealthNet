@@ -29,13 +29,13 @@
     <config.version>1.2.0</config.version>
     <!-- org.eclipse.jetty/jetty-server -->
     <!-- Note: Jetty 9 does not work with CometD 2.x; needs to-be CometD 3.0 -->
-    <jetty.version>8.1.10.v20130312</jetty.version>
+    <jetty.version>8.1.14.v20131031</jetty.version>
     <!-- com.sun.faces/jsf-api -->
-    <mojara.version>2.1.22</mojara.version>
+    <mojara.version>2.2.6</mojara.version>
     <!-- org.primefaces/primefaces -->
-    <primefaces.version>3.5</primefaces.version>
+    <primefaces.version>4.0</primefaces.version>
     <!-- org.cometd.java/bayeux-api -->
-    <cometd.version>2.6.0</cometd.version>
+    <cometd.version>2.8.0</cometd.version>
     <stealthnet-core.version>0.1.0</stealthnet-core.version>
 
     <!-- Plugins versions -->

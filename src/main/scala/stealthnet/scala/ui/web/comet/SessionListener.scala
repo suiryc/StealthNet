@@ -16,10 +16,10 @@ class SessionListener extends HttpSessionListener {
   }
 
   def sessionCreated(event: HttpSessionEvent) =
-    SessionManager.addSession(event.getSession)
+    SessionManager.actor ! SessionManager.AddSession(event.getSession)
 
   def sessionDestroyed(event: HttpSessionEvent) =
-    SessionManager.removeSession(event.getSession)
+    SessionManager.actor ! SessionManager.RemoveSession(event.getSession)
 
 }
 
@@ -29,7 +29,7 @@ object SessionManager {
    *  - use akka logging ?
    *  - refactor classes ?
    */
-  implicit val timeout = Timeout(1.hour)
+  implicit private val timeout = Timeout(1.hour)
 
   private val sessions = mutable.Map[String, HttpSession]()
 
@@ -55,13 +55,10 @@ object SessionManager {
     }
   }
 
-  private val actor = Core.actorSystem.system.actorOf(Props[SessionManagerActor], "UI-SessionManager")
+  val actor = Core.actorSystem.system.actorOf(Props[SessionManagerActor], "UI-SessionManager")
   Core.actorSystem.watch(actor)
 
-  def addSession(session: HttpSession) = actor ! AddSession(session)
-
-  def removeSession(session: HttpSession) = actor ! RemoveSession(session)
-
+  /* XXX - alternative solution without blocking (here) ? */
   def getSession(id: String) =
     Await.result(actor ? GetSession(id), Duration.Inf).asInstanceOf[Option[HttpSession]]
 

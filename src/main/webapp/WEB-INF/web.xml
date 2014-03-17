@@ -12,10 +12,10 @@
   </context-param> -->
   <!-- This option may help resolve weird issues like: -->
   <!--  - ClassCastException: c.s.f.f.c.UIInstructions cannot be cast to o.p.m.m.MenuElement -->
-  <!-- <context-param>
+  <context-param>
     <param-name>javax.faces.FACELETS_SKIP_COMMENTS</param-name>
     <param-value>true</param-value>
-  </context-param> -->
+  </context-param>
 
   <!-- JSF 2.0 servlet -->
   <servlet>
