@@ -5,11 +5,7 @@ import java.util.{Timer, TimerTask}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import stealthnet.scala.Settings
 import stealthnet.scala.cryptography.{RijndaelParameters, RSAKeys}
-import stealthnet.scala.network.{
-  StealthNetClient,
-  StealthNetServer,
-  WebCachesManager
-}
+import stealthnet.scala.network.{StealthNetClient, StealthNetServer}
 import stealthnet.scala.network.connection.{
   StealthNetConnection,
   StealthNetConnectionsManager
@@ -139,17 +135,14 @@ object Core extends Logging with EmptyLoggingContext {
    * Shall be called only once.
    *
    * Performs the following actions:
-   *   - refreshes the WebCaches list
    *   - starts the ''StealthNet'' server
    *   - starts the connections manager
    *
-   * @see [[stealthnet.scala.network.WebCachesManager]]
    * @see [[stealthnet.scala.network.StealthNetServer]]
    * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]]
    */
   def start() {
     stopping = false
-    WebCachesManager.refresh()
     if (Settings.core.enableServerConnections)
       StealthNetServer.start()
     StealthNetConnectionsManager.start()
@@ -159,20 +152,15 @@ object Core extends Logging with EmptyLoggingContext {
    * Stops core.
    *
    * Performs the following actions:
-   *   - removes ourself from WebCaches if necessary
-   *     - this is also done by the connections manager upon stopping, but it is
-   *       better to do it as soon as possible
    *   - stops the connections manager
    * The connections manager is expected to call back the `shutdown` method once
    * all connections are terminated.
    *
-   * @see [[stealthnet.scala.network.WebCachesManager]]
    * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]]
    * @see [[stealthnet.scala.core.Core]].`shutdown`
    */
   def stop() {
     stopping = true
-    WebCachesManager.removePeer()
     StealthNetConnectionsManager.stop()
   }
 

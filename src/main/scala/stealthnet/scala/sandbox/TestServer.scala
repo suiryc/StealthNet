@@ -1,12 +1,13 @@
 package stealthnet.scala.sandbox
 
 import stealthnet.scala.core.Core
+import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 // scalastyle:off magic.number regex
-object TestServer {
+object TestServer extends Logging with EmptyLoggingContext {
 
   def main(args: Array[String]): Unit = {
-    println("Started")
+    logger info("Started")
 
     try {
       Core.start()
@@ -17,7 +18,7 @@ object TestServer {
       Core.stop()
     }
 
-    println("Finished")
+    logger info("Finished")
   }
 
 }

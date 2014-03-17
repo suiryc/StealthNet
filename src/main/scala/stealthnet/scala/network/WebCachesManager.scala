@@ -16,6 +16,8 @@ import stealthnet.scala.webservices.{UpdateClient, WebCacheClient}
  *
  * The actual implementation uses actor messages to ensure thread-safety, and
  * provides methods to interact with the manager without worrying about it.
+ *
+ * XXX - use akka.io/actors and do not block with WebCache client actions
  */
 object WebCachesManager {
 
@@ -23,16 +25,18 @@ object WebCachesManager {
    *  - use akka logging ?
    *  - refactor classes ?
    */
-  implicit val timeout = Timeout(1.hour)
+  implicit private val timeout = Timeout(1.hour)
 
   /** Actor message: refresh WebCaches. */
-  protected case object Refresh
+  case object Refresh
   /** Actor message: add (self) peer to WebCaches. */
-  protected case object AddPeer
+  case object AddPeer
   /** Actor message: remove (self) peer to WebCaches. */
-  protected case object RemovePeer
+  case object RemovePeer
   /** Actor message: get peer from WebCaches. */
-  protected case object GetPeer
+  case object GetPeer
+  /** Actor message: got peer from WebCaches. */
+  case class GotPeer(peer: Peer)
   /** Actor message: checks WebCaches for which peer adding failed. */
   protected case object CheckWebCaches
   /** Actor message: stop. */
@@ -55,21 +59,24 @@ object WebCachesManager {
     /** Whether WebCaches check is ongoing. */
     private var checkOngoing = false
 
+    /** Whether we are stopping. */
+    private var stopping = false
+
     /**
      * Manages this actor messages.
      */
     override def receive = {
       case Refresh =>
-        _refresh()
+        refresh()
 
       case AddPeer =>
-        _addPeer()
+        addPeer()
 
       case RemovePeer =>
-        _removePeer()
+        removePeer()
 
       case GetPeer =>
-        sender ! _getPeer()
+        getPeer() foreach { sender ! GotPeer(_) }
 
       case CheckWebCaches =>
         checkWebCaches()
@@ -85,9 +92,9 @@ object WebCachesManager {
      *
      * If no WebCache could be retrieved, use default (configured) ones.
      */
-    protected def _refresh() = {
+    protected def refresh() = {
       val readd = addedPeer
-      _removePeer()
+      removePeer()
 
       val unfiltered: List[String] = (if (Settings.core.wsWebCacheUpdateEnabled)
           UpdateClient.getWebCaches(Settings.core.wsWebCacheUpdateURL)
@@ -122,7 +129,7 @@ object WebCachesManager {
       cyclicIt = webCaches.iterator
 
       if (readd)
-        _addPeer()
+        addPeer()
     }
 
     /**
@@ -130,7 +137,7 @@ object WebCachesManager {
      *
      * Done if we were added.
      */
-    protected def _removePeer() =
+    protected def removePeer() =
       if (addedPeer) {
         for (webCache <- webCaches)
           WebCacheClient.removePeer(webCache)
@@ -144,9 +151,9 @@ object WebCachesManager {
      *
      * Done if we were not already added.
      */
-    protected def _addPeer() =
+    protected def addPeer() =
       if (!addedPeer && !Core.stopping) {
-        _removePeer()
+        removePeer()
 
         val results = for (webCache <- webCaches)
           yield (webCache, WebCacheClient.addPeer(webCache, Settings.core.serverPort))
@@ -170,12 +177,12 @@ object WebCachesManager {
      *
      * @return an option value containing the retrieved peer, or `None` if none
      */
-    protected def _getPeer(): Option[Peer] = {
+    protected def getPeer(): Option[Peer] = {
       if (webCaches.size == 0)
         return None
 
       if (!addedPeer)
-        _addPeer()
+        addPeer()
 
       for (i <- 1 to webCaches.size) {
         val webCache = cyclicIt.next
@@ -219,24 +226,6 @@ object WebCachesManager {
 
   val actor = Core.actorSystem.system.actorOf(Props[WebCachesManagerActor], "WebCachesManager")
   Core.actorSystem.watch(actor)
-
-  /** Refreshes WebCaches. */
-  def refresh() = actor ! Refresh
-
-  /** Removes ourself from WebCaches. */
-  def removePeer() = actor ! RemovePeer
-
-  /** Adds ourself on WebCaches. */
-  def addPeer() = actor ! AddPeer
-
-  /**
-   * Gets a peer.
-   *
-   * @return an option value containing the retrieved peer, or `None` if none
-   */
-  def getPeer(): Option[Peer] =
-    Await.result(actor ? GetPeer,
-      Duration.Inf).asInstanceOf[Option[Peer]]
 
   /** Stops the manager. */
   def stop() = actor ! Stop

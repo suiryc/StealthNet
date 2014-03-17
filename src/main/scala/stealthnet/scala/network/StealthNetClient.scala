@@ -1,12 +1,15 @@
 package stealthnet.scala.network
 
-import io.netty.bootstrap.{Bootstrap, ChannelFactory}
-import io.netty.channel.{Channel, ChannelFuture, ChannelOption, EventLoopGroup}
+import akka.pattern.ask
+import akka.util.Timeout
+import io.netty.bootstrap.Bootstrap
+import io.netty.channel.{ChannelFuture, ChannelOption, EventLoopGroup}
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.util.concurrent.GenericFutureListener
 import java.net.InetSocketAddress
-import java.util.concurrent.Executors
+import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 import stealthnet.scala.Settings
 import stealthnet.scala.network.connection.{
   StealthNetConnectionParameters,
@@ -24,6 +27,20 @@ object StealthNetClient {
 
   /** Worker EventLoopGroup. */
   private val workerGroup: EventLoopGroup = new NioEventLoopGroup()
+
+  private val bootstrap: Bootstrap = new Bootstrap()
+
+  bootstrap.group(workerGroup)
+  bootstrap.channel(classOf[NioSocketChannel])
+  bootstrap.option[Integer](ChannelOption.CONNECT_TIMEOUT_MILLIS, Settings.core.connectTimeout.toInt)
+
+  /* Add the channel to the (server) group: will be closed with server. */
+  bootstrap.handler(StealthNetChannelInitializer(
+    new StealthNetConnectionParameters(
+      group = Some(StealthNetServer.group),
+      isClient = true
+    )
+  ))
 
   /**
    * Cleans shared resources.
@@ -50,6 +67,8 @@ class StealthNetClient(
 
   import StealthNetClient._
 
+  implicit private val timeout = Timeout(1.hour)
+
   protected def loggerContext = List("peer" -> peer)
 
   /**
@@ -61,8 +80,16 @@ class StealthNetClient(
    * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`addPeer`
    */
   def start() {
-    if (StealthNetConnectionsManager.addPeer(peer))
-      connect()
+    import scala.concurrent.ExecutionContext.Implicits.global
+
+    (StealthNetConnectionsManager.actor ? StealthNetConnectionsManager.AddPeer(peer)).mapTo[Boolean] onComplete {
+      case Failure(e) =>
+        logger error("Failed to start", e)
+
+      case Success(allowed) =>
+        if (allowed)
+          connect()
+    }
   }
 
   /**
@@ -71,28 +98,13 @@ class StealthNetClient(
   protected def connect() {
     logger trace("Starting new client connection")
 
-    val bootstrap: Bootstrap = new Bootstrap()
-
-    bootstrap.group(workerGroup)
-    bootstrap.channel(classOf[NioSocketChannel])
-    bootstrap.option[Integer](ChannelOption.CONNECT_TIMEOUT_MILLIS, Settings.core.connectTimeout.toInt)
-
-    /* Add the channel to the (server) group: will be closed with server. */
-    bootstrap.handler(StealthNetChannelInitializer(
-      new StealthNetConnectionParameters(
-        group = Some(StealthNetServer.group),
-        client = Some(this),
-        peer = Some(peer)
-      )
-    ))
-
     val future = bootstrap.connect(new InetSocketAddress(peer.host, peer.port))
     future.addListener(new GenericFutureListener[ChannelFuture]() {
       override def operationComplete(future: ChannelFuture) {
         if (!future.isSuccess) {
           logger debug("Failed to connect", future.cause)
           /* Since connection failed, we need to notify the manager */
-          StealthNetConnectionsManager.removePeer(peer)
+          StealthNetConnectionsManager.actor ! StealthNetConnectionsManager.RemovePeer(peer)
         }
       }
     })

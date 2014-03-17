@@ -28,7 +28,14 @@ object WebCacheClient extends Logging with EmptyLoggingContext {
 
           case Peer.regexp(host, port) =>
             logger debug s"Got host[$host] port[$port] from service[$url]"
-            Some(Peer(host, Integer.parseInt(port)))
+            try {
+              Some(Peer(host, Integer.parseInt(port)))
+            }
+            catch {
+              case e: Throwable =>
+                logger error(s"Invalid peer address[$host]", e)
+                None
+            }
 
           case peer =>
             logger debug s"Got unhandled peer[$peer] from service[$url]"

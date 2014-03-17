@@ -32,8 +32,7 @@ class ParametersHandler(val parameters: StealthNetConnectionParameters)
     val cnx = StealthNetConnectionsManager.connection(ctx.channel)
 
     cnx.group = parameters.group
-    cnx.client = parameters.client
-    cnx.peer = parameters.peer
+    cnx.isClient = parameters.isClient
 
     cnx.group foreach { _.add(cnx.channel) }
 

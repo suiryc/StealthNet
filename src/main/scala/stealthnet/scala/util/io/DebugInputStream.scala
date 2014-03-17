@@ -20,9 +20,9 @@ class DebugInputStream(
     val result = super.read()
 
     if (result == -1)
-      logger debug("Reached EOF")
+      logger trace("Reached EOF")
     else
-      logger debug("Read:\n" + HexDumper.dump(Array[Byte](result.asInstanceOf[Byte])))
+      logger trace("Read:\n" + HexDumper.dump(Array[Byte](result.asInstanceOf[Byte])))
 
     result
   }
@@ -33,9 +33,9 @@ class DebugInputStream(
     val result = super.read(b, off, len)
 
     if (result == -1)
-      logger debug("Reached EOF")
+      logger trace("Reached EOF")
     else
-      logger debug("Read:\n" + HexDumper.dump(b, off, result))
+      logger trace("Read:\n" + HexDumper.dump(b, off, result))
 
     result
   }
@@ -43,7 +43,7 @@ class DebugInputStream(
   override def skip(n: Long): Long = {
     val result = super.skip(n)
 
-    logger debug s"Skipped: $result"
+    logger trace s"Skipped: $result"
 
     result
   }

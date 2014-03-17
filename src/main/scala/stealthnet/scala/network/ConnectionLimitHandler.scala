@@ -1,6 +1,10 @@
 package stealthnet.scala.network
 
+import akka.pattern.ask
+import akka.util.Timeout
 import io.netty.channel.{ChannelInboundHandlerAdapter, ChannelHandlerContext}
+import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.connection.{
   StealthNetConnection,
@@ -17,6 +21,8 @@ class ConnectionLimitHandler
   with Logging
   with EmptyLoggingContext
 {
+
+  implicit private val timeout = Timeout(1.hour)
 
   /**
    * Handles channel connection event.
@@ -37,16 +43,23 @@ class ConnectionLimitHandler
   override def channelActive(ctx: ChannelHandlerContext) {
     val cnx = StealthNetConnectionsManager.connection(ctx.channel)
 
-    if (!StealthNetConnectionsManager.addConnection(cnx)) {
-      cnx.close()
-      return
+    /* XXX - is it ok to close the channel while super.channelActive was not called ? */
+    NettyDeferrer.defer[Boolean](ctx, StealthNetConnectionsManager.actor ? StealthNetConnectionsManager.AddConnection(cnx)) {
+      case Failure(e) =>
+        cnx.close()
+
+      case Success(allowed) =>
+        if (!allowed) {
+          cnx.close()
+        }
+        else {
+          /* server starts handshake */
+          if (!cnx.isClient)
+            cnx.channel.write(new RSAParametersServerCommand())
+
+          super.channelActive(ctx)
+        }
     }
-
-    /* server starts handshake */
-    if (!cnx.isClient)
-      cnx.channel.write(new RSAParametersServerCommand())
-
-    super.channelActive(ctx)
   }
 
   /**

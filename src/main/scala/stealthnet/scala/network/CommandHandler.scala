@@ -80,9 +80,9 @@ class CommandHandler
     /* set the cipher-text command length */
     buf.setBytes(Constants.commandLengthOffset, ProtocolStream.convertInteger(cipherLength, BitSize.Short))
 
-    ctx.write(output.buffer, promise);
+    ctx.write(output.buffer, promise)
     /* Note: don't forget to flush! */
-    flush(ctx);
+    flush(ctx)
   }
 
   /**
