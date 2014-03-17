@@ -1,4 +1,4 @@
-package stealthnet.scala.network
+package stealthnet.scala.util.netty
 
 import akka.util.Timeout
 import io.netty.channel.ChannelHandlerContext

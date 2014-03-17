@@ -190,7 +190,7 @@ object StealthNetConnectionsManager {
         remove(peer)
 
       case ClosedChannel(channel) =>
-        sender ! closed(channel)
+        closed(channel)
 
       case Stop =>
         if (peers.size == 0) {
@@ -294,12 +294,9 @@ object StealthNetConnectionsManager {
      * First unregisters the associated connection, then the remote peer.
      *
      * @param channel the channel which was closed
-     * @return an option value containing the associated
-     *   [[stealthnet.scala.network.connection.StealthNetConnection]], or `None`
-     *   if none
      * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`remove`
      */
-    protected def closed(channel: Channel): Option[StealthNetConnection] = {
+    protected def closed(channel: Channel) {
       val cnx = Option(channel.attr[StealthNetConnection](STEALTHNET_CONNECTION).getAndRemove())
 
       logger debug(StealthNetConnection.loggerContext(cnx, channel), "Channel closed")
@@ -308,8 +305,6 @@ object StealthNetConnectionsManager {
         cnx.peer foreach { remove(_) }
         listeners foreach { _ ! ConnectionListener.ClosedConnection(cnx) }
       }
-
-      cnx
     }
 
     /**
@@ -421,9 +416,8 @@ object StealthNetConnectionsManager {
    *
    * @param channel the channel which was closed
    */
-  def closedChannel(channel: Channel) {
+  def closedChannel(channel: Channel) =
     actor ! ClosedChannel(channel)
-  }
 
   /** Adds a new connections listener. */
   def addConnectionsListener(listener: ActorRef) =

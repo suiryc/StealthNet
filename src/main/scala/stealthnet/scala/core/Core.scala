@@ -175,8 +175,17 @@ object Core extends Logging with EmptyLoggingContext {
    * @see [[stealthnet.scala.network.StealthNetClient]]
    */
   def shutdown() {
-    StealthNetServer.stop()
-    StealthNetClient.stop()
+    val f1 = StealthNetServer.stop()
+    val f2 = StealthNetClient.stop()
+
+    import scala.concurrent.ExecutionContext.Implicits.global
+    for {
+      _ <- f1
+      _ <- f2
+    } yield {
+      logger debug "Shutdowned"
+    }
+
     timer.cancel()
   }
 

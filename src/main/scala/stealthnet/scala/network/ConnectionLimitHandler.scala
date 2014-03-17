@@ -12,6 +12,7 @@ import stealthnet.scala.network.connection.{
 }
 import stealthnet.scala.network.protocol.commands.RSAParametersServerCommand
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
+import stealthnet.scala.util.netty.NettyDeferrer
 
 /**
  * Inbound connection limiter.

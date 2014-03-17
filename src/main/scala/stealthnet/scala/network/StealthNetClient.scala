@@ -8,6 +8,7 @@ import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.util.concurrent.GenericFutureListener
 import java.net.InetSocketAddress
+import java.util.concurrent.TimeUnit
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 import stealthnet.scala.Settings
@@ -16,14 +17,17 @@ import stealthnet.scala.network.connection.{
   StealthNetConnectionsManager
 }
 import stealthnet.scala.util.Peer
-import stealthnet.scala.util.log.Logging
+import stealthnet.scala.util.log.{Logging, EmptyLoggingContext}
 
 /**
  * ''StealthNet'' client companion object.
  *
  * Manages client-side shared resources.
  */
-object StealthNetClient {
+object StealthNetClient
+  extends Logging
+  with EmptyLoggingContext
+{
 
   /** Worker EventLoopGroup. */
   private val workerGroup: EventLoopGroup = new NioEventLoopGroup()
@@ -36,18 +40,28 @@ object StealthNetClient {
 
   /* Add the channel to the (server) group: will be closed with server. */
   bootstrap.handler(StealthNetChannelInitializer(
-    new StealthNetConnectionParameters(
-      group = Some(StealthNetServer.group),
-      isClient = true
-    )
-  ))
+    new StealthNetConnectionParameters(isClient = true)))
 
   /**
    * Cleans shared resources.
    * @todo Caller may need to wait for returned future completion ?
    */
-  def stop() =
-    workerGroup.shutdownGracefully().awaitUninterruptibly()
+  def stop() = {
+    logger debug "Stopping"
+
+    val f = workerGroup.shutdownGracefully(Settings.core.shutdownQuietPeriod,
+      Settings.core.shutdownTimeout, TimeUnit.MILLISECONDS)
+
+    import stealthnet.scala.util.netty.NettyFuture._
+    import scala.concurrent.ExecutionContext.Implicits.global
+    val r = for {
+      _ <- f
+    } yield {
+      logger debug "Stopped"
+    }
+
+    r
+  }
 
 }
 
@@ -99,6 +113,7 @@ class StealthNetClient(
     logger trace("Starting new client connection")
 
     val future = bootstrap.connect(new InetSocketAddress(peer.host, peer.port))
+    StealthNetServer.group.add(future.channel)
     future.addListener(new GenericFutureListener[ChannelFuture]() {
       override def operationComplete(future: ChannelFuture) {
         if (!future.isSuccess) {

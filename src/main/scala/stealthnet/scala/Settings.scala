@@ -69,6 +69,14 @@ class Settings(config: Config) extends BaseSettings(config) {
   val avgCnxCount: Int =
     config.getInt(optionPath("connection.average"))
 
+  /** Graceful shutdown quiet period (ms). `0s` by default. */
+  val shutdownQuietPeriod: Long =
+    config.getDuration(optionPath("shutdown.quietPeriod"), TimeUnit.MILLISECONDS)
+
+  /** Graceful shutdown timeout (ms). `10s` by default. */
+  val shutdownTimeout: Long =
+    config.getDuration(optionPath("shutdown.timeout"), TimeUnit.MILLISECONDS)
+
   /**
    * Whether to get WebCaches from ''RShare'' update server, or use the default
    * ones. `true` by default.
