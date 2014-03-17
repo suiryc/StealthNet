@@ -56,7 +56,7 @@ class ConnectionLimitHandler
         else {
           /* server starts handshake */
           if (!cnx.isClient)
-            cnx.channel.write(new RSAParametersServerCommand())
+            cnx.send(new RSAParametersServerCommand())
 
           super.channelActive(ctx)
         }

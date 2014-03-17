@@ -29,7 +29,9 @@ object StealthNetChannelInitializer {
  *   - [[org.jboss.netty.handler.timeout.WriteTimeoutHandler]]
  *     - with configured write timeout
  *   - [[stealthnet.scala.network.CommandDecoder]]
+ *   - [[stealthnet.scala.network.CommandEncoder]]
  *   - [[stealthnet.scala.network.CommandHandler]]
+ *   - [[stealthnet.scala.network.ExceptionHandler]]
  */
 class StealthNetChannelInitializer(val parameters: StealthNetConnectionParameters)
   extends ChannelInitializer[SocketChannel]
@@ -61,8 +63,14 @@ class StealthNetChannelInitializer(val parameters: StealthNetConnectionParameter
     /* inbound command decoder */
     pipeline.addLast("command decoder", new CommandDecoder())
 
+    /* outbound command handler */
+    pipeline.addLast("command encoder", new CommandEncoder())
+
     /* inbound/outbound command handler */
     pipeline.addLast("command handler", new CommandHandler())
+
+    /* inbound/outbound exception handler */
+    pipeline.addLast("exception handler", new ExceptionHandler())
   }
 
 }

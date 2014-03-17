@@ -40,7 +40,6 @@ object Core extends Logging with EmptyLoggingContext {
    */
   // scalastyle:off method.length
   def receivedCommand(command: Command, cnx: StealthNetConnection) {
-    cnx.receivedCommands += 1
     command match {
       case c: RSAParametersServerCommand =>
         if ((c.key.getModulus == RSAKeys.publicKey.getModulus)
@@ -51,7 +50,7 @@ object Core extends Logging with EmptyLoggingContext {
           return
         }
         cnx.remoteRSAKey = Some(c.key)
-        cnx.channel.write(new RSAParametersClientCommand())
+        cnx.send(new RSAParametersClientCommand())
 
       case c: RSAParametersClientCommand =>
         if ((c.key.getModulus == RSAKeys.publicKey.getModulus)
@@ -64,13 +63,13 @@ object Core extends Logging with EmptyLoggingContext {
         cnx.remoteRSAKey = Some(c.key)
         val rijndaelParameters = RijndaelParameters()
         cnx.localRijndaelParameters = rijndaelParameters
-        cnx.channel.write(new RijndaelParametersServerCommand(rijndaelParameters))
+        cnx.send(new RijndaelParametersServerCommand(rijndaelParameters))
 
       case c: RijndaelParametersServerCommand =>
         cnx.remoteRijndaelParameters = c.parameters
         val rijndaelParameters = RijndaelParameters()
         cnx.localRijndaelParameters = rijndaelParameters
-        cnx.channel.write(new RijndaelParametersClientCommand(rijndaelParameters))
+        cnx.send(new RijndaelParametersClientCommand(rijndaelParameters))
         cnx.established = true
 
       case c: RijndaelParametersClientCommand =>

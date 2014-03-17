@@ -1,10 +1,12 @@
 package stealthnet.scala.network.connection
 
-import io.netty.channel.Channel
+import io.netty.channel.{Channel, ChannelFutureListener}
 import java.security.interfaces.RSAPublicKey
 import java.util.Date
 import org.bouncycastle.crypto.BufferedBlockCipher
+import stealthnet.scala.core.Core
 import stealthnet.scala.cryptography.{Ciphers, RijndaelParameters}
+import stealthnet.scala.network.protocol.commands.Command
 import stealthnet.scala.util.Peer
 import stealthnet.scala.util.log.LoggingContext
 
@@ -95,6 +97,23 @@ class StealthNetConnection protected[connection] (val channel: Channel)
   var receivedCommands: Int = _
   /** Sent commands. */
   var sentCommands: Int = _
+
+  /** Handles command received on the channel associated to this connection. */
+  def received(command: Command) {
+    receivedCommands += 1
+    Core.receivedCommand(command, this)
+  }
+
+  /** Writes command on the channel associated to this connection. */
+  def send(command: Command) = {
+    val f = channel.write(command)
+
+    sentCommands += 1
+    /* Make sure to notify pipeline upon issues. */
+    f.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE)
+
+    f
+  }
 
   /** Closes the connection channel. */
   def close() {

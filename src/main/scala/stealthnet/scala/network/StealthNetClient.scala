@@ -44,7 +44,6 @@ object StealthNetClient
 
   /**
    * Cleans shared resources.
-   * @todo Caller may need to wait for returned future completion ?
    */
   def stop() = {
     logger debug "Stopping"

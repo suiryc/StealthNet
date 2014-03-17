@@ -1,9 +1,8 @@
 package stealthnet.scala.network
 
 import io.netty.buffer.{ByteBuf, ByteBufInputStream}
-import io.netty.channel.{Channel, ChannelHandlerContext}
+import io.netty.channel.ChannelHandlerContext
 import io.netty.handler.codec.ReplayingDecoder
-import java.io.EOFException
 import stealthnet.scala.Settings
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.connection.{
@@ -11,7 +10,6 @@ import stealthnet.scala.network.connection.{
   StealthNetConnectionsManager
 }
 import stealthnet.scala.network.protocol.commands.Command
-import stealthnet.scala.network.protocol.exceptions.ProtocolException
 import stealthnet.scala.util.HexDumper
 import stealthnet.scala.util.io.DebugInputStream
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
