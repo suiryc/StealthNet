@@ -56,7 +56,7 @@ class CommandEncoder
     /* set the cipher-text command length */
     buf.setBytes(Constants.commandLengthOffset, ProtocolStream.convertInteger(cipherLength, BitSize.Short))
 
-    ctx.write(output.buffer, promise)
+    ctx.write(buf, promise)
     /* Note: don't forget to flush! */
     flush(ctx)
   }
