@@ -43,6 +43,10 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-testkit" % versions("akka") % "test"
 )
 
+org.scalastyle.sbt.ScalastylePlugin.Settings
+
+org.scalastyle.sbt.PluginKeys.config := file("project/scalastyle-config.xml")
+
 
 publishMavenStyle := true
 

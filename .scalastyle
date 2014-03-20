@@ -1,1 +1,1 @@
-<scalastyle-project-configuration enabled="true" file="/StealthNet/src/main/resources/scalastyle_config.xml"></scalastyle-project-configuration>
+<scalastyle-project-configuration enabled="true" file="/stealthnet-core/project/scalastyle-config.xml"></scalastyle-project-configuration>
