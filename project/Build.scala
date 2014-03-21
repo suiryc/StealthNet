@@ -7,14 +7,17 @@ object StealthNetBuild extends Build {
   lazy val copyDependencies = TaskKey[Unit]("copy-dependencies")
   lazy val copyPom = TaskKey[Unit]("copy-pom")
 
-  def copyDepTask(base: File) = copyDependencies <<= (update, crossTarget, scalaVersion) map { (updateReport, _, scalaVersion) =>
-    base.getParentFile.mkdirs
+  def depFilename(name: String, scalaVersion: String) =
+    name match {
+      case "scala-library.jar" => s"scala-library-$scalaVersion.jar"
+      case v => v
+    }
+
+  def copyDepTask(base: File) = copyDependencies <<= (update, scalaVersion) map { (updateReport, scalaVersion) =>
+    val dstBase = base / "target" / "lib"
     updateReport.select(configuration = Set("runtime")) foreach { srcPath =>
-      val dstName = srcPath.getName match {
-        case "scala-library.jar" => s"scala-library-$scalaVersion.jar"
-        case v => v
-      }
-      val dstPath = base / "target" / "lib" / dstName
+      val dstName = depFilename(srcPath.getName, scalaVersion)
+      val dstPath = dstBase / dstName
       IO.copyFile(srcPath, dstPath, preserveLastModified = true)
     }
   }
