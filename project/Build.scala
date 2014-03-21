@@ -45,8 +45,8 @@ object StealthNetBuild extends Build {
   lazy val base = file(".").getCanonicalFile
 
   lazy val root = Project(
-    "root",
-    base,
+    id = "stealthnet-ui-web-jsf",
+    base = base,
     settings = Defaults.defaultSettings ++ Seq(
       copyDepTask(base), copyPomTask(base), distLocalTask(base)
     )
