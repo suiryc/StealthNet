@@ -22,7 +22,7 @@ protected object RSAParametersCommand {
    * Reads the ''RSA'' public key specifications.
    *
    * @param arguments map of read arguments
-   * @return a new [[java.security.interfaces.RSAPublicKey]] representing the
+   * @return a new [[java.security.interfaces.RSAPublicKeySpec]] representing the
    *   read parameters
    */
   def readKeySpec(arguments: Map[String, Any]): RSAPublicKeySpec = {

@@ -57,6 +57,8 @@ pomExtra := (
     <encoding>UTF-8</encoding>
   </properties>
   <build>
+    <sourceDirectory>src/main/scala</sourceDirectory>
+    <testSourceDirectory>src/test/scala</testSourceDirectory>
     <plugins>
       <plugin>
         <groupId>net.alchim31.maven</groupId>

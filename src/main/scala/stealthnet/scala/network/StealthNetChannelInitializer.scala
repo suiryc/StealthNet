@@ -24,9 +24,9 @@ object StealthNetChannelInitializer {
  * Initializes a channel with the following handlers (in order):
  *   - [[stealthnet.scala.network.ParametersHandler]]
  *   - [[stealthnet.scala.network.ConnectionLimitHandler]]
- *   - [[org.jboss.netty.handler.timeout.ReadTimeoutHandler]]
+ *   - [[io.netty.handler.timeout.ReadTimeoutHandler]]
  *     - with configured read timeout
- *   - [[org.jboss.netty.handler.timeout.WriteTimeoutHandler]]
+ *   - [[io.netty.handler.timeout.WriteTimeoutHandler]]
  *     - with configured write timeout
  *   - [[stealthnet.scala.network.CommandDecoder]]
  *   - [[stealthnet.scala.network.CommandEncoder]]
