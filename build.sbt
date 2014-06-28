@@ -2,26 +2,28 @@ organization := "stealthnet.scala"
 
 name := "stealthnet-core"
 
-version := "0.1.0"
+version := "0.1.1"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.11.1"
 
-scalacOptions ++= Seq("-deprecation", "-feature", "-optimize", "-unchecked", "-Yinline-warnings", "-target:jvm-1.7")
+scalacOptions ++= Seq("-deprecation", "-feature", "-optimize", "-unchecked", "-Yinline-warnings")
 
 scalacOptions in (Compile, doc) ++= Seq("-diagrams", "-implicits")
 
 val versions = Map[String, String](
-  "akka" -> "2.3.0",
+  "java" -> "1.8",
+  "akka" -> "2.3.3",
   "bouncycastle" -> "1.50",
-  "config" -> "1.2.0",
+  "config" -> "1.2.1",
   "junit" -> "4.11",
-  "logback" -> "1.1.1",
-  "netty" -> "4.0.17.Final",
-  "scalatest" -> "2.1.0",
-  "slf4j" -> "1.7.6",
+  "logback" -> "1.1.2",
+  "netty" -> "4.0.20.Final",
+  "scala-xml" -> "1.0.2",
+  "scalatest" -> "2.2.0",
+  "slf4j" -> "1.7.7",
   "maven-compiler-plugin" -> "3.1",
   "maven-dependency-plugin" -> "2.8",
-  "maven-surefire-plugin" -> "2.16",
+  "maven-surefire-plugin" -> "2.17",
   "scala-maven-plugin" -> "3.1.6"
 )
 
@@ -29,6 +31,8 @@ libraryDependencies ++= Seq(
   /* Log */
   "org.slf4j" % "slf4j-api" % versions("slf4j"),
   "ch.qos.logback" % "logback-classic" % versions("logback") % "runtime",
+  /* Scala libraries */
+  "org.scala-lang.modules" %% "scala-xml" % versions("scala-xml"),
   /* Akka */
   "com.typesafe.akka" %% "akka-actor" % versions("akka"),
   /* Configuration management */
@@ -72,7 +76,6 @@ pomExtra := (
             <arg>-optimize</arg>
             <arg>-unchecked</arg>
           </args>
-          <recompileMode>incremental</recompileMode>
         </configuration>
         <executions>
           <execution>
@@ -88,8 +91,8 @@ pomExtra := (
         <artifactId>maven-compiler-plugin</artifactId>
         <version>{ versions("maven-compiler-plugin") }</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>{ versions("java") }</source>
+          <target>{ versions("java") }</target>
         </configuration>
       </plugin>
       <plugin>
