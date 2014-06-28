@@ -1,7 +1,7 @@
 package stealthnet.scala.ui.web.beans
 
 import javax.faces.bean.{ManagedBean, SessionScoped}
-import scala.reflect.BeanProperty
+import scala.beans.BeanProperty
 
 @ManagedBean
 @SessionScoped

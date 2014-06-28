@@ -1,7 +1,7 @@
 Ext.cometd.CometD = Class.extend({
 
     init: function(cfg) {
-        this.cometd = new $.Cometd();
+        this.cometd = new $.CometD();
         this.label = cfg.label;
         this.connected = false;
         this.disconnecting = false;

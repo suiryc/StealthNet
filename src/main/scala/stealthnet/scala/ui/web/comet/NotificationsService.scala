@@ -1,7 +1,6 @@
 package stealthnet.scala.ui.web.comet
 
-import org.cometd.bayeux.Message
-import org.cometd.bayeux.server.{BayeuxServer, ServerSession}
+import org.cometd.bayeux.server.{BayeuxServer, ServerMessage, ServerSession}
 import org.cometd.server.AbstractService
 import scala.collection.JavaConversions._
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
@@ -18,7 +17,7 @@ class NotificationsService(bayeux: BayeuxServer)
   private def deliver(session: ServerSession, data: Map[String, Object]): Unit =
     deliver(session, "global", data)
 
-  def processClient(remote: ServerSession, message: Message) {
+  def processClient(remote: ServerSession, message: ServerMessage) {
     val data = message.getDataAsMap().asInstanceOf[java.util.Map[java.lang.String, java.lang.String]]
 
     val channel = Option(data.get("channel")) match {

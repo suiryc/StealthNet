@@ -4,7 +4,7 @@ import javax.faces.application.FacesMessage
 import javax.faces.bean.{ManagedBean, ManagedProperty, RequestScoped}
 import javax.faces.context.FacesContext
 import javax.servlet.http.HttpSession
-import scala.reflect.BeanProperty
+import scala.beans.BeanProperty
 
 @ManagedBean
 @RequestScoped

@@ -12,7 +12,7 @@ trait NotificationsManager {
     )
 
     // scalastyle:off null
-    session.deliver(session, "/notifications", output:java.util.Map[String, Object], null)
+    session.deliver(session, "/notifications", output:java.util.Map[String, Object])
     // scalastyle:on null
   }
 

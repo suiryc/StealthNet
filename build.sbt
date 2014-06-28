@@ -2,35 +2,39 @@ organization := "stealthnet.scala"
 
 name := "stealthnet-ui-web-jsf"
 
-version := "0.1.0"
+version := "0.1.1"
 
-scalaVersion := "2.10.3"
+scalaVersion := versions("scala")
 
-scalacOptions ++= Seq("-deprecation", "-feature", "-optimize", "-unchecked", "-Yinline-warnings", "-target:jvm-1.7")
+scalacOptions ++= Seq("-deprecation", "-feature", "-optimize", "-unchecked", "-Yinline-warnings")
 
 scalacOptions in (Compile, doc) ++= Seq("-diagrams", "-implicits")
 
 val versions = Map[String, String](
-  "akka" -> "2.3.0",
-  "cometd" -> "3.0.0.beta2",
-  "config" -> "1.2.0",
-  "jetty" -> "9.1.3.v20140225",
+  "java" -> "1.8",
+  "scala" -> "2.11.1",
+  "akka" -> "2.3.3",
+  "cometd" -> "3.0.0",
+  "config" -> "1.2.1",
+  "jetty" -> "9.2.1.v20140609",
   "jetty-jsp-jdt" -> "2.3.3",
-  "logback" -> "1.1.1",
-  "mojara" -> "2.2.6",
-  "primefaces" -> "4.0",
-  "slf4j" -> "1.7.6",
-  "stealthnet-core" -> "0.1.0",
+  "logback" -> "1.1.2",
+  "mojara" -> "2.2.7",
+  "primefaces" -> "5.0",
+  "slf4j" -> "1.7.7",
+  "stealthnet-core" -> "0.1.1",
   "maven-antrun-plugin" -> "1.7",
   "maven-compiler-plugin" -> "3.1",
   "maven-dependency-plugin" -> "2.8",
-  "maven-jar-plugin" -> "2.4",
+  "maven-jar-plugin" -> "2.5",
   "maven-resources-plugin" -> "2.6",
-  "maven-surefire-plugin" -> "2.16",
+  "maven-surefire-plugin" -> "2.17",
   "scala-maven-plugin" -> "3.1.6"
 )
 
 libraryDependencies ++= Seq(
+  /** Scala libraries */
+  "org.scala-lang" % "scala-reflect" % versions("scala"),
   /** Log **/
   "org.slf4j" % "slf4j-api" % versions("slf4j"),
   "org.slf4j" % "jul-to-slf4j" % versions("slf4j"),
@@ -107,7 +111,6 @@ pomExtra := (
             <arg>-optimize</arg>
             <arg>-unchecked</arg>
           </args>
-          <recompileMode>incremental</recompileMode>
         </configuration>
         <executions>
           <execution>
@@ -123,8 +126,8 @@ pomExtra := (
         <artifactId>maven-compiler-plugin</artifactId>
         <version>{ versions("maven-compiler-plugin") }</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>{ versions("java") }</source>
+          <target>{ versions("java") }</target>
         </configuration>
       </plugin>
       <plugin>
