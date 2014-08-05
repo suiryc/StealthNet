@@ -35,9 +35,7 @@ object StealthNetBuild extends Build {
   lazy val root = Project(
     id = "stealthnet",
     base = base,
-    settings = Defaults.defaultSettings ++ Seq(
-      copyDepTask, copyPomTask, extCompile
-    )
+    settings = Seq(copyDepTask, copyPomTask, extCompile)
   )
 }
 
