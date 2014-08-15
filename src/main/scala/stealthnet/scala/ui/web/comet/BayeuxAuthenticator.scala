@@ -1,9 +1,7 @@
 package stealthnet.scala.ui.web.comet
 
-import javax.faces.context.FacesContext
 import org.cometd.server.DefaultSecurityPolicy
 import org.cometd.bayeux.server.{BayeuxServer, ServerMessage, ServerSession}
-import scala.collection.JavaConversions._
 import stealthnet.scala.ui.web.beans.UserSession
 
 class BayeuxAuthenticator

@@ -5,7 +5,7 @@
     <artifactId>stealthnet-ui-web-jsf_2.11</artifactId>
     <packaging>jar</packaging>
     <description>stealthnet-ui-web-jsf</description>
-    <version>0.1.1</version>
+    <version>0.1.2-SNAPSHOT</version>
     <name>stealthnet-ui-web-jsf</name>
     <organization>
         <name>stealthnet.scala</name>
@@ -293,7 +293,7 @@
         <dependency>
             <groupId>stealthnet.scala</groupId>
             <artifactId>stealthnet-core_2.11</artifactId>
-            <version>0.1.1</version>
+            <version>0.1.2-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

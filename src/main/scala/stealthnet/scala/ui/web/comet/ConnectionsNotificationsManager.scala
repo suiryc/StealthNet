@@ -3,7 +3,6 @@ package stealthnet.scala.ui.web.comet
 import java.text.SimpleDateFormat
 import org.cometd.bayeux.server.ServerSession
 import akka.actor._
-import scala.collection.JavaConversions._
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.connection.{
   ConnectionListener,

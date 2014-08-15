@@ -2,7 +2,7 @@ organization := "stealthnet.scala"
 
 name := "stealthnet-ui-web-jsf"
 
-version := "0.1.1"
+version := "0.1.2-SNAPSHOT"
 
 scalaVersion := versions("scala")
 
@@ -22,7 +22,7 @@ val versions = Map[String, String](
   "mojara" -> "2.2.7",
   "primefaces" -> "5.0",
   "slf4j" -> "1.7.7",
-  "stealthnet-core" -> "0.1.1",
+  "stealthnet-core" -> "0.1.2-SNAPSHOT",
   "maven-antrun-plugin" -> "1.7",
   "maven-compiler-plugin" -> "3.1",
   "maven-dependency-plugin" -> "2.8",

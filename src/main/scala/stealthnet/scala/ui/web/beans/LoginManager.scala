@@ -29,7 +29,7 @@ class LoginManager {
   def login(): String = {
     if ((username == "test") && (password == "test")) {
       userSession.setLogged(true)
-      val targetPath = Option(reason) flatMap {
+      val targetPath = Option(reason).flatMap {
         _.toLowerCase match {
           case "unauthorized" =>
             Option(path)
@@ -37,7 +37,7 @@ class LoginManager {
           case _ =>
             None
         }
-      } getOrElse("home")
+      }.getOrElse("home")
 
       targetPath + "?faces-redirect=true"
     }

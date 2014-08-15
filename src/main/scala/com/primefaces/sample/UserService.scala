@@ -1,6 +1,5 @@
 package com.primefaces.sample
 
-import java.util.Date
 import scala.collection.mutable
 import scala.collection.JavaConversions._
 import com.primefaces.sample.beans.User
@@ -69,15 +68,15 @@ class UserService {
 
   def searchUsers(username: String) =
     /* We need to return a Java Collection */
-    (USERS_TABLE.values.toList filter { user =>
+    USERS_TABLE.values.toList filter { user =>
       Option(user.username) map { v =>
-        v.toLowerCase().trim().startsWith(
-          Option(username) map { _.toLowerCase().trim() } getOrElse { "" }
+        v.toLowerCase.trim().startsWith(
+          Option(username) map { _.toLowerCase.trim() } getOrElse { "" }
         )
       } getOrElse {
         false
       }
-    }):java.util.List[User]
+    }:java.util.List[User]
 
   def update(user: User) {
     // scalastyle:off null

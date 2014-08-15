@@ -1,8 +1,6 @@
 package com.primefaces.sample.beans
 
-import javax.faces.application.FacesMessage
 import javax.faces.bean.{ApplicationScoped, ManagedBean}
-import javax.faces.context.FacesContext
 import org.primefaces.event.{SelectEvent, UnselectEvent}
 import scala.beans.BeanProperty
 import com.primefaces.sample.UserService
