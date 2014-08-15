@@ -243,7 +243,7 @@ object Ciphers {
    * @return ''Rijndael'' cipher using parameters to encrypt
    */
   def rijndaelEncrypter(rijndael: RijndaelParameters) =
-    rijndaelCipher(rijndael, true)
+    rijndaelCipher(rijndael, encryption = true)
 
   /**
    * Gets new ''Rijndael'' cipher to decrypt.
@@ -252,6 +252,6 @@ object Ciphers {
    * @return ''Rijndael'' cipher using parameters to decrypt
    */
   def rijndaelDecrypter(rijndael: RijndaelParameters) =
-    rijndaelCipher(rijndael, false)
+    rijndaelCipher(rijndael, encryption = false)
 
 }

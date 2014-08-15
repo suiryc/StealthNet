@@ -29,7 +29,7 @@ class BCCipherOutputStreamSuite extends FunSuite {
     encrypter.reset()
     os.write(input)
     os.close()
-    val a = baos.toByteArray()
+    val a = baos.toByteArray
     assert(a === encrypted)
   }
 
@@ -42,7 +42,7 @@ class BCCipherOutputStreamSuite extends FunSuite {
     encrypter.reset()
     os1.write(input)
     os1.close()
-    val a = baos1.toByteArray()
+    val a = baos1.toByteArray
 
     val baos2 = new ByteArrayOutputStream()
     val os2 = new BCCipherOutputStream(baos2, encrypter)
@@ -50,7 +50,7 @@ class BCCipherOutputStreamSuite extends FunSuite {
     encrypter.reset()
     input.foreach(os2.write(_))
     os2.close()
-    val b = baos2.toByteArray()
+    val b = baos2.toByteArray
 
     assert(a === b)
   }

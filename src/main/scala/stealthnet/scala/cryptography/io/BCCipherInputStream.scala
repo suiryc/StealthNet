@@ -65,7 +65,7 @@ class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
       bufferEnd
   }
 
-  override def available(): Int = bufferEnd - bufferOffset
+  override def available: Int = bufferEnd - bufferOffset
 
   override def read(): Int = {
     while (available == 0) {

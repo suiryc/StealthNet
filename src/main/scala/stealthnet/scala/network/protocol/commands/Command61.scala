@@ -2,7 +2,7 @@ package stealthnet.scala.network.protocol.commands
 
 import java.io.InputStream
 import stealthnet.scala.Constants
-import stealthnet.scala.network.protocol.{BitSize, Encryption, ProtocolStream}
+import stealthnet.scala.network.protocol.{BitSize, Encryption}
 import stealthnet.scala.util.Hash
 
 /* XXX - same content as command 0x51 */

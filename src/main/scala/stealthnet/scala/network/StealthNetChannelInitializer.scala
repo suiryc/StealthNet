@@ -1,6 +1,6 @@
 package stealthnet.scala.network
 
-import io.netty.channel.{ChannelInitializer, ChannelPipeline}
+import io.netty.channel.ChannelInitializer
 import io.netty.channel.socket.SocketChannel
 import io.netty.handler.timeout.{ReadTimeoutHandler, WriteTimeoutHandler}
 import java.util.concurrent.TimeUnit

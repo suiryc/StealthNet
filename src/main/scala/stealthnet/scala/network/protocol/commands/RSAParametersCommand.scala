@@ -5,7 +5,7 @@ import java.security.interfaces.RSAPublicKey
 import java.security.spec.RSAPublicKeySpec
 import stealthnet.scala.cryptography.RSAKeys
 import stealthnet.scala.cryptography.Ciphers._
-import stealthnet.scala.network.protocol.{Encryption, ProtocolStream}
+import stealthnet.scala.network.protocol.Encryption
 
 /**
  * ''RSA'' parameters command helper object.

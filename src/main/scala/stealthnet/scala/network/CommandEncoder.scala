@@ -6,12 +6,11 @@ import io.netty.channel.{
   ChannelOutboundHandlerAdapter,
   ChannelPromise
 }
-import stealthnet.scala.{Constants, Settings}
+import stealthnet.scala.Constants
 import stealthnet.scala.core.Core
 import stealthnet.scala.network.connection.StealthNetConnectionsManager
 import stealthnet.scala.network.protocol.{BitSize, ProtocolStream}
 import stealthnet.scala.network.protocol.commands.Command
-import stealthnet.scala.network.protocol.exceptions.ProtocolException
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 /**
@@ -48,7 +47,7 @@ class CommandEncoder
     val cipherStart = buf.writerIndex + Constants.commandOffset
     val unencryptedLength = command.write(cnx, output)
     if (unencryptedLength > 0xFFFF) {
-      logger error(cnx.loggerContext, "Command[%s] length exceeds capacity".format(command))
+      logger.error(cnx.loggerContext, "Command[%s] length exceeds capacity".format(command))
       return
     }
     val cipherLength = buf.writerIndex - cipherStart

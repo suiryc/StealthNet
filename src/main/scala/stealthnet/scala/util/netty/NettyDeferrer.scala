@@ -1,6 +1,5 @@
 package stealthnet.scala.util.netty
 
-import akka.util.Timeout
 import io.netty.channel.ChannelHandlerContext
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag

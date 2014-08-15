@@ -31,7 +31,7 @@ class CommandHandler
     val command: Command = msg.asInstanceOf[Command]
 
     if (Settings.core.debugIOCommands)
-      logger debug(cnx.loggerContext, s"Received command: $command")
+      logger.debug(cnx.loggerContext, s"Received command: $command")
 
     cnx.received(command)
   }
@@ -46,7 +46,7 @@ class CommandHandler
     val command: Command = msg.asInstanceOf[Command]
 
     if (Settings.core.debugIOCommands)
-      logger debug(cnx.loggerContext, s"Sending command: $command")
+      logger.debug(cnx.loggerContext, s"Sending command: $command")
 
     ctx.write(command, promise)
     /* Note: don't forget to flush! */

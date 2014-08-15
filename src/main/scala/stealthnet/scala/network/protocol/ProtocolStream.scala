@@ -1,10 +1,8 @@
 package stealthnet.scala.network.protocol
 
 import java.io.{InputStream, EOFException, OutputStream}
-import java.math.BigInteger
 import stealthnet.scala.Constants
 import stealthnet.scala.network.protocol.commands.CommandArguments
-import stealthnet.scala.network.protocol.exceptions.InvalidDataException
 
 /**
  * Protocol data bit size.
@@ -217,7 +215,6 @@ object ProtocolStream {
    *
    * @param output stream to write to
    * @param value value to write
-   * @param bitSize array length bit size
    * @return number of written bytes
    * @note Since original protocol deals with unsigned integers, we strip the
    *   the big integer leading sign byte if any.

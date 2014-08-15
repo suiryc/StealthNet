@@ -1,12 +1,9 @@
 package stealthnet.scala.network.connection
 
 import akka.actor._
-import akka.pattern.ask
-import akka.util.Timeout
 import io.netty.channel.Channel
 import io.netty.util.AttributeKey
 import java.net.InetSocketAddress
-import scala.concurrent._
 import scala.collection.mutable
 import stealthnet.scala.{Constants, Settings}
 import stealthnet.scala.core.Core
@@ -53,7 +50,7 @@ object StealthNetConnectionsManager {
 
   /** Channel/connection association. */
   private val STEALTHNET_CONNECTION: AttributeKey[StealthNetConnection] =
-    AttributeKey.valueOf("StealthNet.connection");
+    AttributeKey.valueOf("StealthNet.connection")
 
   /**
    * Actor message: register a connection listener.
@@ -182,7 +179,7 @@ object StealthNetConnectionsManager {
         sender ! add(cnx)
 
       case RemovePeer(peer) =>
-        remove(peer, true)
+        remove(peer, accepted = true)
 
       case ClosedChannel(channel) =>
         closed(channel)
@@ -190,7 +187,7 @@ object StealthNetConnectionsManager {
       case Stop =>
         if (peers.size == 0) {
           /* last connection terminated: time to leave */
-          logger debug("Stopped")
+          logger.debug("Stopped")
           /* Note: we get back here when the last peer is unregistered, which
            * is when the last connection is closed. So we know we won't be
            * needed anymore
@@ -225,19 +222,19 @@ object StealthNetConnectionsManager {
      */
     protected def add(peer: Peer): Boolean = {
       if (stopping) {
-        logger debug s"Refused connection with peer[$peer]: stop pending"
+        logger.debug(s"Refused connection with peer[$peer]: stop pending")
         false
       }
       else if (upperLimitReached()) {
-        logger debug s"Refused connection with peer[$peer]: limit reached"
+        logger.debug(s"Refused connection with peer[$peer]: limit reached")
         false
       }
       else if (peers.contains(peer)) {
-        logger debug s"Refused connection with peer[$peer]: already connected"
+        logger.debug(s"Refused connection with peer[$peer]: already connected")
         false
       }
       else {
-        logger debug s"Accepted connection with peer[$peer]"
+        logger.debug(s"Accepted connection with peer[$peer]")
         peers.add(peer)
         checkConnectionsLimit()
         true
@@ -269,7 +266,7 @@ object StealthNetConnectionsManager {
 
         case _ =>
           /* shall not happen */
-          logger debug s"Refused connection with endpoint[$remoteAddress]: unhandled address type"
+          logger.debug(s"Refused connection with endpoint[$remoteAddress]: unhandled address type")
           false
       }
 
@@ -292,9 +289,9 @@ object StealthNetConnectionsManager {
      * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`remove`
      */
     protected def closed(channel: Channel) {
-      val cnx = Option(channel.attr[StealthNetConnection](STEALTHNET_CONNECTION).getAndRemove())
+      val cnx = Option(channel.attr[StealthNetConnection](STEALTHNET_CONNECTION).getAndRemove)
 
-      logger debug(StealthNetConnection.loggerContext(cnx, channel), "Channel closed")
+      logger.debug(StealthNetConnection.loggerContext(cnx, channel), "Channel closed")
 
       cnx foreach { cnx =>
         cnx.peer foreach { remove(_, cnx.accepted) }
@@ -319,9 +316,9 @@ object StealthNetConnectionsManager {
       // scalastyle:on null
 
       if (peers.remove(peer))
-        logger trace s"Removed peer[$peer]"
+        logger.trace(s"Removed peer[$peer]")
       else if (accepted)
-        logger debug s"Peer[$peer] was unknown"
+        logger.debug(s"Peer[$peer] was unknown")
 
       if (!stopping)
         checkConnectionsLimit()
@@ -394,7 +391,7 @@ object StealthNetConnectionsManager {
    * @return the associated connection
    */
   def connection(channel: Channel): StealthNetConnection =
-    get(channel, true).get
+    get(channel, create = true).get
 
   /**
    * Gets the connection associated to the given channel.
@@ -405,7 +402,7 @@ object StealthNetConnectionsManager {
    *   if none
    */
   def getConnection(channel: Channel): Option[StealthNetConnection] =
-    get(channel, false)
+    get(channel, create = false)
 
   /**
    * Indicates the given channel was closed.

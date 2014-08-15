@@ -22,7 +22,7 @@ object UUID {
   implicit def javaUuidToBytes(uuid: jUUID): Array[Byte] = {
     val result: ListBuffer[Byte] = ListBuffer.empty
 
-    for (value <- List(uuid.getLeastSignificantBits(), uuid.getMostSignificantBits())) {
+    for (value <- List(uuid.getLeastSignificantBits, uuid.getMostSignificantBits)) {
       for (idx <- 0 to 7) {
         ((value >>> (idx * 8)) & 0xFF).asInstanceOf[Byte] +=: result
       }

@@ -6,7 +6,7 @@ import stealthnet.scala.cryptography.{
   CipherMode,
   PaddingMode
 }
-import stealthnet.scala.network.protocol.{BitSize, Encryption, ProtocolStream}
+import stealthnet.scala.network.protocol.{BitSize, Encryption}
 import stealthnet.scala.network.protocol.exceptions.InvalidDataException
 
 /**

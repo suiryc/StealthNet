@@ -1,7 +1,6 @@
 package stealthnet.scala.network.protocol.commands
 
 import java.io.{InputStream, OutputStream}
-import java.math.BigInteger
 import scala.collection.mutable
 import scala.language.existentials
 import stealthnet.scala.network.protocol.{BitSize, ProtocolStream}
@@ -232,22 +231,22 @@ trait CommandArguments extends CommandArgumentDefinitions {
         "\n" + HexDumper.dump(value.asInstanceOf[Array[Byte]]) + "\n"
 
       case IntegerArgumentDefinition(name, bitSize) =>
-        value.toString()
+        value.toString
 
       case BigIntegerArgumentDefinition(name) =>
-        value.toString()
+        value.toString
 
       case StringArgumentDefinition(name) =>
-        value.toString()
+        value.toString
 
       case HashArgumentDefinition(name, length) =>
-        value.toString()
+        value.toString
 
       case ListArgumentsDefinition(name, builder) =>
-        value.toString()
+        value.toString
 
       case StringMapArgumentDefinition(name) =>
-        value.toString()
+        value.toString
     })
   }).mkString("(", ", ", ")")
 

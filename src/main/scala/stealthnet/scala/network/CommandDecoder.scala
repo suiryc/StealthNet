@@ -76,7 +76,7 @@ class CommandDecoder
       case e: Exception =>
         checkpoint()
         if (ctx.channel.isActive && !cnx.closing && !Core.stopping) {
-          logger error(cnx.loggerContext, "Protocol issue", e)
+          logger.error(cnx.loggerContext, "Protocol issue", e)
           /* Note: closing channel is not done right away ... */
           cnx.close()
           encryptedDuplicate foreach { logData(cnx, true, _) }
@@ -103,19 +103,19 @@ class CommandDecoder
     try {
       val decrypted = builder.decryptData(cnx, buf.array, buf.readerIndex, buf.readableBytes)
       if (issue)
-        logger error(cnx.loggerContext, "Decrypted data:\n" + HexDumper.dump(decrypted))
+        logger.error(cnx.loggerContext, "Decrypted data:\n" + HexDumper.dump(decrypted))
       else
-        logger trace(cnx.loggerContext, "Decrypted data:\n" + HexDumper.dump(decrypted))
+        logger.trace(cnx.loggerContext, "Decrypted data:\n" + HexDumper.dump(decrypted))
     }
     catch {
       case e: Throwable =>
         if (issue) {
-          logger error(cnx.loggerContext, "Could not decrypt data:\n" + HexDumper.dump(buf.array, buf.readerIndex, buf.readableBytes), e)
-          logger error(cnx.loggerContext, "Decrypting data are: " + builder.decryptingData(cnx))
+          logger.error(cnx.loggerContext, "Could not decrypt data:\n" + HexDumper.dump(buf.array, buf.readerIndex, buf.readableBytes), e)
+          logger.error(cnx.loggerContext, "Decrypting data are: " + builder.decryptingData(cnx))
         }
         else {
-          logger trace(cnx.loggerContext, "Could not decrypt data:\n" + HexDumper.dump(buf.array, buf.readerIndex, buf.readableBytes), e)
-          logger trace(cnx.loggerContext, "Decrypting data are: " + builder.decryptingData(cnx))
+          logger.trace(cnx.loggerContext, "Could not decrypt data:\n" + HexDumper.dump(buf.array, buf.readerIndex, buf.readableBytes), e)
+          logger.trace(cnx.loggerContext, "Decrypting data are: " + builder.decryptingData(cnx))
         }
     }
   }

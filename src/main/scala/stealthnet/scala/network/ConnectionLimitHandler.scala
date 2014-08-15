@@ -75,10 +75,10 @@ class ConnectionLimitHandler
     val cnx = StealthNetConnectionsManager.getConnection(ctx.channel)
     val loggerContext = StealthNetConnection.loggerContext(cnx, ctx.channel)
 
-    if (cnx map(cnx => !cnx.closing && !Core.stopping && (cnx.isClient || cnx.accepted)) getOrElse(false))
-      logger debug(loggerContext, "Remote host disconnected")
+    if (cnx.exists(cnx => !cnx.closing && !Core.stopping && (cnx.isClient || cnx.accepted)))
+      logger.debug(loggerContext, "Remote host disconnected")
     else
-      logger debug(loggerContext, "Disconnected")
+      logger.debug(loggerContext, "Disconnected")
 
     /* Cleanup the connection */
     StealthNetConnectionsManager.closedChannel(ctx.channel)

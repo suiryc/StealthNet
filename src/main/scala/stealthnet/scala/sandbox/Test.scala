@@ -40,7 +40,7 @@ object Test {
     }
 
     if (false) {
-    val input = "test".getBytes()
+    val input = "test".getBytes
     val rijndael = RijndaelParameters()
 
     val rijndaelCipher = Ciphers.rijndaelEncrypter(rijndael)

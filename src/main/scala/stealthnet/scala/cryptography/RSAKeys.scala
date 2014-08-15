@@ -22,12 +22,12 @@ object RSAKeys {
   private val pair = kpGen.generateKeyPair()
 
   /** Gets ''RSA'' key pair. */
-  def keys() = pair
+  def keys = pair
 
   /** Gets ''RSA'' public key. */
-  def publicKey() = pair.getPublic.asInstanceOf[RSAPublicKey]
+  def publicKey = pair.getPublic.asInstanceOf[RSAPublicKey]
 
   /** Gets ''RSA'' private key. */
-  def privateKey() = pair.getPrivate.asInstanceOf[RSAPrivateKey]
+  def privateKey = pair.getPrivate.asInstanceOf[RSAPrivateKey]
 
 }

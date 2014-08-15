@@ -36,7 +36,7 @@ class Message(val bytes: Array[Byte]) {
    *
    * Message is converted to bytes according to default charset.
    */
-  def this(message: String) = this(message.getBytes())
+  def this(message: String) = this(message.getBytes)
 
   /**
    * Hash message for given algorithm.
@@ -46,13 +46,12 @@ class Message(val bytes: Array[Byte]) {
   def hash(algorithm: Algorithm.Value): Hash = {
     cache.get(algorithm) match {
       case Some(hash) => hash
-      case None => {
+      case None =>
         val digest = Digest(algorithm)
         digest.update(bytes)
         val result = digest.digest()
         cache += (algorithm -> result)
         result
-      }
     }
   }
 

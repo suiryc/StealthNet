@@ -1,9 +1,6 @@
 package stealthnet.scala.network
 
 import akka.actor._
-import akka.pattern.ask
-import akka.util.Timeout
-import scala.concurrent._
 import stealthnet.scala.Settings
 import stealthnet.scala.core.Core
 import stealthnet.scala.util.Peer
@@ -71,7 +68,7 @@ object WebCachesManager {
         removePeer()
 
       case GetPeer =>
-        getPeer() foreach { sender ! GotPeer(_) }
+        getPeer.foreach { sender ! GotPeer(_) }
 
       case CheckWebCaches =>
         checkWebCaches()
@@ -97,28 +94,28 @@ object WebCachesManager {
           None
       ) match {
         case Some(urls) =>
-          logger debug s"Got webCaches: $urls"
+          logger.debug(s"Got webCaches: $urls")
           urls
 
         case None =>
           val default = Settings.core.wsWebCacheDefault
           if (Settings.core.wsWebCacheUpdateEnabled)
-            logger debug s"Got no webCache: using default[$default]"
+            logger.debug(s"Got no webCache: using default[$default]")
           else
-            logger debug s"WebCache update disabled: using default[$default]"
+            logger.debug(s"WebCache update disabled: using default[$default]")
           default
       }
 
       val excluded = Settings.core.wsWebCacheExcluded
       webCaches = unfiltered filterNot { webCache =>
-        excluded.find { regex =>
+        excluded.exists { regex =>
           val filtered = regex.r.findFirstIn(webCache).isDefined
 
           if (filtered)
-            logger debug s"WebCache[$webCache] excluded[$regex]"
+            logger.debug(s"WebCache[$webCache] excluded[$regex]")
 
           filtered
-        } .isDefined
+        }
       }
 
       cyclicIt = webCaches.iterator
@@ -154,7 +151,7 @@ object WebCachesManager {
           yield (webCache, WebCacheClient.addPeer(webCache, Settings.core.serverPort))
 
         toCheck = results filterNot { _._2 } map { _._1 }
-        if (!toCheck.isEmpty && !checkOngoing) {
+        if (toCheck.nonEmpty && !checkOngoing) {
           self ! CheckWebCaches
           checkOngoing = true
         }
@@ -172,7 +169,7 @@ object WebCachesManager {
      *
      * @return an option value containing the retrieved peer, or `None` if none
      */
-    protected def getPeer(): Option[Peer] = {
+    protected def getPeer: Option[Peer] = {
       if (webCaches.size == 0)
         return None
 
@@ -180,7 +177,7 @@ object WebCachesManager {
         addPeer()
 
       for (i <- 1 to webCaches.size) {
-        val webCache = cyclicIt.next
+        val webCache = cyclicIt.next()
         if (!cyclicIt.hasNext)
           cyclicIt = webCaches.iterator
 
@@ -192,7 +189,7 @@ object WebCachesManager {
         }
       }
 
-      return None
+      None
     }
 
     /**
@@ -201,14 +198,14 @@ object WebCachesManager {
      * Periodically tries to (re-)add ourself on WebCaches which failed.
      */
     protected def checkWebCaches() =
-      if (addedPeer && !toCheck.isEmpty) {
+      if (addedPeer && toCheck.nonEmpty) {
         val results = for (webCache <- toCheck)
           yield (webCache, WebCacheClient.addPeer(webCache, Settings.core.serverPort))
 
         toCheck = results filterNot { _._2 } map { _._1 }
 
         /* check again later */
-        if (!toCheck.isEmpty)
+        if (toCheck.nonEmpty)
           Core.schedule(self ! CheckWebCaches,
             Settings.core.wsWebCacheCheckPeriod)
         else

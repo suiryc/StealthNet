@@ -5,7 +5,7 @@
     <artifactId>stealthnet-core_2.11</artifactId>
     <packaging>jar</packaging>
     <description>stealthnet-core</description>
-    <version>0.1.1</version>
+    <version>0.1.2-SNAPSHOT</version>
     <name>stealthnet-core</name>
     <organization>
         <name>stealthnet.scala</name>

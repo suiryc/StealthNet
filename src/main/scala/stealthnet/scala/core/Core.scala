@@ -123,7 +123,7 @@ object Core extends Logging with EmptyLoggingContext {
       case c: Command7A =>
 
       case _ =>
-        logger error(cnx.loggerContext, s"Unhandled command $command")
+        logger.error(cnx.loggerContext, s"Unhandled command $command")
     }
   }
   // scalastyle:on method.length
@@ -181,9 +181,7 @@ object Core extends Logging with EmptyLoggingContext {
     for {
       _ <- f1
       _ <- f2
-    } yield {
-      logger debug "Shutdowned"
-    }
+    } logger.debug("Shutdowned")
 
     timer.cancel()
   }

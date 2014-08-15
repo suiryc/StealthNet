@@ -46,7 +46,7 @@ object StealthNetClient
    * Cleans shared resources.
    */
   def stop() = {
-    logger debug "Stopping"
+    logger.debug("Stopping")
 
     val f = workerGroup.shutdownGracefully(Settings.core.shutdownQuietPeriod,
       Settings.core.shutdownTimeout, TimeUnit.MILLISECONDS)
@@ -56,7 +56,7 @@ object StealthNetClient
     val r = for {
       _ <- f
     } yield {
-      logger debug "Stopped"
+      logger.debug("Stopped")
     }
 
     r
@@ -97,7 +97,7 @@ class StealthNetClient(
 
     (StealthNetConnectionsManager.actor ? StealthNetConnectionsManager.AddPeer(peer)).mapTo[Boolean] onComplete {
       case Failure(e) =>
-        logger error("Failed to start", e)
+        logger.error("Failed to start", e)
 
       case Success(allowed) =>
         if (allowed)
@@ -109,14 +109,14 @@ class StealthNetClient(
    * Attempts asynchronous connection.
    */
   protected def connect() {
-    logger trace("Starting new client connection")
+    logger.trace("Starting new client connection")
 
     val future = bootstrap.connect(new InetSocketAddress(peer.host, peer.port))
     StealthNetServer.group.add(future.channel)
     future.addListener(new GenericFutureListener[ChannelFuture]() {
       override def operationComplete(future: ChannelFuture) {
         if (!future.isSuccess) {
-          logger debug("Failed to connect", future.cause)
+          logger.debug("Failed to connect", future.cause)
           /* Since connection failed, we need to notify the manager */
           StealthNetConnectionsManager.actor ! StealthNetConnectionsManager.RemovePeer(peer)
         }

@@ -1,13 +1,10 @@
 package stealthnet.scala.network.protocol
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, EOFException}
-import java.math.BigInteger
-import scala.collection.mutable.WrappedArray
-
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-
+import scala.collection.mutable
 import stealthnet.scala.Constants
 
 // scalastyle:off magic.number
@@ -33,12 +30,12 @@ class ProtocolStreamSuite extends FunSuite {
           output.write(v.map(_.asInstanceOf[Number].byteValue).toArray)
       }
     output.close()
-    output.toByteArray()
+    output.toByteArray
   }
   private def buildInput(seq: Any*) =
     new ByteArrayInputStream(buildArray(seq: _*))
   private def wrapArray(seq: Any*) =
-    buildArray(seq: _*):WrappedArray[Byte]
+    buildArray(seq: _*):mutable.WrappedArray[Byte]
 
   test("convertInteger") {
     val tests: List[((Long, Int), Array[Byte])] = List(
@@ -84,7 +81,7 @@ class ProtocolStreamSuite extends FunSuite {
   test("writeHeader") {
     val output = new ByteArrayOutputStream()
     ProtocolStream.writeHeader(output)
-    assert(wrapArray(Constants.protocolRAW) === wrapArray(output.toByteArray()))
+    assert(wrapArray(Constants.protocolRAW) === wrapArray(output.toByteArray))
   }
 
   test("readByte+writeByte") {
@@ -104,7 +101,7 @@ class ProtocolStreamSuite extends FunSuite {
       val output = new ByteArrayOutputStream()
       assert(1 === ProtocolStream.writeByte(output, value))
       output.close()
-      assert(wrapArray(value) === wrapArray(output.toByteArray()))
+      assert(wrapArray(value) === wrapArray(output.toByteArray))
     }
 
     /* special tests */
@@ -142,7 +139,7 @@ class ProtocolStreamSuite extends FunSuite {
       assert((value.length + bitSize / 8)
         === ProtocolStream.writeBytes(output, value, bitSize))
       output.close()
-      assert(wrapArray(bytes) === wrapArray(output.toByteArray()))
+      assert(wrapArray(bytes) === wrapArray(output.toByteArray))
     }
 
     /* special tests */
@@ -211,7 +208,7 @@ class ProtocolStreamSuite extends FunSuite {
       val output = new ByteArrayOutputStream()
       assert((bitSize / 8) === ProtocolStream.writeInteger(output, value, bitSize))
       output.close()
-      assert(wrapArray(bytes) === wrapArray(output.toByteArray()))
+      assert(wrapArray(bytes) === wrapArray(output.toByteArray))
     }
 
     /* special tests */
@@ -258,7 +255,7 @@ class ProtocolStreamSuite extends FunSuite {
       val output = new ByteArrayOutputStream()
       assert(bytes.length === ProtocolStream.writeBigInteger(output, value))
       output.close()
-      assert(wrapArray(bytes) === wrapArray(output.toByteArray()))
+      assert(wrapArray(bytes) === wrapArray(output.toByteArray))
     }
 
     /* special tests */
@@ -285,7 +282,7 @@ class ProtocolStreamSuite extends FunSuite {
       val output = new ByteArrayOutputStream()
       assert(bytes.length === ProtocolStream.writeString(output, value))
       output.close()
-      assert(wrapArray(bytes) === wrapArray(output.toByteArray()))
+      assert(wrapArray(bytes) === wrapArray(output.toByteArray))
     }
   }
 
@@ -304,7 +301,7 @@ class ProtocolStreamSuite extends FunSuite {
       val output = new ByteArrayOutputStream()
       assert(value.length === ProtocolStream.write(output, value))
       output.close()
-      assert(wrapArray(value) === wrapArray(output.toByteArray()))
+      assert(wrapArray(value) === wrapArray(output.toByteArray))
     }
   }
 

@@ -38,14 +38,14 @@ object SoapClient {
    */
   def doRequest(url: String, req: Elem): Either[String, Elem] = {
     val outs = wrap(req).getBytes("UTF-8")
-    val conn = (new URL(url)).openConnection.asInstanceOf[java.net.HttpURLConnection]
+    val conn = new URL(url).openConnection.asInstanceOf[java.net.HttpURLConnection]
     try {
       conn.setRequestMethod("POST")
       conn.setDoOutput(true)
       conn.setRequestProperty("Content-Length", outs.length.toString)
       conn.setRequestProperty("Content-Type", "text/xml; charset=utf-8")
       conn.getOutputStream.write(outs)
-      conn.getOutputStream.close
+      conn.getOutputStream.close()
       Right(XML.load(conn.getInputStream))
     }
     catch {
@@ -69,7 +69,7 @@ object SoapClient {
           /* Usually means we could not even connect to the server, let alone
            * get a response (code / message).
            */
-          Left(e.toString())
+          Left(e.toString)
         }
     }
   }

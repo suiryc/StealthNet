@@ -41,15 +41,15 @@ abstract class Reaper
   /** Watch and check for termination. */
   final override def receive = {
     case WatchMe(ref) =>
-      logger debug s"Watching $ref"
+      logger.debug(s"Watching $ref")
       context.watch(ref)
       watched += ref
 
     case Terminated(ref) =>
-      logger debug s"$ref terminated"
+      logger.debug(s"$ref terminated")
       watched -= ref
       if (watched.isEmpty) {
-        logger debug "All souls reaped"
+        logger.debug("All souls reaped")
         allSoulsReaped()
       }
   }

@@ -7,7 +7,7 @@ import java.io.{
   OutputStream
 }
 import javax.crypto.{CipherInputStream, CipherOutputStream}
-import scala.collection.mutable.WrappedArray
+import scala.collection.mutable
 import stealthnet.scala.{Constants, Settings}
 import stealthnet.scala.cryptography.{Algorithm, Message, RSAKeys}
 import stealthnet.scala.cryptography.Ciphers._
@@ -119,7 +119,7 @@ object Command extends Logging with EmptyLoggingContext {
      * @return decrypted data
      */
     def decryptData(cnx: StealthNetConnection, cipher: Array[Byte],
-      offset: Int, lenght: Int): Array[Byte] =
+      offset: Int, length: Int): Array[Byte] =
     {
       if (encryption == Encryption.None)
         return cipher
@@ -147,7 +147,7 @@ object Command extends Logging with EmptyLoggingContext {
           output.write(buffer, 0, read)
       }
       output.close()
-      output.toByteArray()
+      output.toByteArray
     }
 
     /**
@@ -163,10 +163,10 @@ object Command extends Logging with EmptyLoggingContext {
         "Data is not encrypted"
 
       case Encryption.RSA =>
-        RSAKeys.privateKey.toString()
+        RSAKeys.privateKey.toString
 
       case Encryption.Rijndael =>
-        cnx.remoteRijndaelParameters.toString()
+        cnx.remoteRijndaelParameters.toString
     }
 
     /**
@@ -209,7 +209,7 @@ object Command extends Logging with EmptyLoggingContext {
           Some(builder.read(newInput))
 
         case None =>
-          logger error(cnx.loggerContext, "Unknown command code[0x%02X] with encryption[%s]".format(code, encryption))
+          logger.error(cnx.loggerContext, "Unknown command code[0x%02X] with encryption[%s]".format(code, encryption))
           None
       }
 
@@ -229,7 +229,7 @@ object Command extends Logging with EmptyLoggingContext {
       case State.Header =>
         val headerRAW = ProtocolStream.read(input, Constants.protocolRAW.length)
         /* Note: bare Arrays cannot be compared with '==', unlike wrapped ones */
-        if ((headerRAW:WrappedArray[Byte]) != (Constants.protocolRAW:WrappedArray[Byte]))
+        if ((headerRAW:mutable.WrappedArray[Byte]) != (Constants.protocolRAW:mutable.WrappedArray[Byte]))
           throw new InvalidDataException("Invalid protocol header:\n" + HexDumper.dump(headerRAW), loggerContext = cnx.loggerContext)
         state = State.Encryption
         -1

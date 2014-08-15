@@ -22,7 +22,7 @@ class BCCipherInputStreamSuite extends FunSuite {
      */
     Stream.continually(is.read(buffer)).
       takeWhile(_ != -1).
-      map(buffer.take(_)).
+      map(buffer.take).
       foldLeft(Array[Byte]())((a, b) => a ++ b)
   }
 
@@ -35,7 +35,7 @@ class BCCipherInputStreamSuite extends FunSuite {
     os.write(input)
     os.close()
 
-    val bais = new ByteArrayInputStream(baos.toByteArray())
+    val bais = new ByteArrayInputStream(baos.toByteArray)
     val is = new BCCipherInputStream(bais, decrypter)
     val a = readInputStream(is)
     is.close()
@@ -52,11 +52,11 @@ class BCCipherInputStreamSuite extends FunSuite {
     os.write(input)
     os.close()
 
-    val bais1 = new ByteArrayInputStream(baos.toByteArray())
+    val bais1 = new ByteArrayInputStream(baos.toByteArray)
     val is1 = new BCCipherInputStream(bais1, decrypter)
     val a = readInputStream(is1)
 
-    val bais2 = new ByteArrayInputStream(baos.toByteArray())
+    val bais2 = new ByteArrayInputStream(baos.toByteArray)
     val is2 = new BCCipherInputStream(bais2, decrypter)
     val b = Stream.continually(is2.read()).
       takeWhile(_ != -1).
@@ -76,7 +76,7 @@ class BCCipherInputStreamSuite extends FunSuite {
     os.write(input)
     os.close()
 
-    val bais = new ByteArrayInputStream(baos.toByteArray())
+    val bais = new ByteArrayInputStream(baos.toByteArray)
     val is = new BCCipherInputStream(bais, decrypter)
     val b = Stream.continually(is.read()).
       takeWhile(_ != -1).toArray

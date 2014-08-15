@@ -2,18 +2,12 @@ package stealthnet.scala.network
 
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.{Channel, EventLoopGroup}
-import io.netty.channel.group.{
-  ChannelGroup,
-  ChannelGroupFuture,
-  DefaultChannelGroup
-}
+import io.netty.channel.group.{ChannelGroup, DefaultChannelGroup}
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.util.concurrent.GlobalEventExecutor
-import java.net.InetSocketAddress
-import java.util.concurrent.{Executors, TimeUnit}
+import java.util.concurrent.TimeUnit
 import stealthnet.scala.Settings
-import stealthnet.scala.core.Core
 import stealthnet.scala.network.connection.StealthNetConnectionParameters
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
@@ -38,7 +32,7 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
    * Server channel is added to the channel group.
    */
   def start() {
-    logger debug "Starting"
+    logger.debug("Starting")
 
     val bootstrap: ServerBootstrap = new ServerBootstrap()
 
@@ -58,7 +52,7 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
    * Cleans resources. Connections are supposed to be closed beforehand.
    */
   def stop() = {
-    logger debug "Stopping"
+    logger.debug("Stopping")
 
     val f1 = bossGroup.shutdownGracefully(Settings.core.shutdownQuietPeriod,
       Settings.core.shutdownTimeout, TimeUnit.MILLISECONDS)
@@ -71,7 +65,7 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
       _ <- f1
       _ <- f2
     } yield {
-      logger debug "Stopped"
+      logger.debug("Stopped")
     }
 
     r
@@ -83,7 +77,7 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
    * Closes channel group.
    */
   def closeConnections() {
-    logger debug s"Closing connections in $group"
+    logger.debug(s"Closing connections in $group")
 
     /* Note: we *MUST NOT* await since this would block the caller thread which
      * is also needed when channel closing event is fired.

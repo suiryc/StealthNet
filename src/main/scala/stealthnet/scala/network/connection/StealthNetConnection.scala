@@ -14,9 +14,9 @@ import stealthnet.scala.util.log.LoggingContext
 object StealthNetConnection {
 
   def loggerContext(cnx: Option[StealthNetConnection], channel: Channel) = {
-    val ctx = cnx map(_.loggerContext) getOrElse(Nil)
+    val ctx = cnx.map(_.loggerContext).getOrElse(Nil)
 
-    if (ctx.find(_._1 == "peer").isDefined)
+    if (ctx.exists(_._1 == "peer"))
       ctx
     else
       ctx ::: List("remote" -> channel.remoteAddress)
@@ -44,7 +44,7 @@ class StealthNetConnection protected[connection] (val channel: Channel)
   val createDate = new Date()
 
   def loggerContext: List[(String, Any)] =
-    peer map(v => List("peer" -> v)) getOrElse(Nil)
+    peer.map(v => List("peer" -> v)).getOrElse(Nil)
 
   /** Remote peer. */
   var peer: Option[Peer] = None

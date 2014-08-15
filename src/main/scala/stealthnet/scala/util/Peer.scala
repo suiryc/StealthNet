@@ -35,7 +35,7 @@ case class Peer(addr: InetSocketAddress) {
         s"[$host]:$port"
     }
 
-  override def toString(): String =
+  override def toString: String =
     representation
 
 }

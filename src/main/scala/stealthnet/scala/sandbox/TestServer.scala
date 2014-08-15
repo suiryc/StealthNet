@@ -7,7 +7,7 @@ import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 object TestServer extends Logging with EmptyLoggingContext {
 
   def main(args: Array[String]): Unit = {
-    logger info("Started")
+    logger.info("Started")
 
     try {
       Core.start()
@@ -18,7 +18,7 @@ object TestServer extends Logging with EmptyLoggingContext {
       Core.stop()
     }
 
-    logger info("Finished")
+    logger.info("Finished")
   }
 
 }

@@ -2,12 +2,10 @@ package stealthnet.scala.cryptography
 
 import java.security.{SecureRandom, Security}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import scala.collection.mutable.WrappedArray
-
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-
+import scala.collection.mutable
 import stealthnet.scala.Constants
 
 // scalastyle:off magic.number
@@ -91,7 +89,7 @@ class CiphersSuite extends FunSuite {
       }
 
       /* Note: for Array, '===' compares the content, while '=='/'!=' compares object reference */
-      assert((encrypted:WrappedArray[Byte]) != (input:WrappedArray[Byte]),
+      assert((encrypted:mutable.WrappedArray[Byte]) != (input:mutable.WrappedArray[Byte]),
         s"Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize] keySize[$keySize]" +
         " cipherMode[$cipherMode] paddingMode[$paddingMode] encrypted data equals unencrypted data"
       )
@@ -138,7 +136,7 @@ class CiphersSuite extends FunSuite {
           )
       }
 
-      assert((encrypted:WrappedArray[Byte]) != (input:WrappedArray[Byte]),
+      assert((encrypted:mutable.WrappedArray[Byte]) != (input:mutable.WrappedArray[Byte]),
         s"RSA keySize[${Constants.RSAKeyLength}] encrypted data equals unencrypted data"
       )
 

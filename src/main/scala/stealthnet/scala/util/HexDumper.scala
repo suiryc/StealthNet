@@ -1,7 +1,5 @@
 package stealthnet.scala.util
 
-import scala.collection.mutable.IndexedSeqView
-
 /**
  * Hexadecimal data dumper.
  *
@@ -49,7 +47,7 @@ object HexDumper {
     def stream: Stream[BytesView] = {
       def loop(rest: BytesView): Stream[BytesView] =
         rest.splitAt(viewBytes) match {
-          case (head, tail) if (!head.isEmpty) =>
+          case (head, tail) if (head.nonEmpty) =>
             head #:: loop(tail)
 
           case _ =>
