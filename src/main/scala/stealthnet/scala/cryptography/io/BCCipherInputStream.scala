@@ -33,49 +33,53 @@ class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
    *
    * @return available decrypted bytes, or `-1` for ''EOF''
    */
-  protected def fillBuffer(): Int = {
-    if (finalized)
-      return -1
+  protected def fillBuffer(): Int =
+    if (finalized) -1
+    else {
+      val read = input.read(inputBuffer)
+      val eof = if (read == -1) true else false
 
-    val read = input.read(inputBuffer)
-    val eof = if (read == -1) true else false
-
-    val length = if (eof)
+      val length = if (eof)
         cipher.getOutputSize(if (read > 0) read else 0)
       else
         cipher.getUpdateOutputSize(read)
 
-    if (length > buffer.length)
-      buffer = new Array[Byte](length)
+      if (length > buffer.length)
+        buffer = new Array[Byte](length)
 
-    bufferOffset = 0
-    bufferEnd = if (read > 0)
+      bufferOffset = 0
+      bufferEnd = if (read > 0)
         cipher.processBytes(inputBuffer, 0, read, buffer, 0)
       else
         0
 
-    if (eof) {
-      bufferEnd += cipher.doFinal(buffer, bufferEnd)
-      finalized = true
-    }
+      if (eof) {
+        bufferEnd += cipher.doFinal(buffer, bufferEnd)
+        finalized = true
+      }
 
-    if (finalized && (bufferEnd == 0))
-      -1
-    else
-      bufferEnd
-  }
+      if (finalized && (bufferEnd == 0))
+        -1
+      else
+        bufferEnd
+    }
 
   override def available: Int = bufferEnd - bufferOffset
 
   override def read(): Int = {
-    while (available == 0) {
-      if (fillBuffer() == -1)
-        return -1
-    }
+    @scala.annotation.tailrec
+    def loop(): Int =
+      if (available == 0) {
+        if (fillBuffer() == -1) -1
+        else loop()
+      }
+      else {
+        bufferOffset += 1
+        /* Note: make sure to return the byte value in the range 0-255 as needed */
+        0xFF & buffer(bufferOffset - 1)
+      }
 
-    bufferOffset += 1
-    /* Note: make sure to return the byte value in the range 0-255 as needed */
-    0xFF & buffer(bufferOffset - 1)
+    loop()
   }
 
   override def read(b: Array[Byte]) = read(b, 0, b.length)
@@ -84,42 +88,45 @@ class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
    * @todo shall we check parameters (as does parent class) ?
    */
   override def read(b: Array[Byte], off: Int, len: Int): Int = {
-    if (len <= 0)
-      return 0
+    @scala.annotation.tailrec
+    def loop(): Int = {
+      if (available == 0) {
+        if (fillBuffer() == -1) -1
+        else loop()
+      }
+      else {
+        val length = if (len < available) len else available
+        System.arraycopy(buffer, bufferOffset, b, off, length)
+        bufferOffset += length
 
-    while (available == 0) {
-      if (fillBuffer() == -1)
-        return -1
+        length
+      }
     }
 
-    val length = if (len < available) len else available
-    System.arraycopy(buffer, bufferOffset, b, off, length)
-    bufferOffset += length
-
-    length
+    if (len <= 0) 0
+    else loop()
   }
 
   /**
    * This implementation do `read` if necessary until the requested number
    * of bytes are skipped or ''EOF'' is reached.
    */
-  override def skip(n: Long): Long = {
-    if (n <= 0)
-      return 0
+  override def skip(n: Long): Long =
+    if (n <= 0) 0
+    else {
+      var remaining = n
+      var stop = false
+      val tmp = new Array[Byte](Constants.cipherBufferLength)
+      while ((remaining > 0) && !stop) {
+        val length = read(tmp, 0, if (remaining < tmp.length) remaining.intValue else tmp.length)
+        if (length == -1)
+          stop = true
+        else
+          remaining -= length
+      }
 
-    var remaining = n
-    var stop = false
-    val tmp = new Array[Byte](Constants.cipherBufferLength)
-    while ((remaining > 0) && !stop) {
-      val length = read(tmp, 0, if (remaining < tmp.length) remaining.intValue else tmp.length)
-      if (length == -1)
-        stop = true
-      else
-        remaining -= length
+      n - remaining
     }
-
-    n - remaining
-  }
 
   /**
    * This implementation does `reset` the cipher.

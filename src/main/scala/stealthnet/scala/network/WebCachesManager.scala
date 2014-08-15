@@ -169,28 +169,19 @@ object WebCachesManager {
      *
      * @return an option value containing the retrieved peer, or `None` if none
      */
-    protected def getPeer: Option[Peer] = {
-      if (webCaches.size == 0)
-        return None
+    protected def getPeer: Option[Peer] =
+      if (webCaches.size == 0) None
+      else {
+        if (!addedPeer) addPeer()
 
-      if (!addedPeer)
-        addPeer()
+        /* Note: use a Stream to only execute code until a peer is retrieved */
+        (1 to webCaches.size).toStream.flatMap { _ =>
+          val webCache = cyclicIt.next()
+          if (!cyclicIt.hasNext) cyclicIt = webCaches.iterator
 
-      for (i <- 1 to webCaches.size) {
-        val webCache = cyclicIt.next()
-        if (!cyclicIt.hasNext)
-          cyclicIt = webCaches.iterator
-
-        WebCacheClient.getPeer(webCache) match {
-          case None =>
-
-          case v =>
-            return v
-        }
+          WebCacheClient.getPeer(webCache)
+        }.headOption
       }
-
-      None
-    }
 
     /**
      * Check WebCaches.

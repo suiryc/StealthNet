@@ -120,35 +120,33 @@ object Command extends Logging with EmptyLoggingContext {
      */
     def decryptData(cnx: StealthNetConnection, cipher: Array[Byte],
       offset: Int, length: Int): Array[Byte] =
-    {
-      if (encryption == Encryption.None)
-        return cipher
+      if (encryption == Encryption.None) cipher
+      else {
+        val input: InputStream = new ByteArrayInputStream(cipher, offset, length)
+        val cipherInput: InputStream = encryption match {
+          case Encryption.RSA =>
+            new CipherInputStream(input, rsaDecrypter(RSAKeys.privateKey))
 
-      val input: InputStream = new ByteArrayInputStream(cipher, offset, length)
-      val cipherInput: InputStream = encryption match {
-        case Encryption.RSA =>
-          new CipherInputStream(input, rsaDecrypter(RSAKeys.privateKey))
+          case Encryption.Rijndael =>
+            cnx.rijndaelDecrypter map { rijndaelDecrypter =>
+              rijndaelDecrypter.reset()
+              new BCCipherInputStream(input, rijndaelDecrypter)
+            } getOrElse {
+              throw new Exception("Cannot decrypt: Rijndael decrypter not yet created")
+            }
+        }
 
-        case Encryption.Rijndael =>
-          cnx.rijndaelDecrypter map { rijndaelDecrypter =>
-            rijndaelDecrypter.reset()
-            new BCCipherInputStream(input, rijndaelDecrypter)
-          } getOrElse {
-            throw new Exception("Cannot decrypt: Rijndael decrypter not yet created")
-          }
+        val output = new ByteArrayOutputStream()
+        val buffer = new Array[Byte](Constants.cipherBufferLength)
+        var read = 1
+        while (read > 0) {
+          read = cipherInput.read(buffer)
+          if (read > 0)
+            output.write(buffer, 0, read)
+        }
+        output.close()
+        output.toByteArray
       }
-
-      val output = new ByteArrayOutputStream()
-      val buffer = new Array[Byte](Constants.cipherBufferLength)
-      var read = 1
-      while (read > 0) {
-        read = cipherInput.read(buffer)
-        if (read > 0)
-          output.write(buffer, 0, read)
-      }
-      output.close()
-      output.toByteArray
-    }
 
     /**
      * Gets decrypting data.
