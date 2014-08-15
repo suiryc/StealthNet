@@ -11,33 +11,25 @@ class BayeuxAuthenticator
 
   private def authenticate(server: BayeuxServer, session: ServerSession,
       message: ServerMessage): Boolean =
-  {
     /* Allow local (i.e. server-side) sessions */
-    if (session.isLocalSession)
-      return true
-
-    Option(message.getExt) flatMap { ext =>
+    if (session.isLocalSession) true
+    else Option(message.getExt).flatMap { ext =>
       /* Get message 'ext.authentication' data */
       Option(ext.get("authentication").asInstanceOf[java.util.Map[String, Object]])
-    } flatMap { authentication =>
+    }.flatMap { authentication =>
       /* Get session id from given authentication data */
       Option(authentication.get("sessionId").asInstanceOf[String])
-    } map { sessionId =>
-      /* Check session id is known and user is logged */
+    }.flatMap { sessionId =>
+      /* Get session from given id; and thus check this id is known */
+      SessionManager.getSession(sessionId)
+    }.flatMap { session =>
+      /* Get user session from given session */
+      Option(session.getAttribute("userSession").asInstanceOf[UserSession])
+    }.exists { userSession =>
+      /* Check user is logged */
       /* XXX - should we also check remote address ? */
-      SessionManager.getSession(sessionId) map { session =>
-        Option(session.getAttribute("userSession").asInstanceOf[UserSession]) map { userSession =>
-          userSession.getLogged
-        } getOrElse {
-          false
-        }
-      } getOrElse {
-        false
-      }
-    } getOrElse {
-      false
+      userSession.getLogged
     }
-  }
 
   override def canHandshake(server: BayeuxServer, session: ServerSession,
       message: ServerMessage): Boolean =
