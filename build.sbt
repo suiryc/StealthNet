@@ -78,9 +78,7 @@ libraryDependencies ++= Seq(
   "stealthnet.scala" %% "stealthnet-core" % versions("stealthnet-core")
 )
 
-val localMavenPath = Path.userHome.absolutePath + "/.m2/repository"
-
-resolvers += "Local Maven Repository" at "file://" + localMavenPath
+resolvers += Resolver.mavenLocal
 
 org.scalastyle.sbt.ScalastylePlugin.Settings
 
@@ -89,7 +87,7 @@ org.scalastyle.sbt.PluginKeys.config := file("project/scalastyle-config.xml")
 
 publishMavenStyle := true
 
-publishTo := Some(Resolver.file("file",  new File(localMavenPath)))
+publishTo := Some(Resolver.mavenLocal)
 
 pomExtra := (
   <properties>
