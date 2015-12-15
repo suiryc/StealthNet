@@ -1,6 +1,6 @@
 package stealthnet.scala.cryptography
 
-import stealthnet.scala.util.Hash
+import suiryc.scala.util.Hash
 
 /**
  * Digest algorithms.

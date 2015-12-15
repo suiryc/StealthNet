@@ -5,7 +5,8 @@ import scala.collection.mutable
 import scala.language.existentials
 import stealthnet.scala.network.protocol.{BitSize, ProtocolStream}
 import stealthnet.scala.network.protocol.exceptions.ProtocolException
-import stealthnet.scala.util.{Hash, HexDumper}
+import stealthnet.scala.util.HexDumper
+import suiryc.scala.util.Hash
 
 /**
  * Command argument definition.

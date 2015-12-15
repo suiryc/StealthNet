@@ -3,7 +3,7 @@ package stealthnet.scala.cryptography
 import org.junit.runner.RunWith
 import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
-import stealthnet.scala.util.Hash
+import suiryc.scala.util.Hash
 
 object DigestSuite {
 

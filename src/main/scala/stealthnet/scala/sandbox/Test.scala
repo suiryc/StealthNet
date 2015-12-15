@@ -16,13 +16,13 @@ import stealthnet.scala.util.HexDumper
 import java.security.KeyFactory
 import java.security.spec.RSAPrivateKeySpec
 import java.math.BigInteger
-import stealthnet.scala.util.Hash
 import java.security.interfaces.RSAPrivateKey
 import stealthnet.scala.network.protocol.ProtocolStream
 import stealthnet.scala.util.io.DebugInputStream
 import stealthnet.scala.cryptography.CipherMode
 import stealthnet.scala.cryptography.PaddingMode
 import stealthnet.scala.network.protocol.commands.Command
+import suiryc.scala.util.{Hash, HexUndumper}
 
 // scalastyle:off line.size.limit regex
 object Test {
@@ -98,11 +98,11 @@ object Test {
     val keySize = 256
     val cipherMode = CipherMode.CBC
     val paddingMode = PaddingMode.PKCS7
-    val iv = HexDumper.undump("""0000: 1C CC 54 C6 88 85 37 88 - 8E 91 A8 19 0D 8B 56 8A | [..T...7.......V.]
+    val iv = HexUndumper.undump("""0000: 1C CC 54 C6 88 85 37 88 - 8E 91 A8 19 0D 8B 56 8A | [..T...7.......V.]
 0010: D6 38 A8 17 A3 7E 62 A4 - 44 28 A2 76 3F 69 69 16 | [.8...~b.D(.v?ii.]""")
-    val key = HexDumper.undump("""0000: 7F 01 E4 AA D3 D4 F7 AF - 48 C9 75 48 CD D3 B6 F8 | [........H.uH....]
+    val key = HexUndumper.undump("""0000: 7F 01 E4 AA D3 D4 F7 AF - 48 C9 75 48 CD D3 B6 F8 | [........H.uH....]
 0010: 75 08 3E BB D4 F3 85 DB - 34 11 1A 4F 6F CB F5 74 | [u.>.....4..Oo..t]""")
-    val rijndaelEncrypted = HexDumper.undump("""0000: D6 B6 3E 0D C0 A6 - AF 79 CD 1E C4 7D 23 EE | [....>....y...}#.]
+    val rijndaelEncrypted = HexUndumper.undump("""0000: D6 B6 3E 0D C0 A6 - AF 79 CD 1E C4 7D 23 EE | [....>....y...}#.]
 0010: 9E B6 2C 9D 3D 7E 30 D8 - E8 7E 16 4A 69 16 46 E3 | [..,.=~0..~.Ji.F.]
 0020: 19 98 70 2E 0D A6 4A 1D - E2 9F C8 30 56 7C E7 4E | [..p...J....0V|.N]
 0030: 18 8F 2B 63 79 43 8D A1 - 20 DC 79 A5 8B C7 62 78 | [..+cyC.. .y...bx]
@@ -144,7 +144,7 @@ object Test {
   }
 
   def testCommandBuilder() {
-    val buffer = HexDumper.undump("""0000: 23 09 B9 AD A2 36 CB 85 - 85 57 FF 34 88 93 FE CA | [#....6...W.4....]
+    val buffer = HexUndumper.undump("""0000: 23 09 B9 AD A2 36 CB 85 - 85 57 FF 34 88 93 FE CA | [#....6...W.4....]
 0010: 6D 6B 10 1D A1 59 9D 12 - 74 9A 7B E0 3B D1 7D 58 | [mk...Y..t.{.;.}X]
 0020: 63 EE F2 D0 D4 E2 CB 1D - FD 4E 78 82 A0 B8 DC A0 | [c........Nx.....]
 0030: 31 D9 FB C9 7F D4 BB 17 - 9B 9B 28 FA ED 3A 99 66 | [1.........(..:.f]

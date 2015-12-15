@@ -3,6 +3,7 @@ package stealthnet.scala.util
 import java.util.{UUID => jUUID}
 import scala.collection.mutable.ListBuffer
 import scala.language.implicitConversions
+import suiryc.scala.util.Hash
 
 /**
  * UUID class companion object

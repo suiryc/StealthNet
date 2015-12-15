@@ -3,7 +3,7 @@ package stealthnet.scala.network.protocol.commands
 import java.io.InputStream
 import stealthnet.scala.Constants
 import stealthnet.scala.network.protocol.Encryption
-import stealthnet.scala.util.Hash
+import suiryc.scala.util.Hash
 
 /* XXX - same content as command 0x50 */
 object Command60 extends CommandBuilder {

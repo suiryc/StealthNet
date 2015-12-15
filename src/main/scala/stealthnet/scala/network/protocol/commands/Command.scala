@@ -18,9 +18,10 @@ import stealthnet.scala.cryptography.io.{
 import stealthnet.scala.network.connection.StealthNetConnection
 import stealthnet.scala.network.protocol.{BitSize, Encryption, ProtocolStream}
 import stealthnet.scala.network.protocol.exceptions.InvalidDataException
-import stealthnet.scala.util.{Hash, HexDumper, UUID}
+import stealthnet.scala.util.{HexDumper, UUID}
 import stealthnet.scala.util.io.DebugInputStream
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
+import suiryc.scala.util.Hash
 
 /**
  * Command builder.
