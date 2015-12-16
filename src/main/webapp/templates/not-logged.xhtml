@@ -13,7 +13,7 @@ Your session expired or you are not logged in yet.<br/>
 Close this dialog or wait a few seconds to be redirected to the login page.<br/>
 <br/>
       <center>
-        <p:commandButton id="ok" value="Ok" onclick="dlg.hide();" type="button" />
+        <p:commandButton id="ok" value="Ok" onclick="PF('dlg').hide();" type="button" />
       </center>
     </p:dialog>
 
@@ -25,8 +25,8 @@ function redirectLogin() {
 /* Note: we need to wait for the page to be loaded before being able to access
  * the dialog widget. */
 $(function() {
-    dlg.cfg.behaviors = { close: redirectLogin };
-    dlg.show();
+    PF('dlg').cfg.behaviors = { close: redirectLogin };
+    PF('dlg').show();
 });
     </script>
   </ui:composition>
