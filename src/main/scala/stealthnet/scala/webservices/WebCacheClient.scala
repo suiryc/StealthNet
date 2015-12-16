@@ -28,6 +28,9 @@ object WebCacheClient extends Logging with EmptyLoggingContext {
 
           case Peer.regexp(host, port) =>
             logger.debug(s"Got host[$host] port[$port] from service[$url]")
+            // Note: WebCache accepts but does not handle correctly IPv6
+            // addresses. We may receive one from it, but the value is truncated
+            // to the max size of an IPv4 one (15 chars = 4*3 digits + 3 dots)
             try {
               Some(Peer(host, Integer.parseInt(port)))
             }
