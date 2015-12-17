@@ -2,17 +2,18 @@ import sbt._
 import sbt.Keys._
 
 lazy val versions = Map[String, String](
-  "akka"         -> "2.4.1",
-  "bouncycastle" -> "1.53",
-  "config"       -> "1.3.0",
-  "junit"        -> "4.12",
-  "logback"      -> "1.1.3",
-  "netty"        -> "4.0.33.Final",
-  "scala"        -> "2.11.7",
-  "scala-xml"    -> "1.0.5",
-  "scalatest"    -> "2.2.4",
-  "suiryc-scala" -> "0.0.2-SNAPSHOT",
-  "slf4j"        -> "1.7.13"
+  "akka"             -> "2.4.1",
+  "bouncycastle"     -> "1.53",
+  "config"           -> "1.3.0",
+  "junit"            -> "4.12",
+  "logback"          -> "1.1.3",
+  "netty"            -> "4.0.33.Final",
+  "scala"            -> "2.11.7",
+  "scala-xml"        -> "1.0.5",
+  "scalatest"        -> "2.2.4",
+  "stealthnet-scala" -> "0.1.2-SNAPSHOT",
+  "suiryc-scala"     -> "0.0.2-SNAPSHOT",
+  "slf4j"            -> "1.7.13"
 )
 
 
@@ -33,22 +34,31 @@ lazy val copyDepTask = copyDependencies <<= (baseDirectory, update, scalaVersion
   }
 }
 
+lazy val commonSettings = Seq(
+  organization := "stealthnet.scala",
+  version := versions("stealthnet-scala"),
+  scalaVersion := versions("scala"),
 
-lazy val stealthnet = project.in(file(".")).
+  scalacOptions ++= Seq(
+    "-deprecation",
+    "-feature",
+    "-optimize",
+    "-unchecked",
+    "-Yinline-warnings"
+  ),
+  scalacOptions in (Compile, doc) ++= Seq("-diagrams", "-implicits"),
+  resolvers += Resolver.mavenLocal,
+  publishMavenStyle := true,
+  publishTo := Some(Resolver.mavenLocal),
+
+  copyDepTask
+)
+
+
+lazy val core = project.in(file("core")).
+  settings(commonSettings:_*).
   settings(
-    organization := "stealthnet.scala",
     name := "stealthnet-core",
-    version := "0.1.2-SNAPSHOT",
-    scalaVersion := versions("scala"),
-
-    scalacOptions ++= Seq(
-      "-deprecation",
-      "-feature",
-      "-optimize",
-      "-unchecked",
-      "-Yinline-warnings"
-    ),
-    scalacOptions in (Compile, doc) ++= Seq("-diagrams", "-implicits"),
 
     libraryDependencies ++= Seq(
       "ch.qos.logback"         %  "logback-classic"   % versions("logback")      % "runtime",
@@ -62,11 +72,16 @@ lazy val stealthnet = project.in(file(".")).
       "org.scalatest"          %% "scalatest"         % versions("scalatest")    % "test",
       "org.slf4j"              %  "slf4j-api"         % versions("slf4j"),
       "suiryc"                 %% "suiryc-scala-core" % versions("suiryc-scala")
-    ),
+    )
+  )
 
-    resolvers += Resolver.mavenLocal,
-    publishMavenStyle := true,
-    publishTo := Some(Resolver.mavenLocal),
-
-    copyDepTask
+// Notes: 'aggregate' can be used so that commands used on 'root' project can be executed in each subproject
+// 'dependsOn' can be used so that an assembly jar can be built with all subprojects resources (and dependencies)
+lazy val root = project.in(file(".")).
+  aggregate(core).
+  settings(commonSettings:_*).
+  settings(
+    name := "stealthnet-scala",
+    libraryDependencies := Seq.empty,
+    publishArtifact in Compile := false
   )
