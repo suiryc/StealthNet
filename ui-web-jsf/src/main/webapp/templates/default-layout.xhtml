@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:p="http://primefaces.org/ui">
+<h:head>
+  <h:outputStylesheet library="css" name="main.css" />
+  <h:outputScript library="js" name="ext/core.js" />
+  <h:outputScript library="js" name="ext/primefaces.js" />
+  <h:outputScript library="js" name="ext/widgets-growl.js" />
+
+  <h:panelGroup rendered="#{not userSession.logged}">
+    <meta http-equiv="refresh" content="10; url='#{request.contextPath}/login.jsf?reason=unauthorized&amp;path=#{request.servletPath}'" />
+  </h:panelGroup>
+
+  <h:panelGroup rendered="#{userSession.logged}">
+    <ui:insert name="html-head" />
+  </h:panelGroup>
+</h:head>
+
+<h:body>
+  <h:panelGroup rendered="#{not userSession.logged}">
+    <div id="page">
+      <ui:insert name="page" >
+        <ui:include src="/templates/not-logged.xhtml" />
+      </ui:insert>
+    </div>
+  </h:panelGroup>
+
+  <h:panelGroup rendered="#{userSession.logged}">
+    <p:layout fullPage="true">
+      <p:layoutUnit position="west" header="Menu" resizable="false" closable="false" collapsible="true">
+        <ui:insert name="page-menu" >
+          <ui:include src="/templates/default-menu.xhtml" />
+        </ui:insert>
+      </p:layoutUnit>
+      <p:layoutUnit position="center" resizable="false" closable="false" collapsible="false">
+        <div id="page">
+          <div id="page-header">
+            <ui:insert name="page-header" >
+              <ui:include src="/templates/default-header.xhtml" />
+            </ui:insert>
+          </div>
+          <div id="page-content">
+            <ui:insert name="page-content" />
+          </div>
+          <div id="page-footer">
+            <ui:insert name="page-footer" >
+              <ui:include src="/templates/default-footer.xhtml" />
+            </ui:insert>
+          </div>
+        </div>
+      </p:layoutUnit>
+    </p:layout>
+  </h:panelGroup>
+</h:body>
+</html>

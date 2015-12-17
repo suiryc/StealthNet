@@ -1,0 +1,38 @@
+/* For testing purposes. */
+#page-content
+{
+    min-height: 600px;
+}
+
+/* Globally resize components. 
+ * See PrimeFaces User's Guide - Theming Tips
+ */
+.ui-widget,
+.ui-widget .ui-widget
+{
+    font-size: 12px !important;
+}
+
+/* Change background color. */
+body
+{
+    background-color: #DDEAFF;
+}
+
+.ui-layout-unit,
+.ui-layout-unit-content
+{
+    background-color: #DDEAFF;
+}
+
+.ui-layout-resizer-closed,
+.ui-panel-content
+{
+    background-color: #CCD9EE;
+}
+
+/* Remove some borders in layout. */
+.ui-layout-unit
+{
+    border: none;
+}

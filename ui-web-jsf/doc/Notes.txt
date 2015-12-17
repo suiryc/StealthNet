@@ -1,0 +1,96 @@
+Proper launching
+----------------
+Logs should say something like:
+INFO  [main] org.eclipse.jetty.server.Server - jetty-8.1.10.v20130312
+INFO  [main] j.enterprise.resource.webcontainer.jsf.config - Initialisation de Mojarra 2.1.22 ( 20130508-2000 https://svn.java.net/svn/mojarra~svn/tags/2.1.22@11945) pour le contexte «»
+INFO  [main] j.e.resource.webcontainer.jsf.application - JSF1048 : Présence d’annotations PostConstruct/PreDestroy  Les méthodes de beans gérés marquées avec ces annotations auront des annotations dites traitées.
+INFO  [main] o.p.webapp.PostConstructApplicationEventListener - Running on PrimeFaces 3.5
+INFO  [main] org.eclipse.jetty.server.AbstractConnector - Started SelectChannelConnector@0.0.0.0:8080
+
+If something is missing (e.g. no log about PrimeFaces being run), corresponding dependency may be corrupted and weird errors may appear like
+  javax.el.ELException: ...: The class '...' does not have the property '...'.
+
+
+Beans
+-----
+To help create beans in Scala, the @BeanProperty annotation can be used on fields to automatically generate the corresponding get/set access methods.
+
+
+Context Dependency Injection (CDI)
+----------------------------------
+Some useful external links:
+  - http://docs.jboss.org/weld/reference/latest/en-US/html/environments.html#d0e5221
+  - http://ocpsoft.org/java/spring-to-java-ee-a-migration-guide-cdi-jsf-jpa-jta-ejb/#config.modular
+
+For CDI to work in Jetty:
+
+WELD is needed with the following dependencies:
+    <dependency>
+      <groupId>org.jboss.weld.servlet</groupId>
+      <artifactId>weld-servlet</artifactId>
+      <version>1.1.8.Final</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-plus</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+
+The JAR containing beans has to have a META-INF/beans.xml file. It can be empty, e.g.:
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+   The contents of this file is permitted to be empty.
+   The schema definition is provided for your convenience.
+-->
+<beans xmlns="http://java.sun.com/xml/ns/javaee"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="
+      http://java.sun.com/xml/ns/javaee 
+      http://java.sun.com/xml/ns/javaee/beans_1_0.xsd">
+</beans>
+
+The WebApp WEB-INF/web.xml configuration file has to
+  - declare the WELD listener, before the JSF one
+  <listener>
+    <listener-class>org.jboss.weld.environment.servlet.Listener</listener-class>
+  </listener>
+
+  - declare a JNDI resource
+  <resource-env-ref>
+    <description>Object factory for the CDI Bean Manager</description>
+    <resource-env-ref-name>BeanManager</resource-env-ref-name>
+    <resource-env-ref-type>javax.enterprise.inject.spi.BeanManager</resource-env-ref-type>
+  </resource-env-ref>
+
+For WELD and JNDI to work properly, the WebApp has to contain:
+  - WEB-INF/jetty-web.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://jetty.mortbay.org/configure.dtd">
+<Configure id="webAppCtx" class="org.eclipse.jetty.webapp.WebAppContext">
+  <Call class="org.jboss.weld.environment.jetty.EclipseWeldServletHandler" name="process">
+    <Arg><Ref id="webAppCtx"/></Arg>
+  </Call>
+</Configure>
+
+  - WEB-INF/jetty-env.xml:
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Configure PUBLIC "-//Mort Bay Consulting//DTD Configure//EN" "http://jetty.mortbay.org/configure.dtd">
+<Configure id="webAppCtx" class="org.eclipse.jetty.webapp.WebAppContext">
+  <New id="BeanManager" class="org.eclipse.jetty.plus.jndi.Resource">
+    <Arg>
+      <Ref id="webAppCtx"/>
+    </Arg>
+    <Arg>BeanManager</Arg>
+    <Arg>
+      <New class="javax.naming.Reference">
+        <Arg>javax.enterprise.inject.spi.BeanManager</Arg>
+        <Arg>org.jboss.weld.resources.ManagerObjectFactory</Arg>
+        <Arg/>
+      </New>
+    </Arg>
+  </New>
+</Configure>
+
+
+Beware when using the @Named annotation instead of @ManagedBean: the same name annotations @ApplicationScoped, etc. which are used come from the javax.enterprise.context package for CDI, in comparison to javax.faces.bean for JSF.

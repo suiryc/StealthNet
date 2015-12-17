@@ -1,0 +1,67 @@
+Order in which connections are listed (especially upon accessing page: order differs between already-existing and new connections)
+
+
+********************************************************************************
+
+
+Shared
+------
+Message system (completed download, etc): use growl ?
+Display DL/UL global speeds.
+
+
+Logs ?
+
+
+Index
+-----
+Login form.
+
+
+Downloads
+---------
+File, progress (graphical + %), status (active, etc), speed, ETA
+Live/periodic (configurable ?) update
+Country flag ?
+
+
+Uploads
+-------
+File, status ?, speed, UL/DL ratio ?
+Separate, or merged with downloads ?
+
+
+Searches
+--------
+List (results, download, delete), add, delete all
+Persistent or only stored in memory ?
+Live/periodic (configurable ?) update for results
+
+
+Connections
+-----------
+List: host, port, status (connected, active, ...), received commands + size, sent commands + size, DL/UL speeds, disconnect
+Live/periodic (configurable ?) update
+
+
+Stats
+-----
+Size and UL/DL ratio
+Speed graph for DL/UL
+Session time (min/moy/max) ?
+Host connection time (min/moy/max) ?
+Live/periodic (configurable ?) update
+Show delta between actual data size and total (with overhead) ?
+Memory usage ?
+
+
+Settings
+--------
+WebCaches: refresh, override
+Connection limit
+Speed limit
+Listening ports ? (need restart)
+Restart ?
+Speeds: Kbps (1000) or KBps (1024) ?
+  -> unit system (K, M, G, T)
+Configurable tables size / column position ?

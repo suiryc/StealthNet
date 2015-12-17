@@ -1,0 +1,41 @@
+<configuration>
+
+  <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator"/>
+
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- Encoders are assigned the type ch.qos.logback.classic.PatternLayoutEncoder by default -->
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{48} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/log.txt</file>
+
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- Time-based rollover policy ... -->
+      <fileNamePattern>logs/log-%d{yyyy-MM-dd}.%i.txt</fileNamePattern>
+      <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+        <!-- ... or size-based rollover policy -->
+        <maxFileSize>1MB</maxFileSize>
+      </timeBasedFileNamingAndTriggeringPolicy>
+      <!-- Rollover history limit -->
+      <maxHistory>5</maxHistory>
+    </rollingPolicy>
+
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{48} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- <logger name="org.cometd" level="INFO" /> -->
+  <!-- <logger name="org.eclipse.jetty" level="INFO" /> -->
+  <logger name="stealthnet.scala" level="INFO" />
+
+  <!-- The level of root is set to DEBUG by default -->
+  <root level="INFO">
+    <appender-ref ref="STDOUT" />
+    <appender-ref ref="FILE" />
+  </root>
+
+</configuration>

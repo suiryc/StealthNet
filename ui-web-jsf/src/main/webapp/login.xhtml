@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:p="http://primefaces.org/ui">
+<h:head>
+  <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="pragma" content="no-cache" />
+  <meta http-equiv="expires" content="0" />
+  <!-- Simple hack to keep session alive for the login page, and prevent expired view issues. -->
+  <meta http-equiv="refresh" content="#{session.maxInactiveInterval - 10}" />
+  <h:outputStylesheet name="main.css" library="css" />
+</h:head>
+<h:body>
+  <f:metadata>
+    <f:viewParam name="reason" value="#{loginManager.reason}" />
+    <f:viewParam name="path" value="#{loginManager.path}" />
+    <f:event type="preRenderView" listener="#{loginManager.handleReason}" />
+  </f:metadata>
+
+  <center>
+    <p:messages id="messages" showDetail="true" autoUpdate="true" />
+    <h:form>
+      <p:panel header="Login" style="width: 350px;">
+        <h:panelGrid columns="2" cellpadding="2">
+          <h:outputText value="UserName" />
+          <p:inputText value="#{loginManager.username}" />
+
+          <h:outputText value="Password" />
+          <p:password value="#{loginManager.password}" />
+
+          <h:panelGroup />
+          <p:commandButton value="Login" action="#{loginManager.login}" ajax="false" />
+        </h:panelGrid>
+      </p:panel>
+    </h:form>
+  </center>
+</h:body>
+</html>

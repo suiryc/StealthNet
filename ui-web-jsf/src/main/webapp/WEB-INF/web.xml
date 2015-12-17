@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="3.0"
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" >
+
+  <!-- This is an optional parameter, but it makes troubleshooting errors much easier -->
+  <!-- You should remove this context parameter before deploying to production! -->
+  <!-- <context-param>
+    <param-name>javax.faces.PROJECT_STAGE</param-name>
+    <param-value>Development</param-value>
+  </context-param> -->
+  <!-- This option may help resolve weird issues like: -->
+  <!--  - ClassCastException: c.s.f.f.c.UIInstructions cannot be cast to o.p.m.m.MenuElement -->
+  <context-param>
+    <param-name>javax.faces.FACELETS_SKIP_COMMENTS</param-name>
+    <param-value>true</param-value>
+  </context-param>
+
+  <!-- JSF 2.0 servlet -->
+  <servlet>
+    <servlet-name>jsf</servlet-name>
+    <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>jsf</servlet-name>
+    <url-pattern>*.jsf</url-pattern>
+    <url-pattern>*.xhtml</url-pattern>
+  </servlet-mapping>
+
+  <!-- CometD servlet -->
+  <servlet>
+    <servlet-name>cometd</servlet-name>
+    <!-- CometdServlet in CometD 2.x renamed to CometDServlet in CometD 3.x -->
+    <servlet-class>org.cometd.server.CometDServlet</servlet-class>
+    <!-- http://docs.cometd.org/reference/java_server.html#java_server_configuration -->
+    <async-supported>true</async-supported>
+    <!-- http://docs.cometd.org/reference/java_server.html#java_server_transports -->
+    <init-param>
+      <param-name>transports</param-name>
+      <!-- Comet 3.x offers both 'javax' (JSR 356) and 'Jetty' transport; provided by separate projects -->
+      <!-- JSR 356 version retains generic name WebSocketTransport from CometD 2.x -->
+      <!-- Jetty version is named JettyWebSocketTransport -->
+      <param-value>org.cometd.websocket.server.WebSocketTransport</param-value>
+    </init-param>
+    <!-- WS URL mapping parameter needed in CometD 3.x -->
+    <init-param>
+      <param-name>ws.cometdURLMapping</param-name>
+      <param-value>/cometd/*</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>cometd</servlet-name>
+    <url-pattern>/cometd/*</url-pattern>
+  </servlet-mapping>
+
+  <!-- Bayeux initializer -->
+  <servlet>
+    <servlet-name>cometd-bayeux</servlet-name>
+    <servlet-class>stealthnet.scala.ui.web.comet.BayeuxInitializer</servlet-class>
+    <load-on-startup>2</load-on-startup>
+  </servlet>
+
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+
+  <listener>
+    <listener-class>stealthnet.scala.ui.web.comet.SessionListener</listener-class>
+  </listener>
+  <listener>
+    <!-- See: http://stackoverflow.com/questions/7886035/could-not-find-factory-javax-faces-context-facescontextfactory -->
+    <listener-class>com.sun.faces.config.ConfigureListener</listener-class>
+  </listener>
+
+  <session-config>
+    <session-timeout>15</session-timeout> 
+  </session-config>
+
+  <error-page>
+    <exception-type>javax.faces.application.ViewExpiredException</exception-type>
+    <location>/viewExpired.jsf</location>
+  </error-page>
+
+</web-app>
