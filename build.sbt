@@ -31,9 +31,13 @@ lazy val distLocal = taskKey[Unit]("dist-local")
 // Note: we need a taskDyn since we don't work with a 'static' project reference
 val packagedDependenciesImpl = Def.taskDyn {
   // We want to work with the current project dependencies, so create a scope
-  // filter including those (and excluding the project itself).
-  val ref = thisProjectRef.value
-  def filter = ScopeFilter(inDependencies(ref) -- inProjects(ref))
+  // filter including those.
+  val projects = thisProject.value.dependencies.map(_.project)
+  val filter = ScopeFilter(inProjects(projects:_*))
+
+  // Note: other way to create this filter:
+  //val ref = thisProjectRef.value
+  //val filter = ScopeFilter(inDependencies(ref) -- inProjects(ref))
 
   // The actual task getting the package of a given dependency
   val packageTask = Def.task {
@@ -64,7 +68,6 @@ def copyDependenciesTask(dstRelative: File = file("target") / "lib") =
   copyDependencies <<= (baseDirectory, update, packagedDependencies, scalaVersion).map {
     (base, updateReport, packaged, scalaVersion) =>
 
-      val dstBase = base / dstRelative.getPath
       copyDependenciesImpl(base, dstRelative, updateReport, packaged, scalaVersion)
   }
 
