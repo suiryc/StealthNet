@@ -24,38 +24,64 @@ lazy val versions = Map[String, String](
 )
 
 
-lazy val copyDependencies = TaskKey[Unit]("copy-dependencies")
-lazy val distLocal = TaskKey[Unit]("dist-local")
+lazy val packagedDependencies = taskKey[Seq[File]]("Project packaged dependencies")
+lazy val copyDependencies = taskKey[Unit]("copy-dependencies")
+lazy val distLocal = taskKey[Unit]("dist-local")
 
-def depFilename(name: String, scalaVersion: String) =
+// Note: we need a taskDyn since we don't work with a 'static' project reference
+val packagedDependenciesImpl = Def.taskDyn {
+  // We want to work with the current project dependencies, so create a scope
+  // filter including those (and excluding the project itself).
+  val ref = thisProjectRef.value
+  def filter = ScopeFilter(inDependencies(ref) -- inProjects(ref))
+
+  // The actual task getting the package of a given dependency
+  val packageTask = Def.task {
+    (packageBin in Compile).value
+  }
+
+  // Filter the task on the wanted dependencies
+  packageTask.all(filter)
+}
+
+// Filter dependency filename
+def dependencyFilename(name: String, scalaVersion: String) =
   name match {
     case "scala-library.jar" => s"scala-library-$scalaVersion.jar"
     case v => v
   }
 
-lazy val copyDepTask = copyDependencies <<= (baseDirectory, update, scalaVersion) map { (base, updateReport, scalaVersion) =>
-  val dstBase = base / "target" / "lib"
-  updateReport.select(configuration = Set("runtime")) foreach { srcPath =>
-    val dstName = depFilename(srcPath.getName, scalaVersion)
+def copyDependenciesImpl(base: File, dstRelative: File, updateReport: UpdateReport, packaged: Seq[File], scalaVersion: String): Unit = {
+  val dstBase = base / dstRelative.getPath
+  (updateReport.select(configuration = Set("runtime")) ++ packaged).foreach { srcPath =>
+    val dstName = dependencyFilename(srcPath.getName, scalaVersion)
     val dstPath = dstBase / dstName
     IO.copyFile(srcPath, dstPath, preserveLastModified = true)
   }
 }
 
-val distLocalTask = distLocal <<= (baseDirectory, update, scalaVersion, packageBin in Compile) map { (base, updateReport, scalaVersion, packagedFile) =>
-  val dstBase = base / "target" / "dist"
-  updateReport.select(configuration = Set("runtime")) foreach { srcPath =>
-    val dstName = depFilename(srcPath.getName, scalaVersion)
-    val dstPath = dstBase / "lib" / dstName
-    IO.copyFile(srcPath, dstPath, preserveLastModified = true)
+def copyDependenciesTask(dstRelative: File = file("target") / "lib") =
+  copyDependencies <<= (baseDirectory, update, packagedDependencies, scalaVersion).map {
+    (base, updateReport, packaged, scalaVersion) =>
+
+      val dstBase = base / dstRelative.getPath
+      copyDependenciesImpl(base, dstRelative, updateReport, packaged, scalaVersion)
   }
-  IO.copyDirectory(base / "src" / "main" / "webapp", dstBase / "webapp", overwrite = true, preserveLastModified = true)
-  IO.copyDirectory(base / "src" / "main" / "config", dstBase / "config", overwrite = true, preserveLastModified = true)
-  IO.copyDirectory(base / "src" / "main" / "scripts", dstBase, overwrite = true, preserveLastModified = true)
-  // IO.copyXXX does not keep file permissions
-  List("chmod", "+x", (dstBase / "launch.sh").getCanonicalPath).!
-  IO.copyFile(packagedFile, dstBase / "webapp" / "WEB-INF" / "lib" / packagedFile.getName , preserveLastModified = true)
-}
+
+lazy val distLocalPath = file("target") / "dist"
+lazy val distLocalTask =
+  distLocal <<= (baseDirectory, update, packagedDependencies, scalaVersion, packageBin in Compile).map {
+    (base, updateReport, packaged, scalaVersion, packagedFile) =>
+
+      copyDependenciesImpl(base, distLocalPath / "lib", updateReport, packaged, scalaVersion)
+      val dstBase = base / distLocalPath.getPath
+      IO.copyDirectory(base / "src" / "main" / "webapp", dstBase / "webapp", overwrite = true, preserveLastModified = true)
+      IO.copyDirectory(base / "src" / "main" / "config", dstBase / "config", overwrite = true, preserveLastModified = true)
+      IO.copyDirectory(base / "src" / "main" / "scripts", dstBase, overwrite = true, preserveLastModified = true)
+      // IO.copyXXX does not keep file permissions
+      List("chmod", "+x", (dstBase / "launch.sh").getCanonicalPath).!
+      IO.copyFile(packagedFile, dstBase / "webapp" / "WEB-INF" / "lib" / packagedFile.getName , preserveLastModified = true)
+  }
 
 lazy val commonSettings = Seq(
   organization := "stealthnet.scala",
@@ -83,7 +109,8 @@ lazy val commonSettings = Seq(
   publishMavenStyle := true,
   publishTo := Some(Resolver.mavenLocal),
 
-  copyDepTask
+  packagedDependencies := packagedDependenciesImpl.value,
+  copyDependenciesTask()
 )
 
 
@@ -129,7 +156,7 @@ lazy val uiWebJsf = project.in(file("ui-web-jsf")).
       // JSP compiler necessary with Jetty 9; previously provided by org.apache.jasper.glassfish through jetty-jsp
       // org.eclipse.jetty.toolchain/jetty-jsp-jdt is available but not upgraded anymore ?
       // Jetty distribution comes with Eclipse JDT compiler and Apache EL, but it does not work if replacing jetty-jsp-jdt ...
-      "org.eclipse.jetty.toolchain" % "jetty-jsp-jdt"                       % versions("jetty-jsp-jdt"),
+      "org.eclipse.jetty.toolchain"   % "jetty-jsp-jdt"                       % versions("jetty-jsp-jdt"),
       //"org.eclipse.jdt.core.compiler" %  "ecj"                                % versions("eclipse-jdt"),
       //"org.mortbay.jasper"            %  "apache-el"                          % versions("apache-jsp"),
       //"org.mortbay.jasper"            %  "apache-jsp"                         % versions("apache-jsp"),
@@ -137,7 +164,7 @@ lazy val uiWebJsf = project.in(file("ui-web-jsf")).
       // org.eclipse.jetty/jetty-websocket in Jetty 8 moved to org.eclipse.jetty.websocket/websocket-server in Jetty 9
       //"org.eclipse.jetty" % "jetty-websocket" % versions("jetty"),
       // Jetty 9 supports JSR 356
-      "org.eclipse.jetty.websocket"   % "javax-websocket-server-impl"         % versions("jetty"),
+      "org.eclipse.jetty.websocket"   %  "javax-websocket-server-impl"        % versions("jetty"),
       //"org.eclipse.jetty" % "jetty-client" % versions("jetty"),
       "org.eclipse.jetty"             %  "jetty-jmx"                          % versions("jetty"),
       // jetty-util-ajax is separated from jetty-util in Jetty 9
