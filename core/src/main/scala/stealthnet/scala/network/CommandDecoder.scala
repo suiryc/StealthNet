@@ -68,6 +68,7 @@ class CommandDecoder
         encryptedDuplicate foreach { logData(cnx, true, _) }
       } { command =>
         out.add(command)
+        ()
       }
     }
     catch {

@@ -15,10 +15,10 @@ class SessionListener extends HttpSessionListener {
   def init(config: ServletConfig) {
   }
 
-  def sessionCreated(event: HttpSessionEvent) =
+  def sessionCreated(event: HttpSessionEvent): Unit =
     SessionManager.actor ! SessionManager.AddSession(event.getSession)
 
-  def sessionDestroyed(event: HttpSessionEvent) =
+  def sessionDestroyed(event: HttpSessionEvent): Unit =
     SessionManager.actor ! SessionManager.RemoveSession(event.getSession)
 
 }
@@ -39,7 +39,7 @@ object SessionManager {
   case object Stop
 
   private class SessionManagerActor extends Actor {
-    override def receive = {
+    override def receive: Receive = {
       case AddSession(session) =>
         /* XXX - log */
         sessions += session.getId -> session
@@ -55,14 +55,14 @@ object SessionManager {
     }
   }
 
-  val actor = Core.actorSystem.system.actorOf(Props[SessionManagerActor], "UI-SessionManager")
+  val actor: ActorRef = Core.actorSystem.system.actorOf(Props[SessionManagerActor], "UI-SessionManager")
   Core.actorSystem.watch(actor)
 
   /* XXX - alternative solution without blocking (here) ? */
-  def getSession(id: String) =
+  def getSession(id: String): Option[HttpSession] =
     Await.result(actor ? GetSession(id), Duration.Inf).asInstanceOf[Option[HttpSession]]
 
-  def stop() = actor ! Stop
+  def stop(): Unit = actor ! Stop
 
   /** Dummy method to start the manager. */
   def start() { }

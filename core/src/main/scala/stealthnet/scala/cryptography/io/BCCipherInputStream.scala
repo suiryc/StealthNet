@@ -82,7 +82,7 @@ class BCCipherInputStream(input: InputStream, cipher: BufferedBlockCipher)
     loop()
   }
 
-  override def read(b: Array[Byte]) = read(b, 0, b.length)
+  override def read(b: Array[Byte]): Int = read(b, 0, b.length)
 
   /**
    * @todo shall we check parameters (as does parent class) ?

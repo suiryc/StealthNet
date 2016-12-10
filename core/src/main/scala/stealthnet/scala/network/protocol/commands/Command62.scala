@@ -41,7 +41,7 @@ class Command62(
 ) extends Command
 {
 
-  val code = Command62.code
+  val code: Byte = Command62.code
 
   val encryption = Encryption.Rijndael
 
@@ -52,7 +52,7 @@ class Command62(
   assert(hashedFileHash != null)
   // scalastyle:on null
 
-  def argumentDefinitions = Command62.argumentDefinitions
+  def argumentDefinitions: List[HashArgumentDefinition] = Command62.argumentDefinitions
 
   def arguments = Map(
     "commandId" -> commandId,

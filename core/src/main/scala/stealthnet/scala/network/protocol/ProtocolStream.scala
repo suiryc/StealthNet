@@ -115,7 +115,7 @@ object ProtocolStream {
    * @return number of written bytes
    */
   def writeByte(output: OutputStream, value: Byte): Int = {
-    output.write(value)
+    output.write(value.toInt)
     1
   }
 
@@ -149,7 +149,7 @@ object ProtocolStream {
    */
   def writeBytes(output: OutputStream, value: Array[Byte], bitSize: Int): Int =
   {
-    val sizeLength = writeInteger(output, value.length, bitSize)
+    val sizeLength = writeInteger(output, value.length.toLong, bitSize)
     output.write(value)
     value.length + sizeLength
   }

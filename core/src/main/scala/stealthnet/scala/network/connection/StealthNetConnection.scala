@@ -1,6 +1,6 @@
 package stealthnet.scala.network.connection
 
-import io.netty.channel.{Channel, ChannelFutureListener}
+import io.netty.channel.{Channel, ChannelFuture, ChannelFutureListener}
 import java.security.interfaces.RSAPublicKey
 import java.util.Date
 import org.bouncycastle.crypto.BufferedBlockCipher
@@ -13,7 +13,7 @@ import stealthnet.scala.util.log.LoggingContext
 /**  ''StealthNet'' connection companion object. */
 object StealthNetConnection {
 
-  def loggerContext(cnx: Option[StealthNetConnection], channel: Channel) = {
+  def loggerContext(cnx: Option[StealthNetConnection], channel: Channel): List[(String, Any)] = {
     val ctx = cnx.map(_.loggerContext).getOrElse(Nil)
 
     if (ctx.exists(_._1 == "peer"))
@@ -105,7 +105,7 @@ class StealthNetConnection protected[connection] (val channel: Channel)
   }
 
   /** Writes command on the channel associated to this connection. */
-  def send(command: Command) = {
+  def send(command: Command): ChannelFuture = {
     val f = channel.write(command)
 
     sentCommands += 1
@@ -119,6 +119,7 @@ class StealthNetConnection protected[connection] (val channel: Channel)
   def close() {
     closing = true
     channel.close()
+    ()
   }
 
 }

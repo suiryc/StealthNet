@@ -19,7 +19,7 @@ object HexDumper {
   def dump(data: Array[Byte], offset: Int = 0, length: Int = -1,
       result: StringBuilder = new StringBuilder()): StringBuilder =
   {
-    val settings = Settings(output = Output(result), offset = offset, length = length, endWithEOL = false)
+    val settings = Settings(output = Output(result), offset = offset.toLong, length = length.toLong, endWithEOL = false)
     sHexDumper.dump(data, settings)
     result
   }

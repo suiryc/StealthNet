@@ -17,6 +17,7 @@ class BayeuxInitializer extends GenericServlet {
     bayeux.setSecurityPolicy(new BayeuxAuthenticator())
 
     new NotificationsService(bayeux)
+    ()
   }
 
   def service(request: ServletRequest, response: ServletResponse) =

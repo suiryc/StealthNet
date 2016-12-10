@@ -43,7 +43,7 @@ class Command23(
 ) extends Command
 {
 
-  val code = Command23.code
+  val code: Byte = Command23.code
 
   val encryption = Encryption.Rijndael
 
@@ -55,7 +55,7 @@ class Command23(
   assert(searchResults != null)
   // scalastyle:on null
 
-  def argumentDefinitions = Command23.argumentDefinitions
+  def argumentDefinitions: List[CommandArgumentDefinition] = Command23.argumentDefinitions
 
   def arguments = Map(
     "commandId" -> commandId,
@@ -93,7 +93,7 @@ object SearchResult
     val comment = arguments("comment").asInstanceOf[String]
     val rating = arguments("rating").asInstanceOf[Byte]
 
-    new SearchResult(fileHash, fileSize, fileName, metaData, comment, rating)
+    new SearchResult(fileHash, fileSize, fileName, metaData, comment, rating.toShort)
   }
 
 }
@@ -124,7 +124,7 @@ class SearchResult(
   assert((rating >= 0) && (rating <= 3))
   // scalastyle:on null
 
-  def argumentDefinitions = SearchResult.argumentDefinitions
+  def argumentDefinitions: List[CommandArgumentDefinition] = SearchResult.argumentDefinitions
 
   def arguments = Map(
     "fileHash" -> fileHash,

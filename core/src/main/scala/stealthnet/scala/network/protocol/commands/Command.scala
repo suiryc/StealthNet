@@ -66,7 +66,7 @@ object Command extends Logging with EmptyLoggingContext {
    * @param code command code to handle
    * @return an option value containing the builder, or `None` if none
    */
-  def commandBuilder(code: Byte) = builders.get(code)
+  def commandBuilder(code: Byte): Option[CommandBuilder] = builders.get(code)
 
   /**
    * Builder helper.
@@ -317,7 +317,7 @@ abstract class Command extends CommandArguments {
     unencryptedLength
   }
 
-  override def toString = getClass.getSimpleName +
+  override def toString: String = getClass.getSimpleName +
     f"(code=0x$code%02X, arguments=$argumentsToString%s)"
 
 }

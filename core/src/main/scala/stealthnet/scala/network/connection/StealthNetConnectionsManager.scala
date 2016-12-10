@@ -153,7 +153,7 @@ object StealthNetConnectionsManager {
      * @see [[stealthnet.scala.network.connection.StealthNetConnectionsManager]].`checkConnectionsLimit`
      */
     // scalastyle:off method.length
-    override def receive = {
+    override def receive: Receive = {
       case AddConnectionsListener(listener) =>
         listeners ::= listener
 
@@ -163,7 +163,7 @@ object StealthNetConnectionsManager {
           WebCachesManager.actor ! WebCachesManager.GetPeer
           /* check again later */
           Core.schedule(self ! RequestPeer,
-            Constants.peerRequestPeriod)
+            Constants.peerRequestPeriod.toLong)
           peerRequestOngoing = true
         }
         /* else: enough connections for now */
@@ -185,7 +185,7 @@ object StealthNetConnectionsManager {
         closed(channel)
 
       case Stop =>
-        if (peers.size == 0) {
+        if (peers.isEmpty) {
           /* last connection terminated: time to leave */
           logger.debug("Stopped")
           /* Note: we get back here when the last peer is unregistered, which
@@ -322,7 +322,7 @@ object StealthNetConnectionsManager {
 
       if (!stopping)
         checkConnectionsLimit()
-      else if (peers.size == 0)
+      else if (peers.isEmpty)
         /* may be time to really stop now */
         self ! Stop
     }
@@ -357,7 +357,7 @@ object StealthNetConnectionsManager {
 
   }
 
-  val actor = Core.actorSystem.system.actorOf(Props[StealthNetConnectionsManagerActor], "StealthNetConnectionsManager")
+  val actor: ActorRef = Core.actorSystem.system.actorOf(Props[StealthNetConnectionsManagerActor], "StealthNetConnectionsManager")
   Core.actorSystem.watch(actor)
 
   /**
@@ -409,11 +409,11 @@ object StealthNetConnectionsManager {
    *
    * @param channel the channel which was closed
    */
-  def closedChannel(channel: Channel) =
+  def closedChannel(channel: Channel): Unit =
     actor ! ClosedChannel(channel)
 
   /** Adds a new connections listener. */
-  def addConnectionsListener(listener: ActorRef) =
+  def addConnectionsListener(listener: ActorRef): Unit =
     actor ! AddConnectionsListener(listener)
 
   /**

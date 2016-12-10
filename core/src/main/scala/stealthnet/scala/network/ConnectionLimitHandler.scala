@@ -46,7 +46,7 @@ class ConnectionLimitHandler
 
     /* XXX - is it ok to close the channel while super.channelActive was not called ? */
     NettyDeferrer.defer[Boolean](ctx, StealthNetConnectionsManager.actor ? StealthNetConnectionsManager.AddConnection(cnx)) {
-      case Failure(e) =>
+      case Failure(_) =>
         cnx.close()
 
       case Success(allowed) =>

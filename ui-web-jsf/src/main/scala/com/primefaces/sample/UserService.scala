@@ -1,12 +1,13 @@
 package com.primefaces.sample
 
-import scala.collection.mutable
-import scala.collection.JavaConversions._
 import com.primefaces.sample.beans.User
+import java.util
+import scala.collection.mutable
+import scala.collection.JavaConverters._
 
 object UserService {
 
-  private var USERS_TABLE = mutable.HashMap[Int, User]()
+  private val USERS_TABLE = mutable.HashMap[Int, User]()
   private var maxUserId = 1
 
   def create(user: User): Int = {
@@ -57,18 +58,18 @@ class UserService {
   import UserService._
 
   /* XXX - not thread-safe */
-  def create(user: User) = UserService.create(user)
+  def create(user: User): Int = UserService.create(user)
 
   /* XXX - not thread-safe */
-  def delete(user: User) = UserService.delete(user)
+  def delete(user: User): Unit = UserService.delete(user)
 
-  def getAllUsers = USERS_TABLE.values.toList:java.util.List[User]
+  def getAllUsers: util.List[User] = USERS_TABLE.values.toList.asJava:java.util.List[User]
 
   def getUser(userId: Int): User = USERS_TABLE.get(userId).orNull
 
-  def searchUsers(username: String) =
+  def searchUsers(username: String): util.List[User] =
     /* We need to return a Java Collection */
-    USERS_TABLE.values.toList filter { user =>
+    USERS_TABLE.values.toList.filter { user =>
       Option(user.username) map { v =>
         v.toLowerCase.trim().startsWith(
           Option(username) map { _.toLowerCase.trim() } getOrElse { "" }
@@ -76,7 +77,7 @@ class UserService {
       } getOrElse {
         false
       }
-    }:java.util.List[User]
+    }.asJava:java.util.List[User]
 
   def update(user: User) {
     // scalastyle:off null

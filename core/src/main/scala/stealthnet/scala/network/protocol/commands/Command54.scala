@@ -36,7 +36,7 @@ object Command54 extends CommandBuilder {
     val sectorsMap = arguments("sectorsMap").asInstanceOf[Array[Byte]]
 
     new Command54(commandId, senderPeerID, receiverPeerID, sourceSearchID,
-      fileSize, fileName, metaData, comment, rating, sectorsMap)
+      fileSize, fileName, metaData, comment, rating.toShort, sectorsMap)
   }
 
 }
@@ -61,7 +61,7 @@ class Command54(
 ) extends Command
 {
 
-  val code = Command54.code
+  val code: Byte = Command54.code
 
   val encryption = Encryption.Rijndael
 
@@ -77,7 +77,7 @@ class Command54(
   assert(sectorsMap != null)
   // scalastyle:on null
 
-  def argumentDefinitions = Command54.argumentDefinitions
+  def argumentDefinitions: List[CommandArgumentDefinition] = Command54.argumentDefinitions
 
   def arguments = Map(
     ("commandId", commandId),

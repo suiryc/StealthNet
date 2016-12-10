@@ -51,7 +51,7 @@ class LoginManager {
     }
   }
 
-  def handleReason() =
+  def handleReason(): Unit =
     Option(reason) foreach {
       _.toLowerCase match {
         case "logout" =>

@@ -32,11 +32,7 @@ class NotificationsService(bayeux: BayeuxServer)
         channel
     }
 
-    val active = Option(data.get("active")) map {
-      _.toBoolean
-    } getOrElse {
-      false
-    }
+    val active = Option(data.get("active")).exists(_.toBoolean)
 
     channel match {
       case "connections" =>
@@ -50,7 +46,6 @@ class NotificationsService(bayeux: BayeuxServer)
           "message" -> s"Unknown channel[$channel]"
         )
         deliver(remote, output)
-        return
     }
   }
 

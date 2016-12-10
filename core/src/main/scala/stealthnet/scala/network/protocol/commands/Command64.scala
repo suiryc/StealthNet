@@ -44,7 +44,7 @@ class Command64(
 ) extends Command
 {
 
-  val code = Command64.code
+  val code: Byte = Command64.code
 
   val encryption = Encryption.Rijndael
 
@@ -56,7 +56,7 @@ class Command64(
   assert(sectorsMap != null)
   // scalastyle:on null
 
-  def argumentDefinitions = Command64.argumentDefinitions
+  def argumentDefinitions: List[CommandArgumentDefinition] = Command64.argumentDefinitions
 
   def arguments = Map(
     "commandId" -> commandId,

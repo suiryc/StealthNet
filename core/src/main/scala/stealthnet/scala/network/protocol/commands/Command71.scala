@@ -45,7 +45,7 @@ class Command71(
 ) extends Command
 {
 
-  val code = Command71.code
+  val code: Byte = Command71.code
 
   val encryption = Encryption.Rijndael
 
@@ -56,7 +56,7 @@ class Command71(
   assert(feedbackID != null)
   // scalastyle:on null
 
-  def argumentDefinitions = Command71.argumentDefinitions
+  def argumentDefinitions: List[CommandArgumentDefinition] = Command71.argumentDefinitions
 
   def arguments = Map(
     "commandId" -> commandId,

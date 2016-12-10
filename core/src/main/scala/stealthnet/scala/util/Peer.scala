@@ -1,13 +1,14 @@
 package stealthnet.scala.util
 
-import java.net.{InetAddress, Inet4Address, InetSocketAddress}
+import java.net.{Inet4Address, InetAddress, InetSocketAddress}
+import scala.util.matching.Regex
 
 
 /** Peer companion object. */
 object Peer {
 
   /** Regular expression to extract host and port number. */
-  val regexp = "^(.+):(\\d+)$".r
+  val regexp: Regex = "^(.+):(\\d+)$".r
 
   def apply(host: String, port: Int) =
     new Peer(new InetSocketAddress(InetAddress.getByName(host), port))
@@ -22,9 +23,9 @@ object Peer {
  */
 case class Peer(addr: InetSocketAddress) {
 
-  val host = addr.getAddress.getHostAddress
+  val host: String = addr.getAddress.getHostAddress
 
-  val port = addr.getPort
+  val port: Int = addr.getPort
 
   private lazy val representation =
     addr.getAddress match {

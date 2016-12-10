@@ -86,7 +86,7 @@ class SearchCommand(
 ) extends Command
 {
 
-  val code = SearchCommand.code
+  val code: Byte = SearchCommand.code
 
   val encryption = Encryption.Rijndael
 
@@ -98,7 +98,7 @@ class SearchCommand(
   assert(searchPattern != null)
   // scalastyle:on null
 
-  def argumentDefinitions = SearchCommand.argumentDefinitions
+  def argumentDefinitions: List[CommandArgumentDefinition] = SearchCommand.argumentDefinitions
 
   def arguments = Map(
     "commandId" -> commandId,

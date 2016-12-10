@@ -56,7 +56,7 @@ protected abstract class RSAParametersCommand extends Command {
   assert(key != null)
   // scalastyle:on null
 
-  def argumentDefinitions = RSAParametersCommand.argumentDefinitions
+  def argumentDefinitions: List[BigIntegerArgumentDefinition] = RSAParametersCommand.argumentDefinitions
 
   def arguments = Map(
     "modulus" -> new BigInt(key.getModulus),
@@ -70,7 +70,7 @@ object RSAParametersServerCommand extends CommandBuilder {
 
   val code: Byte = 0x10
 
-  def argumentDefinitions = RSAParametersCommand.argumentDefinitions
+  def argumentDefinitions: List[BigIntegerArgumentDefinition] = RSAParametersCommand.argumentDefinitions
 
   def read(input: InputStream): Command =
     new RSAParametersServerCommand(RSAParametersCommand.readKeySpec(readArguments(input)))
@@ -86,7 +86,7 @@ class RSAParametersServerCommand(val key: RSAPublicKey)
   extends RSAParametersCommand
 {
 
-  val code = RSAParametersServerCommand.code
+  val code: Byte = RSAParametersServerCommand.code
 
   /** Ctor with our ''RSA'' public key. */
   def this() = this(RSAKeys.publicKey)
@@ -98,7 +98,7 @@ object RSAParametersClientCommand extends CommandBuilder {
 
   val code: Byte = 0x11
 
-  def argumentDefinitions = RSAParametersCommand.argumentDefinitions
+  def argumentDefinitions: List[BigIntegerArgumentDefinition] = RSAParametersCommand.argumentDefinitions
 
   def read(input: InputStream): Command =
     new RSAParametersClientCommand(RSAParametersCommand.readKeySpec(readArguments(input)))
@@ -114,7 +114,7 @@ class RSAParametersClientCommand(val key: RSAPublicKey)
   extends RSAParametersCommand
 {
 
-  val code = RSAParametersClientCommand.code
+  val code: Byte = RSAParametersClientCommand.code
 
   /** Ctor with our ''RSA'' public key. */
   def this() = this(RSAKeys.publicKey)

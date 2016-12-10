@@ -60,7 +60,7 @@ object WebCacheClient extends Logging with EmptyLoggingContext {
         logger.error(s"Failed to add (self) peer on service[$url]: $l")
         false
 
-      case Right(r) =>
+      case Right(_) =>
         logger.debug(s"Added (self) peer port[$port] on service[$url]")
         true
     }
@@ -78,7 +78,7 @@ object WebCacheClient extends Logging with EmptyLoggingContext {
         logger.error(s"Failed to remove (self) peer from service[$url]: $l")
         false
 
-      case Right(r) =>
+      case Right(_) =>
         logger.debug(s"Removed (self) peer from service[$url]")
         true
     }

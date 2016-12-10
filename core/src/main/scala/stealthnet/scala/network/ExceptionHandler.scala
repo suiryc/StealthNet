@@ -27,31 +27,35 @@ class ExceptionHandler
    *
    * Closes related channel.
    */
-  override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
+  override def exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable): Unit = {
     val cnx = StealthNetConnectionsManager.getConnection(ctx.channel)
     val loggerContext = StealthNetConnection.loggerContext(cnx,  ctx.channel)
 
     logger.trace(loggerContext, s"Caught exception: $cause")
     cause match {
-      case e: ReadTimeoutException =>
+      case _: ReadTimeoutException =>
         logger.debug(loggerContext, "Read timeout")
 
-      case e: WriteTimeoutException =>
+      case _: WriteTimeoutException =>
         logger.debug(loggerContext, "Write timeout")
 
-      case e: ClosedChannelException =>
+      case _: ClosedChannelException =>
         /* disconnection was or will be notified */
 
-      case e: ConnectException =>
+      case _: ConnectException =>
         /* connection failure was notified */
 
       case _ =>
-        if (cnx.map(!_.closing).getOrElse(true) && !Core.stopping)
+        if (cnx.forall(!_.closing) && !Core.stopping)
           logger.debug(loggerContext, "Unexpected exception!",  cause)
         /*else: nothing to say here */
     }
 
-    cnx.map(_.close()).getOrElse(ctx.channel.close())
+    cnx match {
+      case Some(cnx) => cnx.close()
+      case None      => ctx.channel.close()
+    }
+    ()
   }
 
 }

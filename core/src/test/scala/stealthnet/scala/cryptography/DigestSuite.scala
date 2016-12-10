@@ -27,7 +27,7 @@ class DigestSuite extends FunSuite {
 
       for {
         (message, results) <- DigestSuite.digests
-        (algorithm2, hash) <- results if (algorithm2 == algorithm)
+        (algorithm2, hash) <- results if algorithm2 == algorithm
       } {
         val a = Hash(hash)
         val b = Digest(algorithm).update(message.getBytes("US-ASCII")).digest()

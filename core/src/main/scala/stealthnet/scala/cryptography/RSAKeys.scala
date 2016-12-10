@@ -1,7 +1,7 @@
 package stealthnet.scala.cryptography
 
-import java.security.KeyPairGenerator
-import java.security.interfaces.{RSAPublicKey, RSAPrivateKey}
+import java.security.{KeyPair, KeyPairGenerator}
+import java.security.interfaces.{RSAPrivateKey, RSAPublicKey}
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import stealthnet.scala.Constants
 
@@ -22,12 +22,12 @@ object RSAKeys {
   private val pair = kpGen.generateKeyPair()
 
   /** Gets ''RSA'' key pair. */
-  def keys = pair
+  def keys: KeyPair = pair
 
   /** Gets ''RSA'' public key. */
-  def publicKey = pair.getPublic.asInstanceOf[RSAPublicKey]
+  def publicKey: RSAPublicKey = pair.getPublic.asInstanceOf[RSAPublicKey]
 
   /** Gets ''RSA'' private key. */
-  def privateKey = pair.getPrivate.asInstanceOf[RSAPrivateKey]
+  def privateKey: RSAPrivateKey = pair.getPrivate.asInstanceOf[RSAPrivateKey]
 
 }

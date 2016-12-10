@@ -33,11 +33,11 @@ class UserManagedBean extends Serializable {
       "tutorial"
     }
 
-    def onUserSelect(event: SelectEvent) =
+    def onUserSelect(event: SelectEvent): Unit =
       selectedUser = event.getObject.asInstanceOf[User]
 
     // scalastyle:off null
-    def onUserUnselect(event: UnselectEvent) =
+    def onUserUnselect(event: UnselectEvent): Unit =
       selectedUser = null
     // scalastyle:on null
 

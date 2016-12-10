@@ -71,6 +71,7 @@ class StealthNetChannelInitializer(val parameters: StealthNetConnectionParameter
 
     /* inbound/outbound exception handler */
     pipeline.addLast("exception handler", new ExceptionHandler())
+    ()
   }
 
 }

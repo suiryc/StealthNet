@@ -1,8 +1,8 @@
 package stealthnet.scala.ui.web.beans
 
+import akka.actor._
 import javax.faces.bean.{ApplicationScoped, ManagedBean}
 import javax.faces.event.ActionEvent
-import akka.actor._
 import org.primefaces.context.RequestContext
 import stealthnet.scala.core.Core
 import stealthnet.scala.ui.web.Server
@@ -17,7 +17,7 @@ object ServerBean {
   case object Stop
 
   private class ServerBeanActor extends Actor {
-    override def receive = {
+    override def receive: Receive = {
       case Stop =>
         Server.stop()
         context.stop(self)
@@ -33,7 +33,7 @@ object ServerBean {
 @ApplicationScoped
 class ServerBean extends Serializable {
 
-  def shutdown(actionEvent: ActionEvent) = {
+  def shutdown(actionEvent: ActionEvent): Unit = {
     /* Let the client know we acknowledged the request */
     RequestContext.getCurrentInstance.addCallbackParam("acknowledged", true)
     /* Note we could also execute ourself the remote JavaScript function (would

@@ -53,7 +53,7 @@ class CommandEncoder
     val cipherLength = buf.writerIndex - cipherStart
 
     /* set the cipher-text command length */
-    buf.setBytes(Constants.commandLengthOffset, ProtocolStream.convertInteger(cipherLength, BitSize.Short))
+    buf.setBytes(Constants.commandLengthOffset, ProtocolStream.convertInteger(cipherLength.toLong, BitSize.Short))
 
     ctx.write(buf, promise)
     /* Note: don't forget to flush! */

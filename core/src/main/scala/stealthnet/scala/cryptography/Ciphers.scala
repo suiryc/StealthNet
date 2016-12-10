@@ -181,7 +181,7 @@ object Ciphers {
    * @param key ''RSA'' public key
    * @return ''RSA'' cipher using key to encrypt
    */
-  def rsaEncrypter(key: PublicKey) = rsaCipher(key, Cipher.ENCRYPT_MODE)
+  def rsaEncrypter(key: PublicKey): Cipher = rsaCipher(key, Cipher.ENCRYPT_MODE)
 
   /**
    * Gets new ''RSA'' cipher to decrypt.
@@ -189,7 +189,7 @@ object Ciphers {
    * @param key ''RSA'' private key
    * @return ''RSA'' cipher using key to decrypt
    */
-  def rsaDecrypter(key: PrivateKey) = rsaCipher(key, Cipher.DECRYPT_MODE)
+  def rsaDecrypter(key: PrivateKey): Cipher = rsaCipher(key, Cipher.DECRYPT_MODE)
 
   /**
    * Gets new ''Rijndael'' cipher.
@@ -242,7 +242,7 @@ object Ciphers {
    * @param rijndael ''Rijndael'' parameters
    * @return ''Rijndael'' cipher using parameters to encrypt
    */
-  def rijndaelEncrypter(rijndael: RijndaelParameters) =
+  def rijndaelEncrypter(rijndael: RijndaelParameters): BufferedBlockCipher =
     rijndaelCipher(rijndael, encryption = true)
 
   /**
@@ -251,7 +251,7 @@ object Ciphers {
    * @param rijndael ''Rijndael'' parameters
    * @return ''Rijndael'' cipher using parameters to decrypt
    */
-  def rijndaelDecrypter(rijndael: RijndaelParameters) =
+  def rijndaelDecrypter(rijndael: RijndaelParameters): BufferedBlockCipher =
     rijndaelCipher(rijndael, encryption = false)
 
 }

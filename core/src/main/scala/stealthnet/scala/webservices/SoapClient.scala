@@ -59,7 +59,7 @@ object SoapClient {
                 "]: " + (doc \\ "faultstring").text
           }
           catch {
-            case e: Throwable => response
+            case _: Throwable => response
           }
 
           Left(s"Response code[${conn.getResponseCode}] message[${conn.getResponseMessage}] details[$details]")

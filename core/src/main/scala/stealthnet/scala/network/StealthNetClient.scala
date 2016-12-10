@@ -9,15 +9,13 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.util.concurrent.GenericFutureListener
 import java.net.InetSocketAddress
 import java.util.concurrent.TimeUnit
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 import stealthnet.scala.Settings
-import stealthnet.scala.network.connection.{
-  StealthNetConnectionParameters,
-  StealthNetConnectionsManager
-}
+import stealthnet.scala.network.connection.{StealthNetConnectionParameters, StealthNetConnectionsManager}
 import stealthnet.scala.util.Peer
-import stealthnet.scala.util.log.{Logging, EmptyLoggingContext}
+import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 
 /**
  * ''StealthNet'' client companion object.
@@ -45,7 +43,7 @@ object StealthNetClient
   /**
    * Cleans shared resources.
    */
-  def stop() = {
+  def stop(): Future[Unit] = {
     logger.debug("Stopping")
 
     val f = workerGroup.shutdownGracefully(Settings.core.shutdownQuietPeriod,
@@ -122,6 +120,7 @@ class StealthNetClient(
         }
       }
     })
+    ()
   }
 
 }

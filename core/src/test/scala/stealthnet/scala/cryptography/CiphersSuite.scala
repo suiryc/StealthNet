@@ -13,7 +13,7 @@ import stealthnet.scala.Constants
 class CiphersSuite extends FunSuite {
 
   /* Register BouncyCastle if necessary */
-  if (Option(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)) == None)
+  if (Option(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)).isEmpty)
     Security.addProvider(new BouncyCastleProvider())
 
   private val blockSizes = List(128, 160, 192, 224, 256)
@@ -30,7 +30,7 @@ class CiphersSuite extends FunSuite {
      */
     for {
       blockSize <- blockSizes
-      feedbackSize <- feedbackSizes if (feedbackSize <= blockSize)
+      feedbackSize <- feedbackSizes if feedbackSize <= blockSize
       keySize <- keyLengths
       cipherMode <- CipherMode.values
       paddingMode <- PaddingMode.values
@@ -48,7 +48,7 @@ class CiphersSuite extends FunSuite {
         case e: Throwable =>
           throw new Error(
             s"Failed to create Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize]" +
-            " keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] encrypter",
+            s" keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] encrypter",
             e
           )
       }
@@ -58,7 +58,7 @@ class CiphersSuite extends FunSuite {
         case e: Throwable =>
           throw new Error(
             s"Failed to create Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize]" +
-            " keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] decrypter",
+            s" keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] decrypter",
             e
           )
       }
@@ -83,7 +83,7 @@ class CiphersSuite extends FunSuite {
         case e: Throwable =>
           throw new Error(
             s"Failed to process data with Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize]" +
-            " keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] encrypter",
+            s" keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] encrypter",
             e
           )
       }
@@ -91,7 +91,7 @@ class CiphersSuite extends FunSuite {
       /* Note: for Array, '===' compares the content, while '=='/'!=' compares object reference */
       assert((encrypted:mutable.WrappedArray[Byte]) != (input:mutable.WrappedArray[Byte]),
         s"Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize] keySize[$keySize]" +
-        " cipherMode[$cipherMode] paddingMode[$paddingMode] encrypted data equals unencrypted data"
+        s" cipherMode[$cipherMode] paddingMode[$paddingMode] encrypted data equals unencrypted data"
       )
 
       /* test decryption */
@@ -105,14 +105,14 @@ class CiphersSuite extends FunSuite {
         case e: Throwable =>
           throw new Error(
             s"Failed to process data with Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize]" +
-            " keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] decrypter",
+            s" keySize[$keySize] cipherMode[$cipherMode] paddingMode[$paddingMode] decrypter",
             e
           )
       }
 
       assert(decrypted.take(decryptedLength) === actualInput,
         s"Rijndael blockSize[$blockSize] feedbackSize[$feedbackSize] keySize[$keySize]" +
-        " cipherMode[$cipherMode] paddingMode[$paddingMode] decrypted data does not equal initial data"
+        s" cipherMode[$cipherMode] paddingMode[$paddingMode] decrypted data does not equal initial data"
       )
     }
   }

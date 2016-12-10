@@ -52,12 +52,12 @@ object WebCachesManager {
     private var checkOngoing = false
 
     /** Whether we are stopping. */
-    private var stopping = false
+    //private var stopping = false
 
     /**
      * Manages this actor messages.
      */
-    override def receive = {
+    override def receive: Receive = {
       case Refresh =>
         refresh()
 
@@ -170,7 +170,7 @@ object WebCachesManager {
      * @return an option value containing the retrieved peer, or `None` if none
      */
     protected def getPeer: Option[Peer] =
-      if (webCaches.size == 0) None
+      if (webCaches.isEmpty) None
       else {
         if (!addedPeer) addPeer()
 
@@ -207,11 +207,11 @@ object WebCachesManager {
 
   }
 
-  val actor = Core.actorSystem.system.actorOf(Props[WebCachesManagerActor], "WebCachesManager")
+  val actor: ActorRef = Core.actorSystem.system.actorOf(Props[WebCachesManagerActor], "WebCachesManager")
   Core.actorSystem.watch(actor)
 
   /** Stops the manager. */
-  def stop() = actor ! Stop
+  def stop(): Unit = actor ! Stop
 
   /** Dummy method to start the manager. */
   def start() { }

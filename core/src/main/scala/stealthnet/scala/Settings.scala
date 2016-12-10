@@ -2,7 +2,7 @@ package stealthnet.scala
 
 import com.typesafe.config.{Config, ConfigFactory}
 import java.util.concurrent.TimeUnit
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 /** ''StealthNet'' core settings companion object. */
 object Settings {
@@ -96,11 +96,11 @@ class Settings(config: Config) extends BaseSettings(config) {
    * `http://webcache.stealthnet.at/rwpmws.php` by default.
    */
   val wsWebCacheDefault: List[String] =
-    config.getStringList(optionPath("webservice.webcache.default")).toList
+    config.getStringList(optionPath("webservice.webcache.default")).asScala.toList
 
   /** Regular expressions of WebCaches to exclude. None by default. */
   val wsWebCacheExcluded: List[String] =
-    config.getStringList(optionPath("webservice.webcache.exclude")).toList
+    config.getStringList(optionPath("webservice.webcache.exclude")).asScala.toList
 
   /**
    * WebCaches check period (ms). `30s` by default.

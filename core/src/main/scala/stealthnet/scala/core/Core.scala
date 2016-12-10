@@ -19,7 +19,7 @@ import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
 object Core extends Logging with EmptyLoggingContext {
 
   /* Register BouncyCastle if necessary */
-  if (Option(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)) == None)
+  if (Option(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)).isEmpty)
     Security.addProvider(new BouncyCastleProvider())
 
   /** Core actor system. */
@@ -51,6 +51,7 @@ object Core extends Logging with EmptyLoggingContext {
         }
         cnx.remoteRSAKey = Some(c.key)
         cnx.send(new RSAParametersClientCommand())
+        ()
 
       case c: RSAParametersClientCommand =>
         if ((c.key.getModulus == RSAKeys.publicKey.getModulus)
@@ -64,6 +65,7 @@ object Core extends Logging with EmptyLoggingContext {
         val rijndaelParameters = RijndaelParameters()
         cnx.localRijndaelParameters = rijndaelParameters
         cnx.send(new RijndaelParametersServerCommand(rijndaelParameters))
+        ()
 
       case c: RijndaelParametersServerCommand =>
         cnx.remoteRijndaelParameters = c.parameters
@@ -76,51 +78,51 @@ object Core extends Logging with EmptyLoggingContext {
         cnx.remoteRijndaelParameters = c.parameters
         cnx.established = true
 
-      case c: SearchCommand =>
+      case _: SearchCommand =>
 
-      case c: Command21 =>
+      case _: Command21 =>
 
-      case c: Command22 =>
+      case _: Command22 =>
 
-      case c: Command23 =>
+      case _: Command23 =>
 
-      case c: Command50 =>
+      case _: Command50 =>
 
-      case c: Command51 =>
+      case _: Command51 =>
 
-      case c: Command52 =>
+      case _: Command52 =>
 
-      case c: Command53 =>
+      case _: Command53 =>
 
-      case c: Command54 =>
+      case _: Command54 =>
 
-      case c: Command60 =>
+      case _: Command60 =>
 
-      case c: Command61 =>
+      case _: Command61 =>
 
-      case c: Command62 =>
+      case _: Command62 =>
 
-      case c: Command63 =>
+      case _: Command63 =>
 
-      case c: Command64 =>
+      case _: Command64 =>
 
-      case c: Command70 =>
+      case _: Command70 =>
 
-      case c: Command71 =>
+      case _: Command71 =>
 
-      case c: Command72 =>
+      case _: Command72 =>
 
-      case c: Command74 =>
+      case _: Command74 =>
 
-      case c: Command75 =>
+      case _: Command75 =>
 
-      case c: Command76 =>
+      case _: Command76 =>
 
-      case c: Command78 =>
+      case _: Command78 =>
 
-      case c: Command79 =>
+      case _: Command79 =>
 
-      case c: Command7A =>
+      case _: Command7A =>
 
       case _ =>
         logger.error(cnx.loggerContext, s"Unhandled command $command")
@@ -194,7 +196,7 @@ object Core extends Logging with EmptyLoggingContext {
    */
   def schedule(action: => Unit, delay: Long) {
     timer.schedule(new TimerTask() {
-      def run() = action
+      def run(): Unit = action
     }, delay)
   }
 

@@ -63,7 +63,7 @@ trait Logger extends LoggingContext {
   /**
    * The name of this Logger.
    */
-  lazy val name = slf4jLogger.getName
+  lazy val name: String = slf4jLogger.getName
 
   /**
    * The wrapped SLF4J Logger.
@@ -288,15 +288,15 @@ trait Logger extends LoggingContext {
   }
 
   /**  Is the logger instance enabled for the ERROR level? */
-  def isErrorEnabled = slf4jLogger.isErrorEnabled
+  def isErrorEnabled: Boolean = slf4jLogger.isErrorEnabled
   /**  Is the logger instance enabled for the WARN level? */
-  def isWarnEnabled = slf4jLogger.isWarnEnabled
+  def isWarnEnabled: Boolean = slf4jLogger.isWarnEnabled
   /**  Is the logger instance enabled for the INFO level? */
-  def isInfoEnabled = slf4jLogger.isInfoEnabled
+  def isInfoEnabled: Boolean = slf4jLogger.isInfoEnabled
   /**  Is the logger instance enabled for the DEBUG level? */
-  def isDebugEnabled = slf4jLogger.isDebugEnabled
+  def isDebugEnabled: Boolean = slf4jLogger.isDebugEnabled
   /**  Is the logger instance enabled for the TRACE level? */
-  def isTraceEnabled = slf4jLogger.isTraceEnabled
+  def isTraceEnabled: Boolean = slf4jLogger.isTraceEnabled
 
 }
 

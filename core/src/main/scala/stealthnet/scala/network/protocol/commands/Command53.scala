@@ -34,7 +34,7 @@ object Command53 extends CommandBuilder {
     val rating = arguments("rating").asInstanceOf[Byte]
 
     new Command53(commandId, senderPeerID, receiverPeerID, sourceSearchID,
-      fileSize, fileName, metaData, comment, rating)
+      fileSize, fileName, metaData, comment, rating.toShort)
   }
 
 }
@@ -58,7 +58,7 @@ class Command53(
 ) extends Command
 {
 
-  val code = Command53.code
+  val code: Byte = Command53.code
 
   val encryption = Encryption.Rijndael
 
@@ -73,7 +73,7 @@ class Command53(
   assert((rating >= 0) && (rating <= 3))
   // scalastyle:on null
 
-  def argumentDefinitions = Command53.argumentDefinitions
+  def argumentDefinitions: List[CommandArgumentDefinition] = Command53.argumentDefinitions
 
   def arguments = Map(
     ("commandId", commandId),

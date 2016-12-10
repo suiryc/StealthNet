@@ -8,7 +8,7 @@ import stealthnet.scala.{BaseSettings, Settings => coreSettings}
 object Settings {
 
   /** Core settings. */
-  val core = coreSettings.core
+  val core: coreSettings = coreSettings.core
 
   /** Web UI settings. */
   val ui = new Settings(ConfigFactory.load())
@@ -21,7 +21,7 @@ class Settings(config: Config) extends BaseSettings(config) {
   protected val confPath = "stealthnet.ui.web"
 
   /** Web server port. */
-  val webServerPort = config.getInt(optionPath("server.port"))
+  val webServerPort: Int = config.getInt(optionPath("server.port"))
 
   /** Shutdown grace period (ms). `2s` by default. */
   val shutdownGracePeriod: Long =

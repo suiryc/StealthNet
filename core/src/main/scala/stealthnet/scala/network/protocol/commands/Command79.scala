@@ -52,7 +52,7 @@ class Command79(
 ) extends Command
 {
 
-  val code = Command79.code
+  val code: Byte = Command79.code
 
   val encryption = Encryption.Rijndael
 
@@ -65,7 +65,7 @@ class Command79(
   assert(sectorHashCodeResult != null)
   // scalastyle:on null
 
-  def argumentDefinitions = Command79.argumentDefinitions
+  def argumentDefinitions: List[CommandArgumentDefinition] = Command79.argumentDefinitions
 
   def arguments = Map(
     "commandId" -> commandId,

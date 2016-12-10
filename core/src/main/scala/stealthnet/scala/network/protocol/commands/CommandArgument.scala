@@ -2,7 +2,6 @@ package stealthnet.scala.network.protocol.commands
 
 import java.io.{InputStream, OutputStream}
 import scala.collection.mutable
-import scala.language.existentials
 import stealthnet.scala.network.protocol.{BitSize, ProtocolStream}
 import stealthnet.scala.network.protocol.exceptions.ProtocolException
 import stealthnet.scala.util.HexDumper
@@ -93,44 +92,44 @@ trait CommandArgumentsReader[T] {
    */
   // scalastyle:off method.length
   def readArguments(input: InputStream): Map[String, Any] = {
-    var result: mutable.Map[String, Any] = mutable.Map()
+    val result: mutable.Map[String, Any] = mutable.Map()
 
     var argumentName: String = ""
     try {
       for (definition <- argumentDefinitions) {
         argumentName = definition.name
         result += argumentName -> (definition match {
-          case ByteArgumentDefinition(name) =>
+          case ByteArgumentDefinition(_) =>
             ProtocolStream.readByte(input)
 
-          case ByteArrayArgumentDefinition(name, bitSize) =>
+          case ByteArrayArgumentDefinition(_, bitSize) =>
             ProtocolStream.readBytes(input, bitSize)
 
-          case IntegerArgumentDefinition(name, bitSize) =>
+          case IntegerArgumentDefinition(_, bitSize) =>
             ProtocolStream.readInteger(input, bitSize)
 
-          case BigIntegerArgumentDefinition(name) =>
+          case BigIntegerArgumentDefinition(_) =>
             ProtocolStream.readBigInteger(input)
 
-          case StringArgumentDefinition(name) =>
+          case StringArgumentDefinition(_) =>
             ProtocolStream.readString(input)
 
-          case HashArgumentDefinition(name, length) =>
+          case HashArgumentDefinition(_, length) =>
             ProtocolStream.read(input, length):Hash
 
-          case ListArgumentsDefinition(name, builder) =>
-            var list: mutable.ListBuffer[Any] = mutable.ListBuffer()
+          case ListArgumentsDefinition(_, builder) =>
+            val list: mutable.ListBuffer[Any] = mutable.ListBuffer()
             val size = ProtocolStream.readInteger(input, BitSize.Short).intValue
-            for (i <- 0 until size) {
+            for (_ <- 0 until size) {
               list += builder.read(input)
             }
             /* no need to be immutable anymore */
             list.toList
 
-          case StringMapArgumentDefinition(name) =>
-            var map: mutable.Map[String, String] = mutable.Map()
+          case StringMapArgumentDefinition(_) =>
+            val map: mutable.Map[String, String] = mutable.Map()
             val size = ProtocolStream.readInteger(input, BitSize.Short).intValue
-            for (i <- 0 until size) {
+            for (_ <- 0 until size) {
               val key = ProtocolStream.readString(input)
               val value = ProtocolStream.readString(input)
               map += key -> value
@@ -180,36 +179,36 @@ trait CommandArguments extends CommandArgumentDefinitions {
     for (definition <- argumentDefinitions) {
       val value = arguments(definition.name)
       unencryptedLength += (definition match {
-        case ByteArgumentDefinition(name) =>
+        case ByteArgumentDefinition(_) =>
           ProtocolStream.writeByte(output, value.asInstanceOf[Byte])
 
-        case ByteArrayArgumentDefinition(name, bitSize) =>
+        case ByteArrayArgumentDefinition(_, bitSize) =>
           ProtocolStream.writeBytes(output, value.asInstanceOf[Array[Byte]], bitSize)
 
-        case IntegerArgumentDefinition(name, bitSize) =>
+        case IntegerArgumentDefinition(_, bitSize) =>
           ProtocolStream.writeInteger(output, value.asInstanceOf[Number].longValue, bitSize)
 
-        case BigIntegerArgumentDefinition(name) =>
+        case BigIntegerArgumentDefinition(_) =>
           ProtocolStream.writeBigInteger(output, value.asInstanceOf[BigInt])
 
-        case StringArgumentDefinition(name) =>
+        case StringArgumentDefinition(_) =>
           ProtocolStream.writeString(output, value.asInstanceOf[String])
 
-        case HashArgumentDefinition(name, length) =>
+        case HashArgumentDefinition(_, length) =>
           val hash = value.asInstanceOf[Hash]
           assert(hash.bytes.length == length)
           ProtocolStream.write(output, hash.bytes)
 
-        case ListArgumentsDefinition(name, builder) =>
+        case ListArgumentsDefinition(_, _) =>
           val list = value.asInstanceOf[List[CommandArguments]]
-          var result = ProtocolStream.writeInteger(output, list.length, BitSize.Short)
+          var result = ProtocolStream.writeInteger(output, list.length.toLong, BitSize.Short)
           for (argument <- list)
             result += argument.write(output)
           result
 
-        case StringMapArgumentDefinition(name) =>
+        case StringMapArgumentDefinition(_) =>
           val map = value.asInstanceOf[Map[String, String]]
-          var result: Int = ProtocolStream.writeInteger(output, map.size, BitSize.Short)
+          var result: Int = ProtocolStream.writeInteger(output, map.size.toLong, BitSize.Short)
           for ((key, value) <- map) {
             result += ProtocolStream.writeString(output, key)
             result += ProtocolStream.writeString(output, value)
@@ -221,36 +220,36 @@ trait CommandArguments extends CommandArgumentDefinitions {
     unencryptedLength
   }
 
-  def argumentsToString = argumentDefinitions.map(definition => {
+  def argumentsToString: String = argumentDefinitions.map(definition => {
     val name = definition.name
     val value = arguments(name)
     name + '=' + (definition match {
-      case ByteArgumentDefinition(name) =>
+      case ByteArgumentDefinition(_) =>
         "%02X".format(value)
 
-      case ByteArrayArgumentDefinition(name, bitSize) =>
+      case ByteArrayArgumentDefinition(_, _) =>
         "\n" + HexDumper.dump(value.asInstanceOf[Array[Byte]]) + "\n"
 
-      case IntegerArgumentDefinition(name, bitSize) =>
+      case IntegerArgumentDefinition(_, _) =>
         value.toString
 
-      case BigIntegerArgumentDefinition(name) =>
+      case BigIntegerArgumentDefinition(_) =>
         value.toString
 
-      case StringArgumentDefinition(name) =>
+      case StringArgumentDefinition(_) =>
         value.toString
 
-      case HashArgumentDefinition(name, length) =>
+      case HashArgumentDefinition(_, _) =>
         value.toString
 
-      case ListArgumentsDefinition(name, builder) =>
+      case ListArgumentsDefinition(_, _) =>
         value.toString
 
-      case StringMapArgumentDefinition(name) =>
+      case StringMapArgumentDefinition(_) =>
         value.toString
     })
   }).mkString("(", ", ", ")")
 
-  override def toString = getClass.getSimpleName + argumentsToString
+  override def toString: String = getClass.getSimpleName + argumentsToString
 
 }

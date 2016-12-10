@@ -27,7 +27,7 @@ class DebugInputStream(
     result
   }
 
-  override def read(b: Array[Byte]) = read(b, 0, b.length)
+  override def read(b: Array[Byte]): Int = read(b, 0, b.length)
 
   override def read(b: Array[Byte], off: Int, len: Int): Int = {
     val result = super.read(b, off, len)

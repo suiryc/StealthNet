@@ -43,7 +43,7 @@ class ConnectionsNotificationsManager(protected val session: ServerSession)
   private def deliver(data: Map[String, Object]): Unit =
     deliver(session, "connections", data)
 
-  override def receive = {
+  override def receive: Receive = {
     case Start =>
       ConnectionsNotificationsManager.actor ! ConnectionsNotificationsManager.NewActor(self, session.getId)
 
@@ -73,7 +73,6 @@ class ConnectionsNotificationsManager(protected val session: ServerSession)
       deliver(output)
 
     case ClosedConnection(cnxInfo) =>
-      val cnx = cnxInfo.cnx
       val output = Map[String, Object](
         "event" -> "closed",
         "id" -> ("connection_" + cnxInfo.id)
@@ -110,7 +109,7 @@ object ConnectionsNotificationsManager {
     private var refreshRunning = false
 
     // scalastyle:off method.length
-    override def receive = {
+    override def receive: Receive = {
       case NewActor(actor, id) =>
         actors += id -> actor
         /* notify the new actor about current connections */
@@ -143,7 +142,7 @@ object ConnectionsNotificationsManager {
           connections foreach { cnxInfo =>
             actors foreach { _._2 ! ConnectionsNotifications.RefreshConnection(cnxInfo) }
           }
-          Core.schedule(self ! RefreshConnections, Constants.cnxInfoRefreshPeriod)
+          Core.schedule(self ! RefreshConnections, Constants.cnxInfoRefreshPeriod.toLong)
         }
         /* else: refresh stopped */
 
@@ -166,16 +165,17 @@ object ConnectionsNotificationsManager {
 
   }
 
-  val actor = Core.actorSystem.system.actorOf(Props[ConnectionsNotificationsManagerActor], "UI-ConnectionsNotificationsManager")
+  val actor: ActorRef = Core.actorSystem.system.actorOf(Props[ConnectionsNotificationsManagerActor], "UI-ConnectionsNotificationsManager")
   Core.actorSystem.watch(actor)
 
-  def stop() = actor ! Stop
+  def stop(): Unit = actor ! Stop
 
   /** Dummy method to start the manager. */
   def start() { }
 
   def register(session: ServerSession) {
     Core.actorSystem.system.actorOf(Props(new ConnectionsNotificationsManager(session)))
+    ()
   }
 
   def unregister(session: ServerSession) {

@@ -2,24 +2,24 @@ import sbt._
 import sbt.Keys._
 
 lazy val versions = Map[String, String](
-  "akka"             -> "2.4.1",
+  "akka"             -> "2.4.14",
   //"apache-jsp"       -> "8.0.27",
-  "bouncycastle"     -> "1.53",
+  "bouncycastle"     -> "1.55",
   "cometd"           -> "3.0.7",
-  "config"           -> "1.3.0",
+  "config"           -> "1.3.1",
   //"eclipse-jdt"      -> "4.4.2",
   "jetty"            -> "9.3.6.v20151106",
   "jetty-jsp-jdt"    -> "2.3.3",
   "junit"            -> "4.12",
-  "logback"          -> "1.1.3",
+  "logback"          -> "1.1.8",
   "mojara"           -> "2.2.9",
   "netty"            -> "4.0.33.Final",
   "primefaces"       -> "5.3",
-  "scala"            -> "2.11.7",
+  "scala"            -> "2.12.1",
   "scala-xml"        -> "1.0.5",
-  "scalatest"        -> "2.2.4",
+  "scalatest"        -> "3.0.1",
   "suiryc-scala"     -> "0.0.2-SNAPSHOT",
-  "slf4j"            -> "1.7.13",
+  "slf4j"            -> "1.7.21",
   "stealthnet-scala" -> "0.1.2-SNAPSHOT"
 )
 
@@ -93,10 +93,21 @@ lazy val commonSettings = Seq(
 
   scalacOptions ++= Seq(
     "-deprecation",
+    "-encoding", "UTF-8",
     "-feature",
-    "-optimize",
     "-unchecked",
-    "-Yinline-warnings"
+    "-Xfatal-warnings",
+    "-Xlint",
+    "-Yno-adapted-args",
+    "-Ywarn-numeric-widen",
+    "-Ywarn-value-discard",
+    "-Ywarn-inaccessible",
+    "-Ywarn-infer-any",
+    "-Ywarn-dead-code",
+    "-Ywarn-nullary-override",
+    "-Ywarn-nullary-unit",
+    "-Ywarn-unused",
+    "-Ywarn-unused-import"
   ),
   scalacOptions in (Compile, doc) ++= Seq("-diagrams", "-implicits"),
   resolvers += Resolver.mavenLocal,

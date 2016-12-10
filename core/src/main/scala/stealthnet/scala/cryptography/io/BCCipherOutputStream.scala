@@ -29,7 +29,7 @@ class BCCipherOutputStream(output: OutputStream, cipher: BufferedBlockCipher)
       output.write(buffer, 0, length)
   }
 
-  override def write(b: Array[Byte]) = write(b, 0, b.length)
+  override def write(b: Array[Byte]): Unit = write(b, 0, b.length)
 
   /**
    * @todo shall we check parameters (as does parent class) ?

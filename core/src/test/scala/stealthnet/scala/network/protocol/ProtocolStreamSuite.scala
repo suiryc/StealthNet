@@ -16,7 +16,7 @@ class ProtocolStreamSuite extends FunSuite {
     for (v <- seq)
       v match {
         case v: Byte =>
-          output.write(v)
+          output.write(v.toInt)
 
         case v: Int =>
           output.write(v)
@@ -130,7 +130,7 @@ class ProtocolStreamSuite extends FunSuite {
     )
 
     for ((value, bitSize) <- tests) {
-      val bytes = buildArray(ProtocolStream.convertInteger(value.length, bitSize), value)
+      val bytes = buildArray(ProtocolStream.convertInteger(value.length.toLong, bitSize), value)
       /* test 'read' */
       assert(wrapArray(value)
         === wrapArray(ProtocolStream.readBytes(buildInput(bytes), bitSize)))
@@ -275,7 +275,7 @@ class ProtocolStreamSuite extends FunSuite {
 
     for (value <- tests) {
       val utf8 = value.getBytes("UTF-8")
-      val bytes = buildArray(ProtocolStream.convertInteger(utf8.length, BitSize.Short), utf8)
+      val bytes = buildArray(ProtocolStream.convertInteger(utf8.length.toLong, BitSize.Short), utf8)
       /* test 'read' */
       assert(value === ProtocolStream.readString(buildInput(bytes)))
       /* test 'write' */

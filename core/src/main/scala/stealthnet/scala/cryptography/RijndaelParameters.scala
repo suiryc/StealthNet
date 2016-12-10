@@ -58,7 +58,7 @@ class RijndaelParameters(
   val key: Array[Byte]
 ) {
 
-  override def toString = getClass.getSimpleName + '(' +
+  override def toString: String = getClass.getSimpleName + '(' +
     s"blockSize=$blockSize, feedbackSize=$feedbackSize, keySize=$keySize, " +
     s"cipherMode=$cipherMode, paddingMode=$paddingMode, iv=\n${HexDumper.dump(iv)}\n, " +
     s"key=\n${HexDumper.dump(key)}\n)"

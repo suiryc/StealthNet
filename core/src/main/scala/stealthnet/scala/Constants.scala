@@ -8,13 +8,13 @@ import stealthnet.scala.cryptography.{PaddingMode, CipherMode}
 object Constants {
 
   /** Protocol header. */
-  val protocolRAW = "LARS REGENSBURGER'S FILE SHARING PROTOCOL 0.2".getBytes("US-ASCII")
+  val protocolRAW: Array[Byte] = "LARS REGENSBURGER'S FILE SHARING PROTOCOL 0.2".getBytes("US-ASCII")
 
   /** Offset of command length: protocol header + encryption = 45 + 1 = 46 */
   val commandLengthOffset = 46
 
   /** Offset of command */
-  val commandOffset = commandLengthOffset + 2
+  val commandOffset: Int = commandLengthOffset + 2
 
   /** ''RSA'' key length: 1024-bits. */
   val RSAKeyLength = 1024

@@ -25,7 +25,7 @@ object UpdateClient extends Logging with EmptyLoggingContext {
           val webCachesNode = XML.loadString((r \\ "GetWebCachesResult").text)
           val webCaches = for { webCacheNode <- webCachesNode \\ "webcache"
             webCache <- webCacheNode \ "@url"
-              if (webCache.text != "") } yield webCache.text
+              if webCache.text != "" } yield webCache.text
           Some(webCaches.toList)
         }
         catch {

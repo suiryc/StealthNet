@@ -7,6 +7,7 @@ import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.util.concurrent.GlobalEventExecutor
 import java.util.concurrent.TimeUnit
+import scala.concurrent.Future
 import stealthnet.scala.Settings
 import stealthnet.scala.network.connection.StealthNetConnectionParameters
 import stealthnet.scala.util.log.{EmptyLoggingContext, Logging}
@@ -44,6 +45,7 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
 
     val channel: Channel = bootstrap.bind(Settings.core.serverPort).sync().channel()
     group.add(channel)
+    ()
   }
 
   /**
@@ -51,7 +53,7 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
    *
    * Cleans resources. Connections are supposed to be closed beforehand.
    */
-  def stop() = {
+  def stop(): Future[Unit] = {
     logger.debug("Stopping")
 
     val f1 = bossGroup.shutdownGracefully(Settings.core.shutdownQuietPeriod,
@@ -83,6 +85,7 @@ object StealthNetServer extends Logging with EmptyLoggingContext {
      * is also needed when channel closing event is fired.
      */
     group.close()
+    ()
   }
 
 }

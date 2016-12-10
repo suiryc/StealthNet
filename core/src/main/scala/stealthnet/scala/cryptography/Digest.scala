@@ -96,14 +96,14 @@ private class MessageDigest(val algorithm: Algorithm.Value)
   private val jDigest =
     java.security.MessageDigest.getInstance(Algorithm.algorithm(algorithm))
 
-  def update(bytes: Array[Byte]) = {
+  def update(bytes: Array[Byte]): MessageDigest = {
     jDigest.update(bytes)
     this
   }
 
-  def digest() = jDigest.digest()
+  def digest(): Hash = jDigest.digest()
 
-  def reset() = {
+  def reset(): MessageDigest = {
     jDigest.reset()
     this
   }

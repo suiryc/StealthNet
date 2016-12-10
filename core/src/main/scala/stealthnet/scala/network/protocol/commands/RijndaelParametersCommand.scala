@@ -83,7 +83,7 @@ protected abstract class RijndaelParametersCommand extends Command {
   assert(parameters != null)
   // scalastyle:on null
 
-  def argumentDefinitions = RijndaelParametersCommand.argumentDefinitions
+  def argumentDefinitions: List[CommandArgumentDefinition] = RijndaelParametersCommand.argumentDefinitions
 
   def arguments = Map(
     "blockSize" -> parameters.blockSize,
@@ -102,7 +102,7 @@ object RijndaelParametersServerCommand extends CommandBuilder {
 
   val code: Byte = 0x12
 
-  def argumentDefinitions = RijndaelParametersCommand.argumentDefinitions
+  def argumentDefinitions: List[CommandArgumentDefinition] = RijndaelParametersCommand.argumentDefinitions
 
   def read(input: InputStream): Command =
     new RijndaelParametersServerCommand(RijndaelParametersCommand.readRijndaelParameters(readArguments(input)))
@@ -118,7 +118,7 @@ class RijndaelParametersServerCommand(val parameters: RijndaelParameters)
   extends RijndaelParametersCommand
 {
 
-  val code = RijndaelParametersServerCommand.code
+  val code: Byte = RijndaelParametersServerCommand.code
 
 }
 
@@ -127,7 +127,7 @@ object RijndaelParametersClientCommand extends CommandBuilder {
 
   val code: Byte = 0x13
 
-  def argumentDefinitions = RijndaelParametersCommand.argumentDefinitions
+  def argumentDefinitions: List[CommandArgumentDefinition] = RijndaelParametersCommand.argumentDefinitions
 
   def read(input: InputStream): Command =
     new RijndaelParametersClientCommand(RijndaelParametersCommand.readRijndaelParameters(readArguments(input)))
@@ -143,6 +143,6 @@ class RijndaelParametersClientCommand(val parameters: RijndaelParameters)
   extends RijndaelParametersCommand
 {
 
-  val code = RijndaelParametersClientCommand.code
+  val code: Byte = RijndaelParametersClientCommand.code
 
 }
